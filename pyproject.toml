@@ -15,6 +15,7 @@ test = ["pytest>=8,<9"]
 [project.scripts]
 oraclarva-audit = "oraclarva.audit:main"
 oraclarva-smoke = "oraclarva.smoke:main"
+oraclarva-body-spec = "oraclarva.body:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
