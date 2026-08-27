@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#110d18" />
+    <meta
+      name="description"
+      content="Oraclarva의 과학적 근거를 표시하는 L1 초파리 유충 3D 몸체 모델 뷰어"
+    />
+    <title>Oraclarva — L1 Body Model</title>
+  </head>
+  <body>
+    <main id="app">
+      <section class="hero">
+        <header class="topbar">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <div>
+              <p>ORACLARVA / BODY LAB</p>
+              <h1>L1 neuromechanical body</h1>
+            </div>
+          </div>
+          <div class="status"><span></span> scientific model v0</div>
+        </header>
+
+        <div class="viewer-shell">
+          <div id="scene" aria-label="회전 및 확대가 가능한 L1 유충 3D 모델"></div>
+          <div class="scene-hud">
+            <div class="metric"><small>nominal length</small><strong>900 <em>µm</em></strong></div>
+            <div class="metric"><small>max width</small><strong>150 <em>µm</em></strong></div>
+            <div class="metric"><small>regions</small><strong>12</strong></div>
+          </div>
+          <div class="axis-note"><span>ANTERIOR</span><i></i><span>POSTERIOR</span></div>
+          <p class="gesture">드래그 회전 · 스크롤 확대 · 분절 클릭</p>
+        </div>
+
+        <aside class="control-panel">
+          <div class="panel-heading">
+            <div>
+              <p>BODY INPUT</p>
+              <h2>형태와 수축</h2>
+            </div>
+            <button id="play" type="button" aria-pressed="false"><span>▶</span> 파동 재생</button>
+          </div>
+
+          <label class="slider-row" for="contraction">
+            <span>수축 강도 <output id="contraction-value">35%</output></span>
+            <input id="contraction" type="range" min="0" max="100" value="35" />
+          </label>
+          <label class="slider-row" for="bend">
+            <span>측면 굽힘 <output id="bend-value">18%</output></span>
+            <input id="bend" type="range" min="0" max="100" value="18" />
+          </label>
+
+          <div class="switch-row">
+            <div>
+              <strong>근거 등급 표시</strong>
+              <small>관측·유도·가설을 색으로 구분</small>
+            </div>
+            <button id="evidence-toggle" class="switch active" type="button" role="switch" aria-checked="true"><span></span></button>
+          </div>
+
+          <div class="segment-card">
+            <div class="segment-title">
+              <span id="segment-index">05</span>
+              <div><small>SELECTED REGION</small><h3 id="segment-name">A1</h3></div>
+              <span id="segment-badge" class="badge hypothesis">HYPOTHESIS</span>
+            </div>
+            <dl>
+              <div><dt>명목 길이</dt><dd id="segment-length">81.0 µm</dd></div>
+              <div><dt>명목 폭</dt><dd id="segment-width">150.0 µm</dd></div>
+              <div><dt>해부학</dt><dd id="segment-anatomy">abdominal 1</dd></div>
+              <div><dt>형상 근거</dt><dd>Heckscher 2012 + v0 hypothesis</dd></div>
+            </dl>
+          </div>
+
+          <div id="segment-buttons" class="segment-buttons" aria-label="분절 선택"></div>
+        </aside>
+      </section>
+
+      <section class="evidence-strip">
+        <div><span class="dot observed"></span><strong>OBSERVED</strong><small>L1 분절 정체성, L3 물성</small></div>
+        <div><span class="dot derived"></span><strong>DERIVED</strong><small>L3 → L1 상사 스케일링</small></div>
+        <div><span class="dot hypothesis"></span><strong>HYPOTHESIS</strong><small>L1 길이·폭·분철 프로파일</small></div>
+        <p>이 뷰어는 생물학적 실측 형상을 주장하지 않습니다. 다음 단계는 보정된 L1 dorsal/lateral 영상 코호트로 현재 가설 프로파일을 교체하는 것입니다.</p>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
