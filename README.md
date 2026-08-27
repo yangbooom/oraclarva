@@ -43,6 +43,24 @@ oraclarva-audit neurons.csv synapses.csv
 
 CSV schemas are documented by `oraclarva-audit --help` and in `docs/SCIENTIFIC_SCOPE.md`.
 
+## Interactive L1 body viewer
+
+The `viewer/` app renders the same `data/body/l1_body_v0.json` bundle with
+Three.js. It exposes all twelve mechanical regions, per-region nominal geometry,
+evidence status, orbit/zoom controls, and a posterior-to-anterior contraction
+wave. Active shortening increases cross-sectional scale by the square root of
+inverse length, matching the hydrostatic volume-preservation approximation used
+by the XPBD reference body.
+
+```bash
+cd viewer
+npm install
+npm run dev
+```
+
+The displayed L1 length, width, and per-region profile remain explicit v0
+hypotheses. The viewer does not turn them into observations.
+
 ## Non-goals for the reference core
 
 - claiming consciousness or a complete mind upload;
