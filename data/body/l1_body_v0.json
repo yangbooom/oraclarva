@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_body_v0",
+  "organism": "Drosophila melanogaster",
+  "stage": "newly-hatched L1",
+  "coordinate_system": {
+    "x": "anterior_to_posterior",
+    "y": "left_to_right",
+    "z": "ventral_to_dorsal",
+    "unit": "metre"
+  },
+  "global_geometry": {
+    "total_length_m": {
+      "nominal": 0.0009,
+      "lower": 0.0006,
+      "upper": 0.001,
+      "provenance": "hypothesis",
+      "source_id": "heckscher_2012",
+      "note": "The cited L1 cohort was reported only as <1000 um average length. The nominal and lower bound are explicit v0 hypotheses pending calibrated image measurements."
+    },
+    "maximum_width_m": {
+      "nominal": 0.00015,
+      "lower": 0.0001,
+      "upper": 0.0002,
+      "provenance": "constraint",
+      "source_id": "heckscher_2012",
+      "note": "L1 segment and muscle imaging used 100 x 150 um channels; whole-animal trials used 200 x 200 um channels. Channel size constrains but does not directly measure unloaded width."
+    },
+    "height_to_width_ratio": {
+      "nominal": 0.9,
+      "lower": 0.75,
+      "upper": 1.0,
+      "provenance": "hypothesis",
+      "source_id": null,
+      "note": "Unloaded 3D cross-sectional measurements for newly hatched L1 were not found."
+    },
+    "density_kg_m3": {
+      "nominal": 1050.0,
+      "lower": 1000.0,
+      "upper": 1100.0,
+      "provenance": "hypothesis",
+      "source_id": null,
+      "note": "Water-rich soft-tissue prior; replace when L1 mass and volume are jointly measured."
+    }
+  },
+  "segments": [
+    {"id": "PSC", "anatomy": "pseudocephalon", "length_fraction": 0.080, "width_scale": 0.65},
+    {"id": "T1", "anatomy": "thoracic_1", "length_fraction": 0.075, "width_scale": 0.78},
+    {"id": "T2", "anatomy": "thoracic_2", "length_fraction": 0.080, "width_scale": 0.88},
+    {"id": "T3", "anatomy": "thoracic_3", "length_fraction": 0.085, "width_scale": 0.96},
+    {"id": "A1", "anatomy": "abdominal_1", "length_fraction": 0.090, "width_scale": 1.00},
+    {"id": "A2", "anatomy": "abdominal_2", "length_fraction": 0.095, "width_scale": 1.03},
+    {"id": "A3", "anatomy": "abdominal_3", "length_fraction": 0.095, "width_scale": 1.05},
+    {"id": "A4", "anatomy": "abdominal_4", "length_fraction": 0.095, "width_scale": 1.05},
+    {"id": "A5", "anatomy": "abdominal_5", "length_fraction": 0.090, "width_scale": 1.02},
+    {"id": "A6", "anatomy": "abdominal_6", "length_fraction": 0.085, "width_scale": 0.95},
+    {"id": "A7", "anatomy": "abdominal_7", "length_fraction": 0.075, "width_scale": 0.80},
+    {"id": "A8", "anatomy": "terminal_abdominal", "length_fraction": 0.055, "width_scale": 0.60}
+  ],
+  "segment_geometry_provenance": {
+    "provenance": "hypothesis",
+    "source_id": "heckscher_2012",
+    "note": "Anatomical identities are observed, but v0 length fractions and width profile are a digitization target rather than measured facts. They must be replaced by a preregistered L1 image cohort before a biological geometry claim."
+  },
+  "active_mechanics": {
+    "maximum_shortening_fraction": {
+      "nominal": 0.45,
+      "lower": 0.20,
+      "upper": 0.57,
+      "provenance": "fit",
+      "source_id": "sun_2022",
+      "note": "Sun et al. report about 0.2 mm shortening from a 0.35 mm L3 segment (~0.57). The lower v0 nominal avoids treating that approximate maximum as a typical contraction."
+    }
+  },
+  "source_l3_mechanics": {
+    "total_length_m": 0.0035,
+    "effective_segment_count": 11,
+    "segment_k1_n_per_m": 40.7,
+    "segment_k2_n_per_m": 58.3,
+    "segment_c_n_s_per_m": 2640.0,
+    "maximum_muscle_force_n": 0.0067,
+    "whole_body_mass_kg": 1.14e-6,
+    "provenance": "observed",
+    "source_id": "sun_2022"
+  },
+  "scaling_assumptions": {
+    "provenance": "derived",
+    "note": "Assume geometric similarity and stage-invariant effective material properties: axial k1, k2 and c scale with linear size; muscle force scales with cross-sectional area; mass scales with volume. These assumptions require L1 validation."
+  },
+  "sources": [
+    {
+      "id": "heckscher_2012",
+      "citation": "Heckscher ES, Lockery SR, Doe CQ. J Neurosci. 2012;32:12460-12471.",
+      "doi": "10.1523/JNEUROSCI.0222-12.2012",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3711835/",
+      "used_for": ["L1 stage", "<1 mm average length constraint", "channel constraints", "segment identities", "muscle timing"]
+    },
+    {
+      "id": "sun_2022",
+      "citation": "Sun X et al. BMC Biology. 2022;20:130.",
+      "doi": "10.1186/s12915-022-01336-w",
+      "url": "https://doi.org/10.1186/s12915-022-01336-w",
+      "used_for": ["L3 SLS parameters", "L3 force", "L3 mass", "effective segment count", "scaling baseline"]
+    }
+  ]
+}

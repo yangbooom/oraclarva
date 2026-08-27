@@ -21,6 +21,10 @@ This repository starts with a small, auditable vertical slice:
 - causal tests from sensory input to motor output;
 - scientific-scope and mobile-core design notes.
 
+The next vertical slice adds a provenance-aware L1 3D body specification and
+a dependency-free XPBD reference body. Run `oraclarva-body-spec` to inspect
+which parameters are observed, derived from measurements, or still hypotheses.
+
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
 ## Quick start
@@ -33,6 +37,7 @@ python -m venv .venv
 python -m pip install -e '.[test]'
 pytest
 oraclarva-smoke
+oraclarva-body-spec
 oraclarva-audit neurons.csv synapses.csv
 ```
 
