@@ -18,6 +18,8 @@ jobs:
           cache: pip
       - run: python -m pip install -e '.[test]'
       - run: pytest
+      - run: python tools/compile_l1_motor_map.py --check
+      - run: oraclarva-motor-map-audit
       - run: oraclarva-smoke
 
   viewer:

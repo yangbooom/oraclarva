@@ -16,6 +16,7 @@ test = ["pytest>=8,<9"]
 oraclarva-audit = "oraclarva.audit:main"
 oraclarva-smoke = "oraclarva.smoke:main"
 oraclarva-body-spec = "oraclarva.body:main"
+oraclarva-motor-map-audit = "oraclarva.neuromuscular:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

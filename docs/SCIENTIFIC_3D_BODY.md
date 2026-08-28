@@ -81,15 +81,16 @@ pressure or viscera motion.
 
 ## Neuromuscular integration gate
 
-Longitudinal and transverse muscles are distinct functional groups innervated by
-distinct motor-neuron sets and recruited at different phases. The core therefore
-accepts only explicit neuron-ID projections into segment, side, and muscle-group
-channels. `data/neuromuscular/l1_motor_map_v0.json` currently contains no such
-projections and has status `blocked_pending_identifier_crosswalk`.
+The v1 crosswalk preserves the published muscle spatial groups (DL, DO, VL, VA,
+VO, T, and Broad), individual muscle numbers and synonyms, synapse types, side,
+segment, and exact CATMAID skeleton IDs. It does not collapse these anatomical
+groups into a made-up longitudinal/transverse actuator. The current A1/A2 map is
+therefore identity-curated but not yet mechanically executable.
 
 Synthetic mappings are permitted only when a test explicitly opts in. A release
 simulation fails closed until every enabled projection carries an observed
-source and the connectome IDs match the selected dataset.
+source, the connectome IDs match the selected dataset, motor-to-muscle gains are
+measured or fitted, and each muscle has an auditable mechanical line of action.
 
 It is not yet a complete soft-body model. The next body milestone must add:
 

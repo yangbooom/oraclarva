@@ -1,0 +1,1571 @@
+{
+  "schema_version": 2,
+  "model_id": "dmel_l1_motor_map_v1",
+  "organism": "Drosophila melanogaster",
+  "stage": "L1",
+  "status": "curated_partial_a1_a2_targets_pending_gains_and_geometry",
+  "dataset": {
+    "id": "vfb_l1em_catmaid_project_1",
+    "base_url": "https://l1em.catmaid.virtualflybrain.org/",
+    "project_id": 1,
+    "identifier_type": "CATMAID skeleton_id",
+    "names_endpoint": "/1/skeleton/neuronnames"
+  },
+  "note": "Table 1 muscle targets are cross-walked to current CATMAID names for 58 reconstructed motor neurons. A1 is represented bilaterally; MN25 is represented in A2 because it is absent in A1. Three supplementary IDs remain unresolved. Muscle gains and attachment geometry are unknown, so this anatomical map must not yet drive release body physics.",
+  "coverage": {
+    "supplement_skeleton_ids": 61,
+    "resolved_current_names": 58,
+    "unresolved_current_names": 3,
+    "mapped_segments": [
+      "A1",
+      "A2"
+    ],
+    "full_body_segments": false
+  },
+  "projections": [
+    {
+      "neuron_id": "4028114",
+      "neuron_name": "MN5 LO1_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "5",
+          "synonym": "LO1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4042315",
+      "neuron_name": "MN22/23 (RF:LT2/LT3) LT1_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "22",
+          "synonym": "LT2",
+          "evidence": "listed"
+        },
+        {
+          "number": "23",
+          "synonym": "LT3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4101976",
+      "neuron_name": "MN27 (SN MN VA2)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VA",
+      "target_muscles": [
+        {
+          "number": "27",
+          "synonym": "VA2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNc",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4102728",
+      "neuron_name": "MN22/23 (RF:LT2/LT3) LT1_a1r  ",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "22",
+          "synonym": "LT2",
+          "evidence": "listed"
+        },
+        {
+          "number": "23",
+          "synonym": "LT3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4121534",
+      "neuron_name": "MN23/24 (RF: LT3/LT4) LT4_a1r  ",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "23",
+          "synonym": "LT3",
+          "evidence": "listed"
+        },
+        {
+          "number": "24",
+          "synonym": "LT4",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4274364",
+      "neuron_name": "MN29 (SN MN VA3)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VA",
+      "target_muscles": [
+        {
+          "number": "29",
+          "synonym": "VA3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNc",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4289773",
+      "neuron_name": "MN23/24 (RF: LT3/LT4) LT4_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "23",
+          "synonym": "LT3",
+          "evidence": "listed"
+        },
+        {
+          "number": "24",
+          "synonym": "LT4",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4326468",
+      "neuron_name": "MN8 (RF:SBM) LT3_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "8",
+          "synonym": "SBM",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4326520",
+      "neuron_name": "MN27 (SN MN VA2)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VA",
+      "target_muscles": [
+        {
+          "number": "27",
+          "synonym": "VA2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNc",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4382895",
+      "neuron_name": "MN29 (SN MN VA3)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VA",
+      "target_muscles": [
+        {
+          "number": "29",
+          "synonym": "VA3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNc",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4397287",
+      "neuron_name": "MN26 (SN MN VA1)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VA",
+      "target_muscles": [
+        {
+          "number": "26",
+          "synonym": "VA1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNc",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4488976",
+      "neuron_name": "MN1 aCC_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "1",
+          "synonym": "DA1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4524871",
+      "neuron_name": "MN26 (SN MN VA1)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VA",
+      "target_muscles": [
+        {
+          "number": "26",
+          "synonym": "VA1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNc",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4535767",
+      "neuron_name": "MN5 LO1_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "5",
+          "synonym": "LO1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4717729",
+      "neuron_name": "MN25 (TN)_a2l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A2",
+      "side": "left",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "25",
+          "synonym": "VT1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "TN",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "4881629",
+      "neuron_name": "MN8 (RF:SBM) LT3_a1r ",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "8",
+          "synonym": "SBM",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "5085455",
+      "neuron_name": "MN20 ISN_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "20",
+          "synonym": "DO5",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNL",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "5899328",
+      "neuron_name": "MN28 ISN_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VO",
+      "target_muscles": [
+        {
+          "number": "28",
+          "synonym": "VO3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "6467481",
+      "neuron_name": "MN21/22 (RF:LT1/LT2) LT2_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "21",
+          "synonym": "LT1",
+          "evidence": "listed"
+        },
+        {
+          "number": "22",
+          "synonym": "LT2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "6970942",
+      "neuron_name": "MN18 (ISN DT1)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "18",
+          "synonym": "DT1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNL",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "8026224",
+      "neuron_name": "MN10 U2_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "10",
+          "synonym": "DO2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "10013402",
+      "neuron_name": "MN11 (ISN NB3-2)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "11",
+          "synonym": "DO3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNL",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "10649843",
+      "neuron_name": "MN1 aCC_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "1",
+          "synonym": "DA1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "10678017",
+      "neuron_name": "MN12-III (ISN VL1 V-MN NB5-2)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "12",
+          "synonym": "VL1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "III",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "13057994",
+      "neuron_name": "MNISN-Is RP2_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "Broad",
+      "target_muscles": [
+        {
+          "number": "1",
+          "synonym": "DA1",
+          "evidence": "listed"
+        },
+        {
+          "number": "2",
+          "synonym": "DA2",
+          "evidence": "listed"
+        },
+        {
+          "number": "3",
+          "synonym": "DA3",
+          "evidence": "listed"
+        },
+        {
+          "number": "4",
+          "synonym": "LL1",
+          "evidence": "listed"
+        },
+        {
+          "number": "9",
+          "synonym": "DO1",
+          "evidence": "listed"
+        },
+        {
+          "number": "10",
+          "synonym": "DO2",
+          "evidence": "listed"
+        },
+        {
+          "number": "11",
+          "synonym": "DO3",
+          "evidence": "listed"
+        },
+        {
+          "number": "18",
+          "synonym": "DT1",
+          "evidence": "bracketed_in_source"
+        },
+        {
+          "number": "19",
+          "synonym": "DO4",
+          "evidence": "listed"
+        },
+        {
+          "number": "20",
+          "synonym": "DO5",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Is",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "13058240",
+      "neuron_name": "MNISN-Is RP2_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "Broad",
+      "target_muscles": [
+        {
+          "number": "1",
+          "synonym": "DA1",
+          "evidence": "listed"
+        },
+        {
+          "number": "2",
+          "synonym": "DA2",
+          "evidence": "listed"
+        },
+        {
+          "number": "3",
+          "synonym": "DA3",
+          "evidence": "listed"
+        },
+        {
+          "number": "4",
+          "synonym": "LL1",
+          "evidence": "listed"
+        },
+        {
+          "number": "9",
+          "synonym": "DO1",
+          "evidence": "listed"
+        },
+        {
+          "number": "10",
+          "synonym": "DO2",
+          "evidence": "listed"
+        },
+        {
+          "number": "11",
+          "synonym": "DO3",
+          "evidence": "listed"
+        },
+        {
+          "number": "18",
+          "synonym": "DT1",
+          "evidence": "bracketed_in_source"
+        },
+        {
+          "number": "19",
+          "synonym": "DO4",
+          "evidence": "listed"
+        },
+        {
+          "number": "20",
+          "synonym": "DO5",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Is",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14044614",
+      "neuron_name": "MNISNb/d-Is RP5_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "Broad",
+      "target_muscles": [
+        {
+          "number": "6",
+          "synonym": "VL3",
+          "evidence": "listed"
+        },
+        {
+          "number": "7",
+          "synonym": "VL4",
+          "evidence": "listed"
+        },
+        {
+          "number": "12",
+          "synonym": "VL1",
+          "evidence": "listed"
+        },
+        {
+          "number": "13",
+          "synonym": "VL2",
+          "evidence": "listed"
+        },
+        {
+          "number": "14",
+          "synonym": "VO2",
+          "evidence": "listed"
+        },
+        {
+          "number": "15",
+          "synonym": "VO4",
+          "evidence": "listed"
+        },
+        {
+          "number": "16",
+          "synonym": "VO5",
+          "evidence": "listed"
+        },
+        {
+          "number": "30",
+          "synonym": "VO1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Is",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14045016",
+      "neuron_name": "MN14 RP1_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "14",
+          "synonym": "VO2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14045489",
+      "neuron_name": "MN15/16/17 VO4–6 (NB7-1? )_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VO",
+      "target_muscles": [
+        {
+          "number": "15",
+          "synonym": "VO4",
+          "evidence": "listed"
+        },
+        {
+          "number": "16",
+          "synonym": "VO5",
+          "evidence": "listed"
+        },
+        {
+          "number": "17",
+          "synonym": "VO6",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNd",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14045854",
+      "neuron_name": "MN3 (ISN U4 DA3 NB7-1?)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "3",
+          "synonym": "DA3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14046720",
+      "neuron_name": "MN12-III (ISN VL1 V-MN NB5-2)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "12",
+          "synonym": "VL1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "III",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14047130",
+      "neuron_name": "MN2 ISN(U3-NB7-1?)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "2",
+          "synonym": "DA2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14047554",
+      "neuron_name": "MN9 U1_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "9",
+          "synonym": "DO1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14047760",
+      "neuron_name": "MN10 U2_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "10",
+          "synonym": "DO2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14047945",
+      "neuron_name": "MN4 (ISN U5 NB7-1?)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "4",
+          "synonym": "LL1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14048287",
+      "neuron_name": "MN2 ISN(U3-NB7-1?)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "2",
+          "synonym": "DA2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14048538",
+      "neuron_name": "MN15/16 VO4/5 (NB7-1? ISN)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VO",
+      "target_muscles": [
+        {
+          "number": "15",
+          "synonym": "VO4",
+          "evidence": "listed"
+        },
+        {
+          "number": "16",
+          "synonym": "VO5",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNd",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14048876",
+      "neuron_name": "MN28 ISN_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VO",
+      "target_muscles": [
+        {
+          "number": "28",
+          "synonym": "VO3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14085813",
+      "neuron_name": "MN9 U1_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "9",
+          "synonym": "DO1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14086309",
+      "neuron_name": "MN19 (ISN NB3-2)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "19",
+          "synonym": "DO4",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNL",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14087107",
+      "neuron_name": "MN30 RP4_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "30",
+          "synonym": "VO1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14087339",
+      "neuron_name": "MN4 (ISN U5 NB7-1?)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "4",
+          "synonym": "LL1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14088149",
+      "neuron_name": "MN3 (ISN U4 DA3 NB7-1?)_a1l ",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "3",
+          "synonym": "DA3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNDM",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14088451",
+      "neuron_name": "MN11 (ISN NB3-2)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "11",
+          "synonym": "DO3",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNL",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14194234",
+      "neuron_name": "MN30 RP4_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "30",
+          "synonym": "VO1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14194703",
+      "neuron_name": "MN13 ISN MN-VL2_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "13",
+          "synonym": "VL2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14199031",
+      "neuron_name": "MN18 (ISN DT1)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "18",
+          "synonym": "DT1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNL",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14199565",
+      "neuron_name": "MNISNb/d-Is RP5_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "Broad",
+      "target_muscles": [
+        {
+          "number": "6",
+          "synonym": "VL3",
+          "evidence": "listed"
+        },
+        {
+          "number": "7",
+          "synonym": "VL4",
+          "evidence": "listed"
+        },
+        {
+          "number": "12",
+          "synonym": "VL1",
+          "evidence": "listed"
+        },
+        {
+          "number": "13",
+          "synonym": "VL2",
+          "evidence": "listed"
+        },
+        {
+          "number": "14",
+          "synonym": "VO2",
+          "evidence": "listed"
+        },
+        {
+          "number": "15",
+          "synonym": "VO4",
+          "evidence": "listed"
+        },
+        {
+          "number": "16",
+          "synonym": "VO5",
+          "evidence": "listed"
+        },
+        {
+          "number": "30",
+          "synonym": "VO1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Is",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14203725",
+      "neuron_name": "MN15/16 VO4/5 (NB7-1? ISN)_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VO",
+      "target_muscles": [
+        {
+          "number": "15",
+          "synonym": "VO4",
+          "evidence": "listed"
+        },
+        {
+          "number": "16",
+          "synonym": "VO5",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNd",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "14206438",
+      "neuron_name": "MN14 RP1_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "14",
+          "synonym": "VO2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "16080562",
+      "neuron_name": "MN25 (TN)_a2r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A2",
+      "side": "right",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "25",
+          "synonym": "VT1",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "TN",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "16181494",
+      "neuron_name": "MN19 (ISN NB3-2)_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "19",
+          "synonym": "DO4",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNL",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "16433395",
+      "neuron_name": "MN20 ISN_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "20",
+          "synonym": "DO5",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNL",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "16713121",
+      "neuron_name": "MN21/22 (RF:LT1/LT2) LT2_a1r  ",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "21",
+          "synonym": "LT1",
+          "evidence": "listed"
+        },
+        {
+          "number": "22",
+          "synonym": "LT2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "SNa",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "19111930",
+      "neuron_name": "MN13 ISN MN-VL2_a1l ",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "13",
+          "synonym": "VL2",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "19139253",
+      "neuron_name": "MN15/16/17 VO4–6 (NB7-1? )_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VO",
+      "target_muscles": [
+        {
+          "number": "15",
+          "synonym": "VO4",
+          "evidence": "listed"
+        },
+        {
+          "number": "16",
+          "synonym": "VO5",
+          "evidence": "listed"
+        },
+        {
+          "number": "17",
+          "synonym": "VO6",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNd",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "20901068",
+      "neuron_name": "MN6/7 RP3_a1r",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "right",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "6",
+          "synonym": "VL3",
+          "evidence": "listed"
+        },
+        {
+          "number": "7",
+          "synonym": "VL4",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    },
+    {
+      "neuron_id": "20901073",
+      "neuron_name": "MN6/7 RP3_a1l",
+      "dataset_id": "vfb_l1em_catmaid_project_1",
+      "segment_id": "A1",
+      "side": "left",
+      "spatial_group": "VL",
+      "target_muscles": [
+        {
+          "number": "6",
+          "synonym": "VL3",
+          "evidence": "listed"
+        },
+        {
+          "number": "7",
+          "synonym": "VL4",
+          "evidence": "listed"
+        }
+      ],
+      "synapse_type": "Ib",
+      "nerve": "ISNb",
+      "muscle_group": null,
+      "weight": null,
+      "gain_provenance": "unknown",
+      "provenance": "observed",
+      "source_id": "zarin_2019_table1"
+    }
+  ],
+  "unresolved_neurons": [
+    {
+      "neuron_id": "4461322",
+      "reason": "Supplementary skeleton ID has no name in the current public CATMAID endpoint; class and target are not inferred."
+    },
+    {
+      "neuron_id": "14086623",
+      "reason": "Supplementary skeleton ID has no name in the current public CATMAID endpoint; class and target are not inferred."
+    },
+    {
+      "neuron_id": "14197913",
+      "reason": "Supplementary skeleton ID has no name in the current public CATMAID endpoint; class and target are not inferred."
+    }
+  ],
+  "sources": [
+    {
+      "id": "zarin_2019_supp1_catmaid",
+      "citation": "Zarin AA et al. eLife. 2019;8:e51781. Supplementary file 1.",
+      "doi": "10.7554/eLife.51781",
+      "url": "https://elifesciences.org/articles/51781/figures",
+      "used_for": [
+        "CATMAID skeleton IDs",
+        "current CATMAID neuron names"
+      ]
+    },
+    {
+      "id": "zarin_2019_table1",
+      "citation": "Zarin AA et al. eLife. 2019;8:e51781. Table 1.",
+      "doi": "10.7554/eLife.51781",
+      "url": "https://elifesciences.org/articles/51781#table1",
+      "used_for": [
+        "motor-neuron class",
+        "muscle targets",
+        "spatial muscle group",
+        "synapse type"
+      ]
+    }
+  ]
+}
