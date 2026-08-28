@@ -20,6 +20,15 @@ stage-specific size constraints, not direct measurements of each unloaded 3D
 cross-section. The study identifies the segment boundaries and muscle timing
 used by the model.
 
+Greaney et al. measured first-instar jGC7f larvae selected at an average size
+of about 1 mm after 24 hours and provides a larger, stage-specific T3-A7
+kinematic target. Across 18 L1 animals, T3 contraction amplitude was lower than
+the abdomen, shortening was slowest around A4-A5, contraction duration peaked
+around A4-A5, and adjacent phase delays were nonuniform. The experiment used
+water-saturated linear channels, not free-surface crawling, and is not known to
+be age-matched to the connectome specimen. It constrains validation without
+turning the current geometry hypotheses into measurements.
+
 Sun et al. directly measured third-instar larvae, not L1. Their animals were
 3.53 +/- 0.12 mm long. The study inferred 11.2 +/- 0.2 effective crawling
 segments and measured a standard-linear-solid whole-body response. Converted
@@ -69,6 +78,12 @@ cohort and preregister the pipeline:
 6. fit a population distribution and hold out animals for validation;
 7. version the parameter bundle and never overwrite the raw measurements.
 
+The current body geometry is not overwritten by the Greaney segment lengths.
+Those lengths were measured during channel crawling in a distinct cohort and
+their T3-A7 sum is inconsistent with treating the existing 0.9 mm global prior
+as an exact decomposition. The measurement definition, age, and boundary
+registration must be reconciled against calibrated raw images first.
+
 ## Numerical representation
 
 `ScientificBody3D` is a dependency-free XPBD axial reference. It uses the
@@ -96,8 +111,8 @@ It is not yet a complete soft-body model. The next body milestone must add:
 
 - SLS internal state rather than instantaneous stiffness alone;
 - bending and torsional constraints;
-- individually curated left/right muscle identities beyond the initial
-  longitudinal/transverse channel contract;
+- individually curated left/right muscle identities beyond the initial A1-A6
+  topology, including three-layer 3D attachment geometry;
 - denticle/contact geometry and measured substrate interaction;
 - proprioceptive readout from strain and curvature;
 - native-core parity fixtures and device benchmarks.
@@ -113,3 +128,6 @@ It is not yet a complete soft-body model. The next body milestone must add:
 - Kohsaka H et al. *Regulation of forward and backward locomotion through
   intersegmental feedback circuits in Drosophila larvae.* Nature Communications.
   2019. https://doi.org/10.1038/s41467-019-10695-y
+- Greaney MR, Heckscher ES, Kaufman MT. *Multiple Scales of Coordination along
+  the Body Axis during Drosophila Larval Locomotion.* J Neurosci. 2026.
+  https://doi.org/10.1523/JNEUROSCI.1623-25.2026

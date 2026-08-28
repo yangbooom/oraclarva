@@ -1,0 +1,345 @@
+{
+  "schema_version": 1,
+  "dataset_id": "greaney_2026_l1_kinematics_v0",
+  "stage": "first-instar L1 (~1 mm screening size)",
+  "task": "forward crawling",
+  "generated_on": "2026-08-28",
+  "source": {
+    "citation": "Greaney MR, Heckscher ES, Kaufman ML. J Neurosci. 2026. Multiple Scales of Coordination along the Body Axis during Drosophila Larval Locomotion.",
+    "doi": "10.1523/JNEUROSCI.1623-25.2026",
+    "repository": "https://github.com/kaufmanlab/larvariability-public",
+    "repository_commit": "b9f3a82028b1223de1e5933151ad3a8ea1b10b91",
+    "artifact_url": "https://raw.githubusercontent.com/kaufmanlab/larvariability-public/main/data/combined/comboResults.mat",
+    "artifact_sha256": "b3b7f2149d6dd247064968bbd5abaf5d94ef3b945b5a3b846d3ce9ee3287bf94"
+  },
+  "cohort": {
+    "animal_count": 18,
+    "minimum_good_cycles_per_animal": 50,
+    "age_context": "Source methods report first-instar jGC7f larvae selected at an average size of 1 mm after 24 hours; this is not established as age-matched to the L1 connectome specimen.",
+    "environment": "water-saturated 2% agarose channels, 200 or 250 um wide and 200 um deep",
+    "pooling": "arithmetic mean across cycles within each animal, then NumPy linear p10/median/p90 across animals"
+  },
+  "coverage": {
+    "observed_segments": [
+      "T3",
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5",
+      "A6",
+      "A7"
+    ],
+    "unobserved_body_regions": [
+      "PSC",
+      "T1",
+      "T2",
+      "A8"
+    ],
+    "l1_muscle_recruitment_observed": false,
+    "age_matched_to_connectome": false,
+    "free_surface_locomotion_observed": false,
+    "note": "The L1 jGCaMP7f cohort supplies segment kinematics only. Muscle recruitment in the source study was measured in L2 Gerry animals and is excluded from this L1 target bundle."
+  },
+  "segments": {
+    "T3": {
+      "rest_length_um": {
+        "p10": 109.237705,
+        "median": 120.666078,
+        "p90": 145.589107,
+        "animal_count": 18
+      },
+      "contraction_amplitude_percent": {
+        "p10": 31.233278,
+        "median": 35.057285,
+        "p90": 42.37097,
+        "animal_count": 18
+      },
+      "shortening_rate_um_s": {
+        "p10": 42.29575,
+        "median": 55.000402,
+        "p90": 83.968812,
+        "animal_count": 18
+      },
+      "contraction_duration_s": {
+        "p10": 1.299814,
+        "median": 1.769137,
+        "p90": 2.226399,
+        "animal_count": 18
+      },
+      "onset_phase_cycle_fraction": {
+        "p10": 0.73835,
+        "median": 0.774917,
+        "p90": 0.813404,
+        "animal_count": 18
+      },
+      "adjacent_onset_delay_cycle_fraction": null
+    },
+    "A1": {
+      "rest_length_um": {
+        "p10": 109.56343,
+        "median": 119.672489,
+        "p90": 145.035702,
+        "animal_count": 18
+      },
+      "contraction_amplitude_percent": {
+        "p10": 39.664605,
+        "median": 48.12055,
+        "p90": 52.425222,
+        "animal_count": 18
+      },
+      "shortening_rate_um_s": {
+        "p10": 55.804383,
+        "median": 68.535667,
+        "p90": 99.619876,
+        "animal_count": 18
+      },
+      "contraction_duration_s": {
+        "p10": 1.325961,
+        "median": 1.746649,
+        "p90": 2.035694,
+        "animal_count": 18
+      },
+      "onset_phase_cycle_fraction": {
+        "p10": 0.677726,
+        "median": 0.708464,
+        "p90": 0.745183,
+        "animal_count": 18
+      },
+      "adjacent_onset_delay_cycle_fraction": {
+        "p10": 0.038266,
+        "median": 0.072701,
+        "p90": 0.092589,
+        "animal_count": 18
+      }
+    },
+    "A2": {
+      "rest_length_um": {
+        "p10": 108.331312,
+        "median": 117.528665,
+        "p90": 145.252339,
+        "animal_count": 18
+      },
+      "contraction_amplitude_percent": {
+        "p10": 45.332326,
+        "median": 48.953133,
+        "p90": 53.401015,
+        "animal_count": 18
+      },
+      "shortening_rate_um_s": {
+        "p10": 55.299717,
+        "median": 67.403449,
+        "p90": 86.718764,
+        "animal_count": 18
+      },
+      "contraction_duration_s": {
+        "p10": 1.499187,
+        "median": 1.837663,
+        "p90": 2.274247,
+        "animal_count": 18
+      },
+      "onset_phase_cycle_fraction": {
+        "p10": 0.542441,
+        "median": 0.588382,
+        "p90": 0.628265,
+        "animal_count": 18
+      },
+      "adjacent_onset_delay_cycle_fraction": {
+        "p10": 0.110592,
+        "median": 0.118499,
+        "p90": 0.140737,
+        "animal_count": 18
+      }
+    },
+    "A3": {
+      "rest_length_um": {
+        "p10": 104.131239,
+        "median": 115.995128,
+        "p90": 141.842197,
+        "animal_count": 18
+      },
+      "contraction_amplitude_percent": {
+        "p10": 46.197581,
+        "median": 51.386468,
+        "p90": 56.179876,
+        "animal_count": 18
+      },
+      "shortening_rate_um_s": {
+        "p10": 50.227043,
+        "median": 59.232728,
+        "p90": 76.769913,
+        "animal_count": 18
+      },
+      "contraction_duration_s": {
+        "p10": 1.608097,
+        "median": 1.952009,
+        "p90": 2.385789,
+        "animal_count": 18
+      },
+      "onset_phase_cycle_fraction": {
+        "p10": 0.407408,
+        "median": 0.46285,
+        "p90": 0.500823,
+        "animal_count": 18
+      },
+      "adjacent_onset_delay_cycle_fraction": {
+        "p10": 0.117557,
+        "median": 0.134872,
+        "p90": 0.152377,
+        "animal_count": 18
+      }
+    },
+    "A4": {
+      "rest_length_um": {
+        "p10": 102.767823,
+        "median": 115.02061,
+        "p90": 140.057037,
+        "animal_count": 18
+      },
+      "contraction_amplitude_percent": {
+        "p10": 48.767867,
+        "median": 51.646236,
+        "p90": 54.352993,
+        "animal_count": 18
+      },
+      "shortening_rate_um_s": {
+        "p10": 45.062238,
+        "median": 53.356099,
+        "p90": 62.048196,
+        "animal_count": 18
+      },
+      "contraction_duration_s": {
+        "p10": 1.790432,
+        "median": 2.239824,
+        "p90": 2.634605,
+        "animal_count": 18
+      },
+      "onset_phase_cycle_fraction": {
+        "p10": 0.257726,
+        "median": 0.301459,
+        "p90": 0.337734,
+        "animal_count": 18
+      },
+      "adjacent_onset_delay_cycle_fraction": {
+        "p10": 0.129828,
+        "median": 0.156207,
+        "p90": 0.188112,
+        "animal_count": 18
+      }
+    },
+    "A5": {
+      "rest_length_um": {
+        "p10": 100.51583,
+        "median": 115.973804,
+        "p90": 140.593895,
+        "animal_count": 18
+      },
+      "contraction_amplitude_percent": {
+        "p10": 46.819135,
+        "median": 50.260593,
+        "p90": 52.909798,
+        "animal_count": 18
+      },
+      "shortening_rate_um_s": {
+        "p10": 45.633603,
+        "median": 54.587581,
+        "p90": 68.321085,
+        "animal_count": 18
+      },
+      "contraction_duration_s": {
+        "p10": 1.94687,
+        "median": 2.304459,
+        "p90": 2.689751,
+        "animal_count": 18
+      },
+      "onset_phase_cycle_fraction": {
+        "p10": 0.162098,
+        "median": 0.18607,
+        "p90": 0.205054,
+        "animal_count": 18
+      },
+      "adjacent_onset_delay_cycle_fraction": {
+        "p10": 0.091031,
+        "median": 0.113375,
+        "p90": 0.133092,
+        "animal_count": 18
+      }
+    },
+    "A6": {
+      "rest_length_um": {
+        "p10": 98.206105,
+        "median": 112.663219,
+        "p90": 137.950204,
+        "animal_count": 18
+      },
+      "contraction_amplitude_percent": {
+        "p10": 47.550221,
+        "median": 51.304524,
+        "p90": 54.515559,
+        "animal_count": 18
+      },
+      "shortening_rate_um_s": {
+        "p10": 57.831834,
+        "median": 64.719258,
+        "p90": 85.272783,
+        "animal_count": 18
+      },
+      "contraction_duration_s": {
+        "p10": 1.80136,
+        "median": 2.130531,
+        "p90": 2.431563,
+        "animal_count": 18
+      },
+      "onset_phase_cycle_fraction": {
+        "p10": 0.094083,
+        "median": 0.114539,
+        "p90": 0.132099,
+        "animal_count": 18
+      },
+      "adjacent_onset_delay_cycle_fraction": {
+        "p10": 0.047647,
+        "median": 0.067087,
+        "p90": 0.086185,
+        "animal_count": 18
+      }
+    },
+    "A7": {
+      "rest_length_um": {
+        "p10": 105.727172,
+        "median": 117.093212,
+        "p90": 138.265576,
+        "animal_count": 18
+      },
+      "contraction_amplitude_percent": {
+        "p10": 47.283938,
+        "median": 51.401679,
+        "p90": 56.691218,
+        "animal_count": 18
+      },
+      "shortening_rate_um_s": {
+        "p10": 58.64737,
+        "median": 73.275869,
+        "p90": 93.46981,
+        "animal_count": 18
+      },
+      "contraction_duration_s": {
+        "p10": 1.636897,
+        "median": 2.030283,
+        "p90": 2.438256,
+        "animal_count": 18
+      },
+      "onset_phase_cycle_fraction": {
+        "p10": 0.028233,
+        "median": 0.047418,
+        "p90": 0.055885,
+        "animal_count": 18
+      },
+      "adjacent_onset_delay_cycle_fraction": {
+        "p10": 0.044349,
+        "median": 0.069681,
+        "p90": 0.097606,
+        "animal_count": 18
+      }
+    }
+  }
+}
