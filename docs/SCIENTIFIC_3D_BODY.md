@@ -6,8 +6,10 @@ Oraclarva uses a genuinely 3D physical body. Neural output may set continuous
 muscle activation only. There are no runtime crawl, turn, stop, or pose commands.
 
 The first reference body contains twelve mechanical regions: pseudocephalon,
-T1–T3, and A1–A8. A deformable render skin can be layered over these regions,
-but its animation must not translate or rotate the simulated body.
+T1–T3, and A1–A8. `build_surface_mesh` places one continuous watertight skin over
+them. Region IDs label surface faces for diagnostics; they are not independent
+balls, capsules, or rigid bodies. Rendering must not translate or rotate the
+simulated body independently.
 
 ## What is actually known
 
@@ -71,15 +73,30 @@ cohort and preregister the pipeline:
 
 `ScientificBody3D` is a dependency-free XPBD axial reference. It uses the
 instantaneous SLS stiffness (`k1 + k2`) for stable compliant length constraints.
-Active shortening changes segment target length; a hydrostatic approximation
-increases cross-sectional scale as the square root of inverse length. This
-creates the required plumpness without an animation deciding movement.
+Active shortening changes region target length. Because Drosophila abdominal
+regions are not sealed by septa, one aggregate body-cavity scale preserves total
+reference volume across all regions. This is still a hypothesis: it removes the
+incorrect per-region sealed-volume assumption but does not yet simulate measured
+pressure or viscera motion.
+
+## Neuromuscular integration gate
+
+Longitudinal and transverse muscles are distinct functional groups innervated by
+distinct motor-neuron sets and recruited at different phases. The core therefore
+accepts only explicit neuron-ID projections into segment, side, and muscle-group
+channels. `data/neuromuscular/l1_motor_map_v0.json` currently contains no such
+projections and has status `blocked_pending_identifier_crosswalk`.
+
+Synthetic mappings are permitted only when a test explicitly opts in. A release
+simulation fails closed until every enabled projection carries an observed
+source and the connectome IDs match the selected dataset.
 
 It is not yet a complete soft-body model. The next body milestone must add:
 
 - SLS internal state rather than instantaneous stiffness alone;
 - bending and torsional constraints;
-- left/right and dorsal/ventral muscle groups;
+- individually curated left/right muscle identities beyond the initial
+  longitudinal/transverse channel contract;
 - denticle/contact geometry and measured substrate interaction;
 - proprioceptive readout from strain and curvature;
 - native-core parity fixtures and device benchmarks.
@@ -92,3 +109,6 @@ It is not yet a complete soft-body model. The next body milestone must add:
 - Sun X et al. *A neuromechanical model for Drosophila larval crawling based
   on physical measurements.* BMC Biology. 2022.
   https://doi.org/10.1186/s12915-022-01336-w
+- Kohsaka H et al. *Regulation of forward and backward locomotion through
+  intersegmental feedback circuits in Drosophila larvae.* Nature Communications.
+  2019. https://doi.org/10.1038/s41467-019-10695-y
