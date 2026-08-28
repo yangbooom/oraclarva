@@ -33,6 +33,16 @@ public API. Muscle gains and attachment geometry are not published by this
 source, so the core still refuses to let the anatomical map drive release body
 physics.
 
+The first stage-specific behavior target is also checked in. It preserves
+animal-level p10/median/p90 bands from 18 first-instar L1 animals for T3-A7
+length, contraction amplitude, shortening rate, duration, and phase. The gate
+is deliberately a plausibility screen: it records that PSC/T1/T2/A8,
+age-matching, free-surface locomotion, and L1 muscle recruitment remain absent.
+
+The abdominal muscle atlas now enumerates 358 bilateral fiber identities across
+A1-A6 (58 in A1 and 60 in each of A2-A6). It does not fabricate 3D attachments,
+force gains, or thoracic/terminal homology, so it still cannot actuate the body.
+
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
 ## Quick start
@@ -47,12 +57,16 @@ pytest
 oraclarva-smoke
 oraclarva-body-spec
 oraclarva-motor-map-audit
+oraclarva-kinematics-targets
+oraclarva-muscle-atlas-audit
 oraclarva-audit neurons.csv synapses.csv
 ```
 
 CSV schemas are documented by `oraclarva-audit --help` and in `docs/SCIENTIFIC_SCOPE.md`.
 The motor crosswalk, its exact evidence boundary, and remaining blockers are in
 `docs/L1_MOTOR_CROSSWALK.md`.
+The kinematic screening protocol is in `docs/L1_KINEMATIC_VALIDATION.md`; the
+muscle identity and geometry boundary is in `docs/L1_BODY_WALL_MUSCLE_ATLAS.md`.
 
 ## Interactive L1 body viewer
 

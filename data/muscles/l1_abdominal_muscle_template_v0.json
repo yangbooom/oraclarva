@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_abdominal_muscle_template_v0",
+  "stage": "first-instar L1",
+  "status": "identity_topology_only_not_mechanically_executable",
+  "body_wall_layers": ["internal", "median", "external"],
+  "sources": [
+    {
+      "id": "zarin_2019",
+      "citation": "Zarin AA et al. eLife. 2019;8:e51781. Figure 1 and Table 1.",
+      "doi": "10.7554/eLife.51781",
+      "used_for": ["muscle numbers", "synonyms", "spatial groups", "A1 versus A2-A6 identity difference"]
+    },
+    {
+      "id": "carayon_2020",
+      "citation": "Carayon A et al. eLife. 2020;9:e57547.",
+      "doi": "10.7554/eLife.57547",
+      "used_for": ["three body-wall layers", "attachment-site classes"]
+    },
+    {
+      "id": "hooper_1986",
+      "citation": "Hooper JE. EMBO J. 1986;5:2321-2329.",
+      "doi": "10.1002/j.1460-2075.1986.tb04499.x",
+      "used_for": ["block uniform cloning into thoracic and terminal abdominal segments"]
+    }
+  ],
+  "scope": {
+    "homology_supported_segments": ["A1", "A2", "A3", "A4", "A5", "A6"],
+    "blocked_segments": ["PSC", "T1", "T2", "T3", "A7", "A8"],
+    "A1_missing_muscles": ["25"],
+    "A2_A6_additional_muscles": ["25"],
+    "note": "Zarin Figure 1 states that A2-A6 are similar to A1 except for muscle 25. No segment-uniform assumption is made outside that range."
+  },
+  "geometry_gate": {
+    "individual_layer_assignments_complete": false,
+    "attachment_coordinates_complete": false,
+    "lines_of_action_complete": false,
+    "mechanically_executable": false,
+    "note": "Identity and homology are curated. Quantitative 3D origins, insertions, layer assignment per fiber, rest length, cross-section, material law, and force gain remain required."
+  },
+  "muscles": [
+    {"number":"1","synonym":"DA1","spatial_group":"DL"},
+    {"number":"2","synonym":"DA2","spatial_group":"DL"},
+    {"number":"3","synonym":"DA3","spatial_group":"DL"},
+    {"number":"4","synonym":"LL1","spatial_group":"DL"},
+    {"number":"5","synonym":"LO1","spatial_group":"DO"},
+    {"number":"6","synonym":"VL3","spatial_group":"VL"},
+    {"number":"7","synonym":"VL4","spatial_group":"VL"},
+    {"number":"8","synonym":"SBM","spatial_group":"T"},
+    {"number":"9","synonym":"DO1","spatial_group":"DL"},
+    {"number":"10","synonym":"DO2","spatial_group":"DL"},
+    {"number":"11","synonym":"DO3","spatial_group":"DO"},
+    {"number":"12","synonym":"VL1","spatial_group":"VL"},
+    {"number":"13","synonym":"VL2","spatial_group":"VL"},
+    {"number":"14","synonym":"VO2","spatial_group":"VL"},
+    {"number":"15","synonym":"VO4","spatial_group":"VO"},
+    {"number":"16","synonym":"VO5","spatial_group":"VO"},
+    {"number":"17","synonym":"VO6","spatial_group":"VO"},
+    {"number":"18","synonym":"DT1","spatial_group":"T"},
+    {"number":"19","synonym":"DO4","spatial_group":"DO"},
+    {"number":"20","synonym":"DO5","spatial_group":"DO"},
+    {"number":"21","synonym":"LT1","spatial_group":"T"},
+    {"number":"22","synonym":"LT2","spatial_group":"T"},
+    {"number":"23","synonym":"LT3","spatial_group":"T"},
+    {"number":"24","synonym":"LT4","spatial_group":"T"},
+    {"number":"25","synonym":"VT1","spatial_group":"T"},
+    {"number":"26","synonym":"VA1","spatial_group":"VA"},
+    {"number":"27","synonym":"VA2","spatial_group":"VA"},
+    {"number":"28","synonym":"VO3","spatial_group":"VO"},
+    {"number":"29","synonym":"VA3","spatial_group":"VA"},
+    {"number":"30","synonym":"VO1","spatial_group":"VL"}
+  ]
+}
