@@ -6,6 +6,12 @@ Oraclarva aims to become a connectome-driven embodied neural simulation. It does
 
 The Winding et al. dataset commonly summarized as 3,016 neurons and roughly 548,000 synapses is a larval brain connectome reconstructed within the available CNS EM volume. Before describing a model as a complete sensor-to-muscle animal, the project must verify coverage and identity across sensory neurons, descending pathways, VNC circuitry, motor neurons, neuromuscular junctions, and muscles.
 
+The current motor crosswalk uses the broader L1 CNS CATMAID project and Zarin
+et al. Table 1 rather than pretending that the 3,016-neuron brain graph alone
+contains a complete whole-body motor output. It covers the published bilateral
+A1 motor-neuron set, with MN25 taken from A2, not all thoracic and abdominal
+segments.
+
 ## Provenance labels
 
 Every imported node, edge, parameter, and mapping must carry one of these labels:

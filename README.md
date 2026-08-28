@@ -26,10 +26,12 @@ a dependency-free XPBD reference body, and one continuous watertight surface
 over twelve labeled mechanical regions. Run `oraclarva-body-spec` to inspect
 which parameters are observed, derived from measurements, or still hypotheses.
 
-`data/neuromuscular/l1_motor_map_v0.json` is deliberately blocked until the
-selected connectome neuron identifiers are cross-walked to observed muscle
-targets. The core refuses to let an empty or synthetic mapping drive a release
-simulation.
+`data/neuromuscular/l1_motor_map_v1.json` now cross-walks 58 published CATMAID
+skeleton IDs to their A1 muscle targets (MN25 is represented in A2, as in the
+source). Three supplementary skeleton IDs remain unresolved in the current
+public API. Muscle gains and attachment geometry are not published by this
+source, so the core still refuses to let the anatomical map drive release body
+physics.
 
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
@@ -44,10 +46,13 @@ python -m pip install -e '.[test]'
 pytest
 oraclarva-smoke
 oraclarva-body-spec
+oraclarva-motor-map-audit
 oraclarva-audit neurons.csv synapses.csv
 ```
 
 CSV schemas are documented by `oraclarva-audit --help` and in `docs/SCIENTIFIC_SCOPE.md`.
+The motor crosswalk, its exact evidence boundary, and remaining blockers are in
+`docs/L1_MOTOR_CROSSWALK.md`.
 
 ## Interactive L1 body viewer
 

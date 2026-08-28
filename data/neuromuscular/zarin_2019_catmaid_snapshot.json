@@ -1,0 +1,385 @@
+{
+  "source_id": "zarin_2019_supp1_catmaid",
+  "citation": "Zarin AA et al. eLife. 2019;8:e51781. Supplementary file 1.",
+  "doi": "10.7554/eLife.51781",
+  "download_url": "https://elifesciences.org/articles/51781/figures",
+  "downloaded_file": "elife-51781-supp1-v3.json.zip",
+  "download_sha256": "7a6cbcac5d9798805d84fc25ef7934f8127b3c5883a5c409762286b1ffbf34f1",
+  "inner_file_sha256": "1612ca91c2896cbbbcbd86b28ed5f7c32f0b0a4e72ff59476f1b981d7a3660c8",
+  "retrieved_utc": "2026-08-28",
+  "dataset": {
+    "id": "vfb_l1em_catmaid_project_1",
+    "base_url": "https://l1em.catmaid.virtualflybrain.org/",
+    "project_id": 1,
+    "identifier_type": "CATMAID skeleton_id",
+    "names_endpoint": "/1/skeleton/neuronnames"
+  },
+  "neurons": [
+    {
+      "neuron_id": "10649843",
+      "neuron_name": "MN1 aCC_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4488976",
+      "neuron_name": "MN1 aCC_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14047130",
+      "neuron_name": "MN2 ISN(U3-NB7-1?)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14048287",
+      "neuron_name": "MN2 ISN(U3-NB7-1?)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14088149",
+      "neuron_name": "MN3 (ISN U4 DA3 NB7-1?)_a1l ",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14045854",
+      "neuron_name": "MN3 (ISN U4 DA3 NB7-1?)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14087339",
+      "neuron_name": "MN4 (ISN U5 NB7-1?)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14047945",
+      "neuron_name": "MN4 (ISN U5 NB7-1?)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4028114",
+      "neuron_name": "MN5 LO1_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4535767",
+      "neuron_name": "MN5 LO1_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "20901073",
+      "neuron_name": "MN6/7 RP3_a1l",
+      "supplement_color": "#ffff00",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "20901068",
+      "neuron_name": "MN6/7 RP3_a1r",
+      "supplement_color": "#ffff00",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4326468",
+      "neuron_name": "MN8 (RF:SBM) LT3_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4881629",
+      "neuron_name": "MN8 (RF:SBM) LT3_a1r ",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14085813",
+      "neuron_name": "MN9 U1_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14047554",
+      "neuron_name": "MN9 U1_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "8026224",
+      "neuron_name": "MN10 U2_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14047760",
+      "neuron_name": "MN10 U2_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14088451",
+      "neuron_name": "MN11 (ISN NB3-2)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "10013402",
+      "neuron_name": "MN11 (ISN NB3-2)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "10678017",
+      "neuron_name": "MN12-III (ISN VL1 V-MN NB5-2)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14046720",
+      "neuron_name": "MN12-III (ISN VL1 V-MN NB5-2)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "19111930",
+      "neuron_name": "MN13 ISN MN-VL2_a1l ",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14194703",
+      "neuron_name": "MN13 ISN MN-VL2_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14045016",
+      "neuron_name": "MN14 RP1_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14206438",
+      "neuron_name": "MN14 RP1_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14203725",
+      "neuron_name": "MN15/16 VO4/5 (NB7-1? ISN)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14048538",
+      "neuron_name": "MN15/16 VO4/5 (NB7-1? ISN)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "19139253",
+      "neuron_name": "MN15/16/17 VO4–6 (NB7-1? )_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14045489",
+      "neuron_name": "MN15/16/17 VO4–6 (NB7-1? )_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14199031",
+      "neuron_name": "MN18 (ISN DT1)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "6970942",
+      "neuron_name": "MN18 (ISN DT1)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14086309",
+      "neuron_name": "MN19 (ISN NB3-2)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "16181494",
+      "neuron_name": "MN19 (ISN NB3-2)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "16433395",
+      "neuron_name": "MN20 ISN_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "5085455",
+      "neuron_name": "MN20 ISN_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "6467481",
+      "neuron_name": "MN21/22 (RF:LT1/LT2) LT2_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "16713121",
+      "neuron_name": "MN21/22 (RF:LT1/LT2) LT2_a1r  ",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4042315",
+      "neuron_name": "MN22/23 (RF:LT2/LT3) LT1_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4102728",
+      "neuron_name": "MN22/23 (RF:LT2/LT3) LT1_a1r  ",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4289773",
+      "neuron_name": "MN23/24 (RF: LT3/LT4) LT4_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4121534",
+      "neuron_name": "MN23/24 (RF: LT3/LT4) LT4_a1r  ",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4717729",
+      "neuron_name": "MN25 (TN)_a2l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "16080562",
+      "neuron_name": "MN25 (TN)_a2r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4524871",
+      "neuron_name": "MN26 (SN MN VA1)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4397287",
+      "neuron_name": "MN26 (SN MN VA1)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4326520",
+      "neuron_name": "MN27 (SN MN VA2)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4101976",
+      "neuron_name": "MN27 (SN MN VA2)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "5899328",
+      "neuron_name": "MN28 ISN_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14048876",
+      "neuron_name": "MN28 ISN_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4274364",
+      "neuron_name": "MN29 (SN MN VA3)_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4382895",
+      "neuron_name": "MN29 (SN MN VA3)_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14194234",
+      "neuron_name": "MN30 RP4_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14087107",
+      "neuron_name": "MN30 RP4_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "13058240",
+      "neuron_name": "MNISN-Is RP2_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "13057994",
+      "neuron_name": "MNISN-Is RP2_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14044614",
+      "neuron_name": "MNISNb/d-Is RP5_a1l",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14199565",
+      "neuron_name": "MNISNb/d-Is RP5_a1r",
+      "supplement_color": "#00f9e6",
+      "current_name_status": "resolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14086623",
+      "neuron_name": null,
+      "supplement_color": "#ffff00",
+      "current_name_status": "unresolved_2026-08-28"
+    },
+    {
+      "neuron_id": "14197913",
+      "neuron_name": null,
+      "supplement_color": "#ffff00",
+      "current_name_status": "unresolved_2026-08-28"
+    },
+    {
+      "neuron_id": "4461322",
+      "neuron_name": null,
+      "supplement_color": "#ffff00",
+      "current_name_status": "unresolved_2026-08-28"
+    }
+  ]
+}
