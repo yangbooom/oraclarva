@@ -13,7 +13,6 @@ sceneHost.append(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x120e19, 0.06);
-
 const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
 camera.position.set(1.5, 3.9, 7.8);
 
@@ -40,57 +39,96 @@ floor.rotation.x = -Math.PI / 2;
 floor.position.y = -0.72;
 scene.add(floor);
 
-const rings = new THREE.Group();
-for (let index = 0; index < 13; index += 1) {
-  const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(0.37 + Math.sin((index / 12) * Math.PI) * 0.21, 0.008, 8, 64),
-    new THREE.MeshBasicMaterial({ color: 0x5f4b6c, transparent: true, opacity: 0.24 }),
-  );
-  ring.rotation.y = Math.PI / 2;
-  ring.position.set(-3.22 + index * 0.535, -0.705, 0);
-  rings.add(ring);
-}
-scene.add(rings);
-
-const bodyGroup = new THREE.Group();
-bodyGroup.rotation.z = -0.025;
-scene.add(bodyGroup);
-
 const nominalLengthUm = bodySpec.global_geometry.total_length_m.nominal * 1e6;
 const nominalWidthUm = bodySpec.global_geometry.maximum_width_m.nominal * 1e6;
 const heightRatio = bodySpec.global_geometry.height_to_width_ratio.nominal;
 const worldLength = 6.25;
-const gap = 0.018;
-const segmentMeshes = [];
-const baseState = [];
-let cursor = -worldLength / 2;
+const radialSamples = 28;
+const axialSubdivisions = 6;
+const ringCount = bodySpec.segments.length * axialSubdivisions + 1;
+const bodyGroup = new THREE.Group();
+bodyGroup.rotation.z = -0.018;
+scene.add(bodyGroup);
+
+const baseLengths = bodySpec.segments.map((segment) => segment.length_fraction * worldLength);
+const baseWidths = bodySpec.segments.map(
+  (segment) => (nominalWidthUm / nominalLengthUm) * worldLength * segment.width_scale,
+);
+const baseHeights = baseWidths.map((width) => width * heightRatio);
+const nodeProfile = (values) => [
+  values[0] * 0.55,
+  ...values.slice(1).map((value, index) => (values[index] + value) / 2),
+  values.at(-1) * 0.45,
+];
+const nodeWidths = nodeProfile(baseWidths);
+const nodeHeights = nodeProfile(baseHeights);
 
 const materials = bodySpec.segments.map((segment, index) => new THREE.MeshPhysicalMaterial({
   color: index === 0 ? 0xd8a56c : index > 9 ? 0xb98264 : index % 2 ? 0xe5bd86 : 0xdcae75,
-  roughness: 0.42,
+  roughness: 0.44,
   metalness: 0,
-  clearcoat: 0.42,
-  clearcoatRoughness: 0.32,
+  clearcoat: 0.38,
+  clearcoatRoughness: 0.34,
   transparent: true,
-  opacity: 0.92,
+  opacity: 0.94,
   emissive: 0x2b1625,
   emissiveIntensity: 0.2,
+  side: THREE.DoubleSide,
 }));
 
-bodySpec.segments.forEach((segment, index) => {
-  const length = segment.length_fraction * worldLength;
-  const radius = nominalWidthUm / nominalLengthUm * worldLength * segment.width_scale * 0.5;
-  const geometry = new THREE.SphereGeometry(1, 36, 24);
-  geometry.scale(Math.max(length * 0.58, radius * 0.74), radius, radius * heightRatio);
-  const mesh = new THREE.Mesh(geometry, materials[index]);
-  const x = cursor + length / 2;
-  mesh.position.set(x, 0, 0);
-  mesh.userData.segmentIndex = index;
-  mesh.userData.segment = segment;
-  bodyGroup.add(mesh);
-  segmentMeshes.push(mesh);
-  baseState.push({ x, length, radius });
-  cursor += length - gap;
+const positionArray = new Float32Array((ringCount * radialSamples + 2) * 3);
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute("position", new THREE.BufferAttribute(positionArray, 3));
+const indices = [];
+for (let segmentIndex = 0; segmentIndex < bodySpec.segments.length; segmentIndex += 1) {
+  const groupStart = indices.length;
+  for (let localSpan = 0; localSpan < axialSubdivisions; localSpan += 1) {
+    const spanIndex = segmentIndex * axialSubdivisions + localSpan;
+    const leftStart = spanIndex * radialSamples;
+    const rightStart = (spanIndex + 1) * radialSamples;
+    for (let radialIndex = 0; radialIndex < radialSamples; radialIndex += 1) {
+      const following = (radialIndex + 1) % radialSamples;
+      indices.push(
+        leftStart + radialIndex,
+        rightStart + radialIndex,
+        rightStart + following,
+        leftStart + radialIndex,
+        rightStart + following,
+        leftStart + following,
+      );
+    }
+  }
+  geometry.addGroup(groupStart, indices.length - groupStart, segmentIndex);
+}
+
+const startCapOffset = indices.length;
+const startCenterIndex = ringCount * radialSamples;
+const endCenterIndex = startCenterIndex + 1;
+const lastRingStart = (ringCount - 1) * radialSamples;
+for (let radialIndex = 0; radialIndex < radialSamples; radialIndex += 1) {
+  const following = (radialIndex + 1) % radialSamples;
+  indices.push(startCenterIndex, radialIndex, following);
+}
+geometry.addGroup(startCapOffset, indices.length - startCapOffset, 0);
+const endCapOffset = indices.length;
+for (let radialIndex = 0; radialIndex < radialSamples; radialIndex += 1) {
+  const following = (radialIndex + 1) % radialSamples;
+  indices.push(endCenterIndex, lastRingStart + following, lastRingStart + radialIndex);
+}
+geometry.addGroup(endCapOffset, indices.length - endCapOffset, bodySpec.segments.length - 1);
+geometry.setIndex(indices);
+
+const bodyMesh = new THREE.Mesh(geometry, materials);
+bodyMesh.userData.continuousSurface = true;
+bodyGroup.add(bodyMesh);
+
+const boundaryMaterial = new THREE.LineBasicMaterial({ color: 0x6f5362, transparent: true, opacity: 0.28 });
+const boundaryRings = Array.from({ length: bodySpec.segments.length + 1 }, () => {
+  const ringGeometry = new THREE.BufferGeometry();
+  ringGeometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(radialSamples * 3), 3));
+  const line = new THREE.LineLoop(ringGeometry, boundaryMaterial);
+  bodyGroup.add(line);
+  return line;
 });
 
 const mouth = new THREE.Mesh(
@@ -98,14 +136,13 @@ const mouth = new THREE.Mesh(
   new THREE.MeshPhysicalMaterial({ color: 0x5f3035, roughness: 0.5, clearcoat: 0.3 }),
 );
 mouth.rotation.y = Math.PI / 2;
-mouth.position.set(baseState[0].x - baseState[0].length * 0.62, -0.02, 0);
 bodyGroup.add(mouth);
-
 const sensoryMaterial = new THREE.MeshStandardMaterial({ color: 0x6b3442, emissive: 0x39131e, emissiveIntensity: 0.8 });
-[-1, 1].forEach((side) => {
+const sensoryOrgans = [-1, 1].map((side) => {
   const organ = new THREE.Mesh(new THREE.SphereGeometry(0.055, 18, 14), sensoryMaterial);
-  organ.position.set(baseState[0].x - 0.16, 0.16, side * 0.22);
+  organ.userData.side = side;
   bodyGroup.add(organ);
+  return organ;
 });
 
 const raycaster = new THREE.Raycaster();
@@ -180,36 +217,113 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
   pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
-  const hit = raycaster.intersectObjects(segmentMeshes, false)[0];
-  if (hit) setSelected(hit.object.userData.segmentIndex);
+  const hit = raycaster.intersectObject(bodyMesh, false)[0];
+  if (hit?.face) setSelected(hit.face.materialIndex);
 });
+
+function smoothstep(amount) {
+  return amount * amount * (3 - 2 * amount);
+}
+
+function centerline(x, displayedLength) {
+  const normalized = x / Math.max(displayedLength / 2, 0.001);
+  return {
+    y: 0.08 + Math.cos(normalized * Math.PI * 1.6) * bend * 0.13,
+    z: Math.sin((normalized + 1) * Math.PI) * bend * 0.82,
+  };
+}
+
+function writeRing(ringIndex, x, width, height, displayedLength) {
+  const center = centerline(x, displayedLength);
+  for (let radialIndex = 0; radialIndex < radialSamples; radialIndex += 1) {
+    const angle = (2 * Math.PI * radialIndex) / radialSamples;
+    const offset = (ringIndex * radialSamples + radialIndex) * 3;
+    positionArray[offset] = x;
+    positionArray[offset + 1] = center.y + Math.sin(angle) * height * 0.5;
+    positionArray[offset + 2] = center.z + Math.cos(angle) * width * 0.5;
+  }
+  return center;
+}
 
 function updateBody(time) {
   if (playing) phase = (time * 0.00022) % 1;
   const waveCenter = playing ? 11 - phase * 14 : selectedIndex;
-  let accumulatedShift = 0;
-  segmentMeshes.forEach((mesh, index) => {
+  const currentLengths = baseLengths.map((length, index) => {
     const distance = Math.abs(index - waveCenter);
     const activation = Math.exp(-(distance * distance) / 1.5) * contraction;
-    const shorten = 1 - activation * 0.45;
-    const plump = Math.sqrt(1 / shorten);
-    const base = baseState[index];
-    const displayedLength = base.length * shorten;
-    mesh.scale.set(shorten, plump, plump);
-    const center = base.x - accumulatedShift - (base.length - displayedLength) / 2;
-    const normalized = center / (worldLength / 2);
-    const lateral = Math.sin((normalized + 1) * Math.PI) * bend * 0.82;
-    const lift = 0.08 + Math.cos(normalized * Math.PI * 1.6) * bend * 0.16;
-    mesh.position.set(center, lift, lateral);
-    mesh.rotation.y = Math.cos((normalized + 1) * Math.PI) * bend * 0.18;
-    mesh.rotation.z = Math.cos((normalized + 1) * Math.PI) * bend * 0.3;
-    accumulatedShift += base.length - displayedLength;
+    return length * (1 - activation * 0.45);
+  });
+  const restVolumeProxy = baseLengths.reduce(
+    (sum, length, index) => sum + length * baseWidths[index] * baseHeights[index],
+    0,
+  );
+  const currentVolumeProxy = currentLengths.reduce(
+    (sum, length, index) => sum + length * baseWidths[index] * baseHeights[index],
+    0,
+  );
+  const cavityScale = Math.sqrt(restVolumeProxy / currentVolumeProxy);
+  const displayedLength = currentLengths.reduce((sum, length) => sum + length, 0);
+  const nodeX = [-displayedLength / 2];
+  currentLengths.forEach((length) => nodeX.push(nodeX.at(-1) + length));
 
+  let ringIndex = 0;
+  bodySpec.segments.forEach((segment, segmentIndex) => {
+    for (let step = 0; step < axialSubdivisions; step += 1) {
+      const amount = step / axialSubdivisions;
+      const profile = smoothstep(amount);
+      const width = (
+        nodeWidths[segmentIndex] * (1 - profile) + nodeWidths[segmentIndex + 1] * profile
+      ) * cavityScale;
+      const height = (
+        nodeHeights[segmentIndex] * (1 - profile) + nodeHeights[segmentIndex + 1] * profile
+      ) * cavityScale;
+      const x = nodeX[segmentIndex] * (1 - amount) + nodeX[segmentIndex + 1] * amount;
+      writeRing(ringIndex, x, width, height, displayedLength);
+      ringIndex += 1;
+    }
+  });
+  writeRing(ringIndex, nodeX.at(-1), nodeWidths.at(-1) * cavityScale, nodeHeights.at(-1) * cavityScale, displayedLength);
+
+  for (let boundaryIndex = 0; boundaryIndex < boundaryRings.length; boundaryIndex += 1) {
+    const sourceRing = boundaryIndex * axialSubdivisions;
+    const boundaryPositions = boundaryRings[boundaryIndex].geometry.attributes.position.array;
+    for (let radialIndex = 0; radialIndex < radialSamples; radialIndex += 1) {
+      const sourceOffset = (sourceRing * radialSamples + radialIndex) * 3;
+      const targetOffset = radialIndex * 3;
+      boundaryPositions[targetOffset] = positionArray[sourceOffset];
+      boundaryPositions[targetOffset + 1] = positionArray[sourceOffset + 1];
+      boundaryPositions[targetOffset + 2] = positionArray[sourceOffset + 2];
+    }
+    boundaryRings[boundaryIndex].geometry.attributes.position.needsUpdate = true;
+  }
+
+  const startCenter = centerline(nodeX[0], displayedLength);
+  const endCenter = centerline(nodeX.at(-1), displayedLength);
+  positionArray[startCenterIndex * 3] = nodeX[0];
+  positionArray[startCenterIndex * 3 + 1] = startCenter.y;
+  positionArray[startCenterIndex * 3 + 2] = startCenter.z;
+  positionArray[endCenterIndex * 3] = nodeX.at(-1);
+  positionArray[endCenterIndex * 3 + 1] = endCenter.y;
+  positionArray[endCenterIndex * 3 + 2] = endCenter.z;
+  geometry.attributes.position.needsUpdate = true;
+  geometry.computeVertexNormals();
+  geometry.computeBoundingSphere();
+
+  mouth.position.set(nodeX[0] - 0.03, startCenter.y, startCenter.z);
+  sensoryOrgans.forEach((organ) => {
+    organ.position.set(
+      nodeX[0] + 0.15,
+      startCenter.y + 0.16,
+      startCenter.z + organ.userData.side * nodeWidths[0] * cavityScale * 0.3,
+    );
+  });
+
+  materials.forEach((material, index) => {
     const isSelected = index === selectedIndex;
     const hypothesisColor = index === 0 ? 0xd8a56c : index > 9 ? 0xb98264 : index % 2 ? 0xe5bd86 : 0xdcae75;
-    materials[index].color.setHex(evidenceMode ? hypothesisColor : 0xd9b785);
-    materials[index].emissive.setHex(isSelected ? 0x6e2b31 : 0x2b1625);
-    materials[index].emissiveIntensity = isSelected ? 0.85 : 0.2;
+    material.color.setHex(evidenceMode ? hypothesisColor : 0xd9b785);
+    material.emissive.setHex(isSelected ? 0x6e2b31 : 0x2b1625);
+    material.emissiveIntensity = isSelected ? 0.85 : 0.2;
   });
 }
 

@@ -7,7 +7,7 @@ Geometry and mechanics come from the provenance-aware body specification.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import sqrt
+from math import pi, sqrt
 from typing import Iterable, Mapping
 
 from .body import BodyModelSpec, SegmentGeometry
@@ -32,6 +32,16 @@ class Vec3:
 
     def norm(self) -> float:
         return sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+
+    def dot(self, other: "Vec3") -> float:
+        return self.x * other.x + self.y * other.y + self.z * other.z
+
+    def cross(self, other: "Vec3") -> "Vec3":
+        return Vec3(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
+        )
 
     def normalized(self) -> "Vec3":
         magnitude = self.norm()
@@ -100,14 +110,31 @@ class ScientificBody3D:
         return (self.particles[index + 1].position - self.particles[index].position).norm()
 
     def cross_section_scale(self, index: int) -> float:
-        """Hydrostatic approximation: cross-sectional area grows as length shrinks."""
-        current_length = self.segment_length_m(index)
-        if current_length <= 0:
-            raise ValueError("segment collapsed to zero length")
-        return sqrt(self.geometry[index].rest_length_m / current_length)
+        """Whole-cavity volume approximation shared by every body region.
+
+        Drosophila abdominal regions are not sealed by intersegmental septa. The
+        v0 model therefore preserves the aggregate body-cavity volume rather
+        than forcing every mechanical region to preserve its own volume.
+        ``index`` remains part of the API for render-core compatibility.
+        """
+        if not 0 <= index < len(self.geometry):
+            raise IndexError("segment index out of range")
+        rest_volume = sum(segment.volume_m3 for segment in self.geometry)
+        reference_volume = 0.0
+        for segment_index, segment in enumerate(self.geometry):
+            current_length = self.segment_length_m(segment_index)
+            if current_length <= 0:
+                raise ValueError("segment collapsed to zero length")
+            reference_volume += (
+                pi * (segment.width_m / 2) * (segment.height_m / 2) * current_length
+            )
+        return sqrt(rest_volume / reference_volume)
 
     def current_width_m(self, index: int) -> float:
         return self.geometry[index].width_m * self.cross_section_scale(index)
+
+    def current_height_m(self, index: int) -> float:
+        return self.geometry[index].height_m * self.cross_section_scale(index)
 
     def step(
         self,

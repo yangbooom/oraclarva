@@ -21,9 +21,15 @@ This repository starts with a small, auditable vertical slice:
 - causal tests from sensory input to motor output;
 - scientific-scope and mobile-core design notes.
 
-The next vertical slice adds a provenance-aware L1 3D body specification and
-a dependency-free XPBD reference body. Run `oraclarva-body-spec` to inspect
+The current vertical slice includes a provenance-aware L1 3D body specification,
+a dependency-free XPBD reference body, and one continuous watertight surface
+over twelve labeled mechanical regions. Run `oraclarva-body-spec` to inspect
 which parameters are observed, derived from measurements, or still hypotheses.
+
+`data/neuromuscular/l1_motor_map_v0.json` is deliberately blocked until the
+selected connectome neuron identifiers are cross-walked to observed muscle
+targets. The core refuses to let an empty or synthetic mapping drive a release
+simulation.
 
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
@@ -46,11 +52,11 @@ CSV schemas are documented by `oraclarva-audit --help` and in `docs/SCIENTIFIC_S
 ## Interactive L1 body viewer
 
 The `viewer/` app renders the same `data/body/l1_body_v0.json` bundle with
-Three.js. It exposes all twelve mechanical regions, per-region nominal geometry,
-evidence status, orbit/zoom controls, and a posterior-to-anterior contraction
-wave. Active shortening increases cross-sectional scale by the square root of
-inverse length, matching the hydrostatic volume-preservation approximation used
-by the XPBD reference body.
+Three.js. It exposes all twelve mechanical regions on one continuous surface,
+per-region nominal geometry, evidence status, orbit/zoom controls, and a
+posterior-to-anterior contraction wave. Active shortening is compensated by one
+aggregate body-cavity volume constraint rather than twelve sealed spherical
+segments.
 
 ```bash
 cd viewer

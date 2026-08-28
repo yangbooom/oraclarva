@@ -155,6 +155,7 @@ class BodyModelSpec:
             counts[estimate.provenance] += 1
         geometry_provenance = self.raw["segment_geometry_provenance"]["provenance"]
         counts[geometry_provenance] += len(self.segments) * 2
+        counts[self.raw["volume_constraint"]["provenance"]] += 1
         counts[self.raw["source_l3_mechanics"]["provenance"]] += 6
         return {key: value for key, value in counts.items() if value}
 

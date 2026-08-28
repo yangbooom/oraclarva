@@ -62,6 +62,12 @@
     "source_id": "heckscher_2012",
     "note": "Anatomical identities are observed, but v0 length fractions and width profile are a digitization target rather than measured facts. They must be replaced by a preregistered L1 image cohort before a biological geometry claim."
   },
+  "volume_constraint": {
+    "scope": "whole_body_cavity",
+    "provenance": "hypothesis",
+    "source_id": "heckscher_2012",
+    "note": "Drosophila abdominal regions are not treated as sealed compartments. The v0 solver preserves aggregate cavity volume and allows redistribution across mechanical region boundaries; pressure dynamics remain unmeasured."
+  },
   "active_mechanics": {
     "maximum_shortening_fraction": {
       "nominal": 0.45,
