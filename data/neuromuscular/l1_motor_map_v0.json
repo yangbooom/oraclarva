@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_motor_map_v0",
+  "organism": "Drosophila melanogaster",
+  "stage": "L1",
+  "status": "blocked_pending_identifier_crosswalk",
+  "note": "The repository does not yet contain a curated crosswalk from the selected connectome neuron IDs to observed left/right longitudinal/transverse muscle targets. An empty map must fail closed instead of silently inserting a crawl policy or synthetic motor program.",
+  "channels": {
+    "sides": ["left", "right", "bilateral"],
+    "muscle_groups": ["longitudinal", "transverse"]
+  },
+  "projections": [],
+  "required_curation": [
+    "select the exact L1 CNS/connectome release and preserve its neuron identifiers",
+    "cross-reference each motor neuron with an observed neuromuscular target",
+    "record segment, side, muscle identity or functional group, source, and confidence",
+    "audit coverage and identifier uniqueness before enabling body drive"
+  ],
+  "sources": [
+    {
+      "id": "kohsaka_2019",
+      "citation": "Kohsaka H et al. Nature Communications. 2019;10:2654.",
+      "doi": "10.1038/s41467-019-10695-y",
+      "url": "https://doi.org/10.1038/s41467-019-10695-y",
+      "used_for": ["L1 CNS motor circuits", "longitudinal/transverse muscle groups", "distinct motor-neuron groups"]
+    },
+    {
+      "id": "perez_moreno_2018",
+      "citation": "Pérez-Moreno JJ, O'Kane CJ. G3. 2018;9:79-92.",
+      "doi": "10.1534/g3.118.200809",
+      "url": "https://doi.org/10.1534/g3.118.200809",
+      "used_for": ["larval motor-neuron and body-wall muscle organization"]
+    }
+  ]
+}
