@@ -1,4 +1,4 @@
-from math import isclose
+from math import isclose, pi
 
 import pytest
 
@@ -45,17 +45,30 @@ def test_only_continuous_segment_activation_is_accepted():
         body.set_activations({"turn_left": 1.0})
 
 
-def test_active_segment_shortens_and_thickens_with_volume_preservation():
+def test_active_segment_shortens_and_whole_cavity_preserves_volume():
     spec = load_body_spec()
     body = ScientificBody3D(spec, pinned_nodes={0})
     segment_index = next(i for i, segment in enumerate(spec.segments) if segment.id == "PSC")
     rest_length = body.segment_length_m(segment_index)
     rest_width = body.current_width_m(segment_index)
+    distant_width = body.current_width_m(len(body.geometry) - 1)
     body.set_activations({"PSC": 1.0})
     for _ in range(25):
         body.step(0.001, gravity=Vec3(0.0, 0.0, 0.0), ground_z=None)
     assert body.segment_length_m(segment_index) < rest_length
     assert body.current_width_m(segment_index) > rest_width
+    assert body.current_width_m(len(body.geometry) - 1) > distant_width
+    assert body.cross_section_scale(0) == pytest.approx(body.cross_section_scale(8))
+
+    current_volume = sum(
+        pi
+        * (body.current_width_m(index) / 2)
+        * (body.current_height_m(index) / 2)
+        * body.segment_length_m(index)
+        for index in range(len(body.geometry))
+    )
+    rest_volume = sum(segment.volume_m3 for segment in body.geometry)
+    assert current_volume == pytest.approx(rest_volume, rel=1e-12)
 
 
 def test_unstimulated_body_preserves_rest_lengths_without_gravity():
