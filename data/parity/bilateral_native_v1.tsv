@@ -1,0 +1,391 @@
+# Oraclarva 126-neuron bilateral embodied native parity fixture.
+# Compiled from provenance-aware repository configs; do not edit by hand.
+# status: research_approximation
+# release_validated: false
+schema	bilateral_closed_loop_native_v1
+model_id	dmel_l1_bilateral_steering_v0
+status	research_approximation
+release_validated	false
+neuron_count	126
+steps	4500
+sample_stride	30
+touch_neuron	left	0
+asymmetry_neuron	left	2
+touch_neuron	right	1
+asymmetry_neuron	right	3
+config	dt_s	0.001
+config	tau_m_s	0.02
+config	tau_exc_s	0.0050000000000000001
+config	tau_inh_s	0.01
+config	resistance_ohm	100000000
+config	v_rest_v	-0.065000000000000002
+config	v_reset_v	-0.065000000000000002
+config	v_threshold_v	-0.050000000000000003
+config	refractory_s	0.002
+parameter	posterior_touch_current_a	4.0000000000000002e-09
+parameter	posterior_touch_duration_s	0.10000000000000001
+parameter	proprioceptor_min_strain	0.050000000000000003
+parameter	proprioceptor_min_shortening_rate_m_s	1.0000000000000001e-05
+parameter	proprioceptor_current_gain_a_s_m	0.00020000000000000001
+parameter	proprioceptor_max_current_a	4.0000000000000002e-09
+parameter	sensory_adaptation_tau_s	0.40000000000000002
+parameter	sensory_adaptation_fraction	0.20000000000000001
+parameter	body_velocity_retention	0.5
+parameter	ground_negative_x_retention	0.90000000000000002
+parameter	ground_positive_x_retention	0.10000000000000001
+parameter	motor_excitation_tau_s	0.80000000000000004
+parameter	excitation_per_motor_spike	1
+parameter	muscle_activation_excitation_threshold	0.10539922456186433
+parameter	active_curvature_gain	0.10000000000000001
+parameter	active_bending_stiffness_ratio	0.25
+parameter	asymmetric_sensory_current_a	3e-09
+parameter	gravity_z_m_s2	-9.8100000000000005
+parameter	ground_z_m	0
+parameter	body_iterations	12
+parameter	instantaneous_stiffness_n_m	25.457142857142856
+neuron	0	environment_touch:left
+neuron	1	environment_touch:right
+neuron	2	rectified_sensory_difference:left
+neuron	3	rectified_sensory_difference:right
+neuron	4	proprioceptor:A7:left
+neuron	5	proprioceptor:A7:right
+neuron	6	proprioceptor:A6:left
+neuron	7	proprioceptor:A6:right
+neuron	8	proprioceptor:A5:left
+neuron	9	proprioceptor:A5:right
+neuron	10	proprioceptor:A4:left
+neuron	11	proprioceptor:A4:right
+neuron	12	proprioceptor:A3:left
+neuron	13	proprioceptor:A3:right
+neuron	14	proprioceptor:A2:left
+neuron	15	proprioceptor:A2:right
+neuron	16	proprioceptor:A1:left
+neuron	17	proprioceptor:A1:right
+neuron	18	proprioceptor:T3:left
+neuron	19	proprioceptor:T3:right
+neuron	20	premotor_A27h_like:A7:left
+neuron	21	premotor_A27h_like:A7:right
+neuron	22	premotor_A27h_like:A6:left
+neuron	23	premotor_A27h_like:A6:right
+neuron	24	premotor_A27h_like:A5:left
+neuron	25	premotor_A27h_like:A5:right
+neuron	26	premotor_A27h_like:A4:left
+neuron	27	premotor_A27h_like:A4:right
+neuron	28	premotor_A27h_like:A3:left
+neuron	29	premotor_A27h_like:A3:right
+neuron	30	premotor_A27h_like:A2:left
+neuron	31	premotor_A27h_like:A2:right
+neuron	32	premotor_A27h_like:A1:left
+neuron	33	premotor_A27h_like:A1:right
+neuron	34	premotor_A27h_like:T3:left
+neuron	35	premotor_A27h_like:T3:right
+neuron	36	inhibitory_PMSI_like:A7:left
+neuron	37	inhibitory_PMSI_like:A7:right
+neuron	38	inhibitory_PMSI_like:A6:left
+neuron	39	inhibitory_PMSI_like:A6:right
+neuron	40	inhibitory_PMSI_like:A5:left
+neuron	41	inhibitory_PMSI_like:A5:right
+neuron	42	inhibitory_PMSI_like:A4:left
+neuron	43	inhibitory_PMSI_like:A4:right
+neuron	44	inhibitory_PMSI_like:A3:left
+neuron	45	inhibitory_PMSI_like:A3:right
+neuron	46	inhibitory_PMSI_like:A2:left
+neuron	47	inhibitory_PMSI_like:A2:right
+neuron	48	inhibitory_PMSI_like:A1:left
+neuron	49	inhibitory_PMSI_like:A1:right
+neuron	50	inhibitory_PMSI_like:T3:left
+neuron	51	inhibitory_PMSI_like:T3:right
+neuron	52	motor_pool:A7:left
+neuron	53	motor_pool:A7:right
+neuron	54	motor_pool:A6:left
+neuron	55	motor_pool:A6:right
+neuron	56	motor_pool:A5:left
+neuron	57	motor_pool:A5:right
+neuron	58	motor_pool:A4:left
+neuron	59	motor_pool:A4:right
+neuron	60	motor_pool:A3:left
+neuron	61	motor_pool:A3:right
+neuron	62	motor_pool:A2:left
+neuron	63	motor_pool:A2:right
+neuron	64	motor_pool:A1:left
+neuron	65	motor_pool:A1:right
+neuron	66	motor_pool:T3:left
+neuron	67	motor_pool:T3:right
+neuron	68	motor_identity:4028114:left
+neuron	69	motor_identity:4042315:left
+neuron	70	motor_identity:4101976:right
+neuron	71	motor_identity:4102728:right
+neuron	72	motor_identity:4121534:right
+neuron	73	motor_identity:4274364:left
+neuron	74	motor_identity:4289773:left
+neuron	75	motor_identity:4326468:left
+neuron	76	motor_identity:4326520:left
+neuron	77	motor_identity:4382895:right
+neuron	78	motor_identity:4397287:right
+neuron	79	motor_identity:4488976:right
+neuron	80	motor_identity:4524871:left
+neuron	81	motor_identity:4535767:right
+neuron	82	motor_identity:4717729:left
+neuron	83	motor_identity:4881629:right
+neuron	84	motor_identity:5085455:right
+neuron	85	motor_identity:5899328:left
+neuron	86	motor_identity:6467481:left
+neuron	87	motor_identity:6970942:right
+neuron	88	motor_identity:8026224:left
+neuron	89	motor_identity:10013402:right
+neuron	90	motor_identity:10649843:left
+neuron	91	motor_identity:10678017:left
+neuron	92	motor_identity:13057994:right
+neuron	93	motor_identity:13058240:left
+neuron	94	motor_identity:14044614:left
+neuron	95	motor_identity:14045016:left
+neuron	96	motor_identity:14045489:right
+neuron	97	motor_identity:14045854:right
+neuron	98	motor_identity:14046720:right
+neuron	99	motor_identity:14047130:left
+neuron	100	motor_identity:14047554:right
+neuron	101	motor_identity:14047760:right
+neuron	102	motor_identity:14047945:right
+neuron	103	motor_identity:14048287:right
+neuron	104	motor_identity:14048538:right
+neuron	105	motor_identity:14048876:right
+neuron	106	motor_identity:14085813:left
+neuron	107	motor_identity:14086309:left
+neuron	108	motor_identity:14087107:right
+neuron	109	motor_identity:14087339:left
+neuron	110	motor_identity:14088149:left
+neuron	111	motor_identity:14088451:left
+neuron	112	motor_identity:14194234:left
+neuron	113	motor_identity:14194703:right
+neuron	114	motor_identity:14199031:left
+neuron	115	motor_identity:14199565:right
+neuron	116	motor_identity:14203725:left
+neuron	117	motor_identity:14206438:right
+neuron	118	motor_identity:16080562:right
+neuron	119	motor_identity:16181494:right
+neuron	120	motor_identity:16433395:left
+neuron	121	motor_identity:16713121:right
+neuron	122	motor_identity:19111930:left
+neuron	123	motor_identity:19139253:left
+neuron	124	motor_identity:20901068:right
+neuron	125	motor_identity:20901073:left
+body_segment	0	PSC	7.2000000000000002e-05	9.7499999999999998e-05	8.7750000000000005e-05	5.0799965542582732e-10	0.45000000000000001
+body_segment	1	T1	6.7500000000000001e-05	0.000117	0.0001053	6.8579953482486699e-10	0.45000000000000001
+body_segment	2	T2	7.2000000000000002e-05	0.00013199999999999998	0.00011879999999999999	9.3111226783848667e-10	0.45000000000000001
+body_segment	3	T3	7.6500000000000003e-05	0.00014399999999999998	0.00012959999999999998	1.1773568345395741e-09	0.35057284999999999
+body_segment	4	A1	8.099999999999999e-05	0.00014999999999999999	0.000135	1.3526618043882973e-09	0.48120550000000001
+body_segment	5	A2	8.5500000000000005e-05	0.00015449999999999999	0.00013904999999999999	1.5147632920686307e-09	0.48953132999999999
+body_segment	6	A3	8.5500000000000005e-05	0.00015749999999999998	0.00014174999999999998	1.5741601748568813e-09	0.51386467999999996
+body_segment	7	A4	8.5500000000000005e-05	0.00015749999999999998	0.00014174999999999998	1.5741601748568813e-09	0.54200000000000004
+body_segment	8	A5	8.099999999999999e-05	0.00015299999999999998	0.00013769999999999999	1.4073093412855846e-09	0.50260592999999998
+body_segment	9	A6	7.6500000000000003e-05	0.00014249999999999999	0.00012825	1.1529563185459698e-09	0.51304523999999996
+body_segment	10	A7	6.7500000000000001e-05	0.00011999999999999999	0.000108	7.2141962900709208e-10	0.51401679
+body_segment	11	A8	4.9499999999999997e-05	8.9999999999999992e-05	8.099999999999999e-05	2.9758559696542547e-10	0.45000000000000001
+wave_segment	0	A7	10	4	5	20	21	36	37	52	53	0.58999999999999997	0.70999999999999996
+wave_segment	1	A6	9	6	7	22	23	38	39	54	55	0.59999999999999998	0.71999999999999997
+wave_segment	2	A5	8	8	9	24	25	40	41	56	57	0.59999999999999998	0.71999999999999997
+wave_segment	3	A4	7	10	11	26	27	42	43	58	59	0.75	0.87
+wave_segment	4	A3	6	12	13	28	29	44	45	60	61	0.59999999999999998	0.71999999999999997
+wave_segment	5	A2	5	14	15	30	31	46	47	62	63	0.59999999999999998	0.71999999999999997
+wave_segment	6	A1	4	16	17	32	33	48	49	64	65	0.59999999999999998	0.71999999999999997
+wave_segment	7	T3	3	18	19	34	35	50	51	66	67	0.59999999999999998	0.71999999999999997
+motor_identity	A1	left	68	4028114
+motor_identity	A1	left	69	4042315
+motor_identity	A1	right	70	4101976
+motor_identity	A1	right	71	4102728
+motor_identity	A1	right	72	4121534
+motor_identity	A1	left	73	4274364
+motor_identity	A1	left	74	4289773
+motor_identity	A1	left	75	4326468
+motor_identity	A1	left	76	4326520
+motor_identity	A1	right	77	4382895
+motor_identity	A1	right	78	4397287
+motor_identity	A1	right	79	4488976
+motor_identity	A1	left	80	4524871
+motor_identity	A1	right	81	4535767
+motor_identity	A2	left	82	4717729
+motor_identity	A1	right	83	4881629
+motor_identity	A1	right	84	5085455
+motor_identity	A1	left	85	5899328
+motor_identity	A1	left	86	6467481
+motor_identity	A1	right	87	6970942
+motor_identity	A1	left	88	8026224
+motor_identity	A1	right	89	10013402
+motor_identity	A1	left	90	10649843
+motor_identity	A1	left	91	10678017
+motor_identity	A1	right	92	13057994
+motor_identity	A1	left	93	13058240
+motor_identity	A1	left	94	14044614
+motor_identity	A1	left	95	14045016
+motor_identity	A1	right	96	14045489
+motor_identity	A1	right	97	14045854
+motor_identity	A1	right	98	14046720
+motor_identity	A1	left	99	14047130
+motor_identity	A1	right	100	14047554
+motor_identity	A1	right	101	14047760
+motor_identity	A1	right	102	14047945
+motor_identity	A1	right	103	14048287
+motor_identity	A1	right	104	14048538
+motor_identity	A1	right	105	14048876
+motor_identity	A1	left	106	14085813
+motor_identity	A1	left	107	14086309
+motor_identity	A1	right	108	14087107
+motor_identity	A1	left	109	14087339
+motor_identity	A1	left	110	14088149
+motor_identity	A1	left	111	14088451
+motor_identity	A1	left	112	14194234
+motor_identity	A1	right	113	14194703
+motor_identity	A1	left	114	14199031
+motor_identity	A1	right	115	14199565
+motor_identity	A1	left	116	14203725
+motor_identity	A1	right	117	14206438
+motor_identity	A2	right	118	16080562
+motor_identity	A1	right	119	16181494
+motor_identity	A1	left	120	16433395
+motor_identity	A1	right	121	16713121
+motor_identity	A1	left	122	19111930
+motor_identity	A1	left	123	19139253
+motor_identity	A1	right	124	20901068
+motor_identity	A1	left	125	20901073
+muscle_proxy	A1	left	29
+muscle_proxy	A1	right	29
+muscle_proxy	A2	left	30
+muscle_proxy	A2	right	30
+muscle_proxy	A3	left	30
+muscle_proxy	A3	right	30
+muscle_proxy	A4	left	30
+muscle_proxy	A4	right	30
+muscle_proxy	A5	left	30
+muscle_proxy	A5	right	30
+muscle_proxy	A6	left	30
+muscle_proxy	A6	right	30
+synapse	0	20	1.8e-09	excitatory	0
+synapse	0	21	1.8e-09	excitatory	0
+synapse	1	20	1.8e-09	excitatory	0
+synapse	1	21	1.8e-09	excitatory	0
+synapse	2	34	3e-09	excitatory	0
+synapse	2	32	3e-09	excitatory	30
+synapse	2	30	3e-09	excitatory	60
+synapse	3	35	3e-09	excitatory	0
+synapse	3	33	3e-09	excitatory	30
+synapse	3	31	3e-09	excitatory	60
+synapse	4	22	1.8e-09	excitatory	107
+synapse	5	23	1.8e-09	excitatory	107
+synapse	6	24	1.8e-09	excitatory	100
+synapse	7	25	1.8e-09	excitatory	100
+synapse	8	26	1.8e-09	excitatory	216
+synapse	9	27	1.8e-09	excitatory	216
+synapse	10	28	1.8e-09	excitatory	323
+synapse	11	29	1.8e-09	excitatory	323
+synapse	12	30	1.8e-09	excitatory	270
+synapse	13	31	1.8e-09	excitatory	270
+synapse	14	32	1.8e-09	excitatory	226
+synapse	15	33	1.8e-09	excitatory	226
+synapse	16	34	1.8e-09	excitatory	111
+synapse	17	35	1.8e-09	excitatory	111
+synapse	20	52	1.8e-09	excitatory	0
+synapse	20	36	1.8e-09	excitatory	2
+synapse	21	53	1.8e-09	excitatory	0
+synapse	21	37	1.8e-09	excitatory	2
+synapse	22	54	1.8e-09	excitatory	0
+synapse	22	38	1.8e-09	excitatory	2
+synapse	23	55	1.8e-09	excitatory	0
+synapse	23	39	1.8e-09	excitatory	2
+synapse	24	56	1.8e-09	excitatory	0
+synapse	24	40	1.8e-09	excitatory	2
+synapse	25	57	1.8e-09	excitatory	0
+synapse	25	41	1.8e-09	excitatory	2
+synapse	26	58	1.8e-09	excitatory	0
+synapse	26	42	1.8e-09	excitatory	2
+synapse	27	59	1.8e-09	excitatory	0
+synapse	27	43	1.8e-09	excitatory	2
+synapse	28	60	1.8e-09	excitatory	0
+synapse	28	44	1.8e-09	excitatory	2
+synapse	29	61	1.8e-09	excitatory	0
+synapse	29	45	1.8e-09	excitatory	2
+synapse	30	62	1.8e-09	excitatory	0
+synapse	30	46	1.8e-09	excitatory	2
+synapse	31	63	1.8e-09	excitatory	0
+synapse	31	47	1.8e-09	excitatory	2
+synapse	32	64	1.8e-09	excitatory	0
+synapse	32	48	1.8e-09	excitatory	2
+synapse	33	65	1.8e-09	excitatory	0
+synapse	33	49	1.8e-09	excitatory	2
+synapse	34	66	1.8e-09	excitatory	0
+synapse	34	50	1.8e-09	excitatory	2
+synapse	35	67	1.8e-09	excitatory	0
+synapse	35	51	1.8e-09	excitatory	2
+synapse	36	52	4.0000000000000002e-09	inhibitory	0
+synapse	37	53	4.0000000000000002e-09	inhibitory	0
+synapse	38	54	4.0000000000000002e-09	inhibitory	0
+synapse	39	55	4.0000000000000002e-09	inhibitory	0
+synapse	40	56	4.0000000000000002e-09	inhibitory	0
+synapse	41	57	4.0000000000000002e-09	inhibitory	0
+synapse	42	58	4.0000000000000002e-09	inhibitory	0
+synapse	43	59	4.0000000000000002e-09	inhibitory	0
+synapse	44	60	4.0000000000000002e-09	inhibitory	0
+synapse	45	61	4.0000000000000002e-09	inhibitory	0
+synapse	46	62	4.0000000000000002e-09	inhibitory	0
+synapse	47	63	4.0000000000000002e-09	inhibitory	0
+synapse	48	64	4.0000000000000002e-09	inhibitory	0
+synapse	49	65	4.0000000000000002e-09	inhibitory	0
+synapse	50	66	4.0000000000000002e-09	inhibitory	0
+synapse	51	67	4.0000000000000002e-09	inhibitory	0
+synapse	62	82	1.8e-09	excitatory	0
+synapse	63	118	1.8e-09	excitatory	0
+synapse	64	68	1.8e-09	excitatory	0
+synapse	64	69	1.8e-09	excitatory	0
+synapse	64	73	1.8e-09	excitatory	0
+synapse	64	74	1.8e-09	excitatory	0
+synapse	64	75	1.8e-09	excitatory	0
+synapse	64	76	1.8e-09	excitatory	0
+synapse	64	80	1.8e-09	excitatory	0
+synapse	64	85	1.8e-09	excitatory	0
+synapse	64	86	1.8e-09	excitatory	0
+synapse	64	88	1.8e-09	excitatory	0
+synapse	64	90	1.8e-09	excitatory	0
+synapse	64	91	1.8e-09	excitatory	0
+synapse	64	93	1.8e-09	excitatory	0
+synapse	64	94	1.8e-09	excitatory	0
+synapse	64	95	1.8e-09	excitatory	0
+synapse	64	99	1.8e-09	excitatory	0
+synapse	64	106	1.8e-09	excitatory	0
+synapse	64	107	1.8e-09	excitatory	0
+synapse	64	109	1.8e-09	excitatory	0
+synapse	64	110	1.8e-09	excitatory	0
+synapse	64	111	1.8e-09	excitatory	0
+synapse	64	112	1.8e-09	excitatory	0
+synapse	64	114	1.8e-09	excitatory	0
+synapse	64	116	1.8e-09	excitatory	0
+synapse	64	120	1.8e-09	excitatory	0
+synapse	64	122	1.8e-09	excitatory	0
+synapse	64	123	1.8e-09	excitatory	0
+synapse	64	125	1.8e-09	excitatory	0
+synapse	65	70	1.8e-09	excitatory	0
+synapse	65	71	1.8e-09	excitatory	0
+synapse	65	72	1.8e-09	excitatory	0
+synapse	65	77	1.8e-09	excitatory	0
+synapse	65	78	1.8e-09	excitatory	0
+synapse	65	79	1.8e-09	excitatory	0
+synapse	65	81	1.8e-09	excitatory	0
+synapse	65	83	1.8e-09	excitatory	0
+synapse	65	84	1.8e-09	excitatory	0
+synapse	65	87	1.8e-09	excitatory	0
+synapse	65	89	1.8e-09	excitatory	0
+synapse	65	92	1.8e-09	excitatory	0
+synapse	65	96	1.8e-09	excitatory	0
+synapse	65	97	1.8e-09	excitatory	0
+synapse	65	98	1.8e-09	excitatory	0
+synapse	65	100	1.8e-09	excitatory	0
+synapse	65	101	1.8e-09	excitatory	0
+synapse	65	102	1.8e-09	excitatory	0
+synapse	65	103	1.8e-09	excitatory	0
+synapse	65	104	1.8e-09	excitatory	0
+synapse	65	105	1.8e-09	excitatory	0
+synapse	65	108	1.8e-09	excitatory	0
+synapse	65	113	1.8e-09	excitatory	0
+synapse	65	115	1.8e-09	excitatory	0
+synapse	65	117	1.8e-09	excitatory	0
+synapse	65	119	1.8e-09	excitatory	0
+synapse	65	121	1.8e-09	excitatory	0
+synapse	65	124	1.8e-09	excitatory	0

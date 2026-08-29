@@ -43,6 +43,12 @@ lesion, A4 muscle lesion, and A1 motor-identity lesion runs match Python on all
 neuron spike counts and first-spike times, peak activation and shortening,
 displacement, and all 151 sampled node/activation frames.
 
+The bilateral acceptance gate is `data/parity/bilateral_native_v1.tsv`. It
+executes 126 LIF neurons, 130 synapses, side-resolved motor and muscle channels,
+active-curvature XPBD, local-tangent substrate friction, and bilateral rail
+feedback. Symmetric, left, right, zero-input, and premotor/motor-identity/muscle
+lesion cases match Python across every spike and all 151 sampled frames.
+
 This is correctness parity for the current `research_approximation`, not
 biological validation or a performance result. The full brain/VNC, individual
 muscle attachments and force gains, held-out behavior validation, and mobile

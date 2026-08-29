@@ -1,18 +1,19 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import bodySpec from "../../data/body/l1_body_v0.json";
-import closedLoopTrajectory from "../../data/trajectories/l1_closed_loop_v0.json";
+import bilateralTrajectory from "../../data/trajectories/l1_bilateral_steering_v0.json";
 import "./style.css";
 
 const expectedSegmentIds = bodySpec.segments.map((segment) => segment.id);
 if (
-  closedLoopTrajectory.schema_version !== 1
-  || closedLoopTrajectory.node_count !== expectedSegmentIds.length + 1
-  || closedLoopTrajectory.body_segment_ids.join(",") !== expectedSegmentIds.join(",")
-  || closedLoopTrajectory.frames.length < 2
-  || closedLoopTrajectory.release_validated !== false
+  bilateralTrajectory.schema_version !== 1
+  || bilateralTrajectory.node_count !== expectedSegmentIds.length + 1
+  || bilateralTrajectory.body_segment_ids.join(",") !== expectedSegmentIds.join(",")
+  || bilateralTrajectory.frames.length < 2
+  || bilateralTrajectory.sides.join(",") !== "left,right"
+  || bilateralTrajectory.release_validated !== false
 ) {
-  throw new Error("closed-loop trajectory does not match the body/viewer contract");
+  throw new Error("bilateral trajectory does not match the body/viewer contract");
 }
 
 const sceneHost = document.querySelector("#scene");
@@ -165,11 +166,11 @@ let playing = false;
 let playbackTimeS = 0;
 let playbackSpeed = 1;
 let previousAnimationTimeMs = null;
-const trajectoryDurationS = closedLoopTrajectory.frames.at(-1).time_s;
-const trajectoryInitialCenterXUm = closedLoopTrajectory.frames[0].nodes_um.reduce(
+const trajectoryDurationS = bilateralTrajectory.frames.at(-1).time_s;
+const trajectoryInitialCenterXUm = bilateralTrajectory.frames[0].nodes_um.reduce(
   (sum, node) => sum + node[0],
   0,
-) / closedLoopTrajectory.node_count;
+) / bilateralTrajectory.node_count;
 const worldPerUm = worldLength / nominalLengthUm;
 
 const anatomyLabels = {
@@ -244,26 +245,34 @@ function smoothstep(amount) {
 }
 
 function sampleTrajectory(timeS) {
-  const framePosition = timeS / closedLoopTrajectory.sample_interval_s;
+  const framePosition = timeS / bilateralTrajectory.sample_interval_s;
   const leftIndex = Math.min(
     Math.floor(framePosition),
-    closedLoopTrajectory.frames.length - 1,
+    bilateralTrajectory.frames.length - 1,
   );
   const rightIndex = Math.min(
     leftIndex + 1,
-    closedLoopTrajectory.frames.length - 1,
+    bilateralTrajectory.frames.length - 1,
   );
   const amount = Math.min(1, Math.max(0, framePosition - leftIndex));
-  const left = closedLoopTrajectory.frames[leftIndex];
-  const right = closedLoopTrajectory.frames[rightIndex];
+  const left = bilateralTrajectory.frames[leftIndex];
+  const right = bilateralTrajectory.frames[rightIndex];
   return {
     nodes: left.nodes_um.map((node, nodeIndex) => node.map(
       (value, axis) => value * (1 - amount) + right.nodes_um[nodeIndex][axis] * amount,
     )),
-    activations: left.segment_activation.map(
-      (value, segmentIndex) => (
-        value * (1 - amount) + right.segment_activation[segmentIndex] * amount
-      ),
+    activations: left.segment_activation_left.map(
+      (value, segmentIndex) => {
+        const leftActivation = (
+          value * (1 - amount)
+          + right.segment_activation_left[segmentIndex] * amount
+        );
+        const rightActivation = (
+          left.segment_activation_right[segmentIndex] * (1 - amount)
+          + right.segment_activation_right[segmentIndex] * amount
+        );
+        return (leftActivation + rightActivation) / 2;
+      },
     ),
   };
 }

@@ -22,6 +22,7 @@ oraclarva-kinematics-targets = "oraclarva.kinematics:main"
 oraclarva-muscle-atlas-audit = "oraclarva.muscles:main"
 oraclarva-source-audit = "oraclarva.sources:main"
 oraclarva-organism = "oraclarva.organism:main"
+oraclarva-bilateral = "oraclarva.bilateral:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -64,6 +64,17 @@ aggregate proxy. This is not held-out or whole-body validation; the runtime
 reports `release_validated: false`. See `docs/CLOSED_LOOP_L1_V0.md`; run
 `oraclarva-organism`.
 
+A bilateral research extension now executes 126 LIF neurons and 130 synapses.
+A shared posterior sensory component drives the symmetric forward wave, while a
+rectified left-right receptor difference recruits an anterior T3-A2 asymmetric
+pulse. Side-resolved activation drives active-curvature XPBD and virtual
+left/right proprioceptive rails. Symmetric input remains exactly straight;
+left/right inputs produce exact mirrored headings of about ±2.46 degrees at the
+current stable `MODEL_FITTED` fixture. This is an approximation informed by
+reported anterior unilateral activity during larval turning, not a complete or
+measured L1 turning connectome. See `docs/BILATERAL_STEERING_V0.md`; run
+`oraclarva-bilateral --left 1 --right 0`.
+
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
 ## Quick start
@@ -80,6 +91,7 @@ oraclarva-body-spec
 oraclarva-motor-map-audit
 oraclarva-kinematics-targets
 oraclarva-muscle-atlas-audit
+oraclarva-bilateral --left 1 --right 0
 oraclarva-audit neurons.csv synapses.csv
 ```
 
@@ -93,9 +105,11 @@ muscle identity and geometry boundary is in `docs/L1_BODY_WALL_MUSCLE_ATLAS.md`.
 ## Interactive L1 body viewer
 
 The `viewer/` app renders the shared `data/body/l1_body_v0.json` morphology
-and the generated `data/trajectories/l1_closed_loop_v0.json` Python trajectory.
-Its 151 frames contain 13 internal XPBD nodes and 12 activation channels sampled
-every 30 ms. Three.js interpolates those nodes under one continuous surface; it
+and the generated `data/trajectories/l1_bilateral_steering_v0.json` Python
+trajectory. Its 151 frames contain 13 internal XPBD nodes and 24 side-resolved
+activation channels sampled every 30 ms. Three.js averages only the two channels
+for surface emissive display; position and curvature come directly from the
+stored physics nodes. Three.js interpolates those nodes under one continuous surface; it
 contains no independent gait, Gaussian contraction wave, bend animation, or
 render-driven translation. Active shortening still uses one aggregate body-cavity
 volume constraint rather than twelve sealed spherical segments.
@@ -108,11 +122,11 @@ npm run dev
 
 The displayed L1 length, width, and per-region profile remain explicit v0
 hypotheses, and the trajectory is model output rather than motion capture. Run
-`python tools/export_closed_loop_trajectory.py --check` to verify that the
-checked-in viewer artifact matches the current 91-LIF Python reference. Run
-`python tools/check_native_viewer_trajectory.py` to compile the C++ core and
-verify all 151 native frames against the same artifact with zero relative
-tolerance and a 2e-9 µm absolute node-coordinate ceiling.
+`python tools/export_bilateral_trajectory.py --check` to verify that the
+checked-in viewer artifact matches the current 126-LIF Python reference. The
+bilateral C++ parity test compares all 151 native frames with a 2e-9 µm absolute
+node-coordinate ceiling across symmetric, left, right, zero-input, and lesion
+conditions.
 
 ## Native parity
 
@@ -126,6 +140,13 @@ aggregate proxy, XPBD body, substrate contact, and proprioceptive feedback. Its
 normal, no-stimulus, and three lesion runs match Python on spikes, first-spike
 times, peak activation/shortening, displacement, and every sampled 13-node
 trajectory frame. Run `pytest tests/test_native_closed_loop_parity.py`.
+
+The third fixture, `data/parity/bilateral_native_v1.tsv`, covers 126 side-resolved
+neurons, 130 synapses, bilateral muscle proxies, active curvature, local-tangent
+contact friction, and left/right rail feedback. Seven symmetric, asymmetric,
+zero-input, and lesion cases match Python on every spike, summary, activation,
+shortening value, and all 151 trajectory frames. Run
+`pytest tests/test_native_bilateral_parity.py`.
 
 This establishes native numerical parity for the research approximation, not a
 complete L1 brain/VNC, individual muscle mechanics, held-out biological

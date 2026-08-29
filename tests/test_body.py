@@ -108,3 +108,63 @@ def test_segment_specific_shortening_capacity_is_bounded_and_changes_target():
         ScientificBody3D(
             spec, maximum_shortening_by_segment={"crawl": 0.5}
         )
+
+
+def test_bilateral_activation_creates_mirrored_active_curvature():
+    def simulate(pair):
+        body = ScientificBody3D(load_body_spec())
+        body.set_bilateral_activations({
+            segment: pair for segment in ("A2", "A3", "A4", "A5", "A6")
+        })
+        for _ in range(50):
+            body.step(
+                0.001,
+                gravity=Vec3(0.0, 0.0, 0.0),
+                ground_z=None,
+                active_curvature_gain=0.05,
+            )
+        return body
+
+    left = simulate((1.0, 0.0))
+    right = simulate((0.0, 1.0))
+    symmetric = simulate((1.0, 1.0))
+    left_y = [particle.position.y for particle in left.particles]
+    right_y = [particle.position.y for particle in right.particles]
+    assert max(abs(value) for value in left_y) > 50e-6
+    # Body coordinates run anterior-to-posterior in +x and left-to-right in +y.
+    assert min(left_y) < 0.0
+    assert max(right_y) > 0.0
+    assert right_y == pytest.approx([-value for value in left_y], abs=1e-15)
+    assert [particle.position.y for particle in symmetric.particles] == pytest.approx(
+        [0.0] * len(symmetric.particles), abs=1e-15
+    )
+
+
+def test_virtual_bilateral_rails_report_side_specific_shortening():
+    body = ScientificBody3D(load_body_spec())
+    body.set_bilateral_activations({"A4": (1.0, 0.0), "A5": (1.0, 0.0)})
+    for _ in range(50):
+        body.step(
+            0.001,
+            gravity=Vec3(0.0, 0.0, 0.0),
+            ground_z=None,
+            active_curvature_gain=0.05,
+        )
+    a4_index = next(
+        index for index, segment in enumerate(body.geometry) if segment.id == "A4"
+    )
+    assert body.bilateral_segment_length_m(
+        a4_index, "left"
+    ) < body.bilateral_segment_length_m(a4_index, "right")
+    with pytest.raises(ValueError, match="side"):
+        body.bilateral_segment_length_m(a4_index, "dorsal")
+
+
+def test_bilateral_activation_rejects_commands_and_invalid_pairs():
+    body = ScientificBody3D(load_body_spec())
+    with pytest.raises(KeyError):
+        body.set_bilateral_activations({"turn_left": (1.0, 0.0)})
+    with pytest.raises(ValueError, match="left/right pair"):
+        body.set_bilateral_activations({"A4": (1.0,)})
+    with pytest.raises(ValueError, match="bilateral muscle activation"):
+        body.set_bilateral_activations({"A4": (1.1, 0.0)})
