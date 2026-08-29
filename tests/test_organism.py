@@ -8,6 +8,8 @@ def test_config_keeps_approximations_and_causal_contract_explicit():
     assert config["status"] == "research_approximation"
     assert config["topology"]["provenance"] == "ANATOMY_DERIVED"
     assert config["parameter_provenance"]["provenance"] == "MODEL_FITTED"
+    assert config["parameter_provenance"]["fit_status"] == "phase_fitted_research_baseline"
+    assert config["parameters"]["fitted_cycle_period_s"] == 2.5
     assert config["causal_contract"] == [
         "environment", "sensory_transduction", "neural_dynamics",
         "motor_neurons", "muscle_activation", "body_physics", "environment",
@@ -29,6 +31,11 @@ def test_touch_produces_ordered_neural_wave_contraction_and_forward_motion():
         assert result.peak_activation[segment] > 0
         assert result.peak_shortening_fraction[segment] >= 0.05
     assert result.displacement_um < -1.0
+    assert result.phase_fit_passed
+    assert set(result.phase_fit) == set(SEGMENTS[:-1])
+    assert all(
+        item["inside_observed_p10_p90"] for item in result.phase_fit.values()
+    )
 
 
 def test_without_environmental_touch_nervous_system_and_body_remain_at_rest():
@@ -36,6 +43,7 @@ def test_without_environmental_touch_nervous_system_and_body_remain_at_rest():
     assert sum(result.spike_counts.values()) == 0
     assert all(value == 0 for value in result.peak_activation.values())
     assert abs(result.displacement_um) < 1e-6
+    assert not result.phase_fit_passed
 
 
 def test_premotor_lesion_breaks_downstream_wave_instead_of_invoking_fallback_action():
@@ -45,5 +53,6 @@ def test_premotor_lesion_breaks_downstream_wave_instead_of_invoking_fallback_act
     for segment in ("A4", "A3", "A2", "A1", "T3"):
         assert result.spike_counts[f"motor_pool:{segment}"] == 0
         assert result.peak_activation[segment] == 0
+    assert not result.phase_fit_passed
     assert not hasattr(ClosedLoopLarva, "crawl")
     assert not hasattr(ClosedLoopLarva, "turn_left")

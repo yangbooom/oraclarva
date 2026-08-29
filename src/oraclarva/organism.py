@@ -10,6 +10,7 @@ from typing import Any
 
 from .body import load_body_spec
 from .body3d import ScientificBody3D, Vec3
+from .kinematics import load_kinematic_targets
 from .lif import SparseLIFNetwork, Synapse
 
 
@@ -25,6 +26,8 @@ class ClosedLoopResult:
     peak_activation: dict[str, float]
     peak_shortening_fraction: dict[str, float]
     causal_contract: tuple[str, ...]
+    phase_fit: dict[str, dict[str, float | bool]]
+    phase_fit_passed: bool
     lesion: str | None
 
     def to_dict(self) -> dict[str, Any]:
@@ -39,6 +42,8 @@ class ClosedLoopResult:
             "peak_activation": self.peak_activation,
             "peak_shortening_fraction": self.peak_shortening_fraction,
             "causal_contract": list(self.causal_contract),
+            "phase_fit": self.phase_fit,
+            "phase_fit_passed": self.phase_fit_passed,
             "lesion": self.lesion,
             "claim_boundary": "reduced embodied neural research model; not a complete L1 brain emulation",
         }
@@ -83,8 +88,24 @@ class ClosedLoopLarva:
         self.motor_offset = 1 + 2 * count
         current = float(self.params["synaptic_current_a"])
         synapses = [Synapse(self.touch, self.premotor_offset, current)]
-        synapses.extend(Synapse(self.premotor_offset + i, self.motor_offset + i, current) for i in range(count))
-        synapses.extend(Synapse(self.proprioceptor_offset + i, self.premotor_offset + i + 1, current) for i in range(count - 1))
+        synapses.extend(
+            Synapse(self.premotor_offset + i, self.motor_offset + i, current)
+            for i in range(count)
+        )
+        relay_delays = self.params["intersegmental_relay_delay_s"]
+        expected_relays = set(self.segments[:-1])
+        if set(relay_delays) != expected_relays:
+            raise ValueError("relay delays must cover every modeled intersegmental edge")
+        dt = float(self.params["dt_s"])
+        synapses.extend(
+            Synapse(
+                self.proprioceptor_offset + i,
+                self.premotor_offset + i + 1,
+                current,
+                delay_steps=round(float(relay_delays[segment]) / dt),
+            )
+            for i, segment in enumerate(self.segments[:-1])
+        )
         self.network = SparseLIFNetwork(1 + 3 * count, synapses)
         if self.lesion is not None:
             self.network.lesion([self.premotor_offset + self.segments.index(self.lesion)])
@@ -146,14 +167,48 @@ class ClosedLoopLarva:
                 ground_velocity_retention_x=(float(p["ground_negative_x_retention"]), float(p["ground_positive_x_retention"])),
             )
 
+        phase_fit = self._phase_fit(first_spike)
         return ClosedLoopResult(
             model_id=str(self.config["model_id"]), status=str(self.config["status"]), duration_s=steps * dt,
             displacement_um=(self._center_x() - initial_center) * 1e6, forward_axis="negative_x (posterior-to-anterior body coordinate)",
             spike_counts=spike_counts, first_spike_s=first_spike,
             peak_activation=dict(zip(self.segments, peak_activation, strict=True)),
             peak_shortening_fraction=dict(zip(self.segments, peak_shortening, strict=True)),
-            causal_contract=tuple(self.config["causal_contract"]), lesion=self.lesion,
+            causal_contract=tuple(self.config["causal_contract"]),
+            phase_fit=phase_fit,
+            phase_fit_passed=(
+                len(phase_fit) == len(self.segments) - 1
+                and all(
+                    bool(item["inside_observed_p10_p90"])
+                    for item in phase_fit.values()
+                )
+            ),
+            lesion=self.lesion,
         )
+
+    def _phase_fit(
+        self, first_spike: dict[str, float | None]
+    ) -> dict[str, dict[str, float | bool]]:
+        targets = load_kinematic_targets()
+        cycle_period = float(self.params["fitted_cycle_period_s"])
+        result: dict[str, dict[str, float | bool]] = {}
+        for posterior, anterior in zip(self.segments[:-1], self.segments[1:], strict=True):
+            posterior_onset = first_spike[f"motor_pool:{posterior}"]
+            anterior_onset = first_spike[f"motor_pool:{anterior}"]
+            if posterior_onset is None or anterior_onset is None:
+                continue
+            band = targets.targets[posterior]["adjacent_onset_delay_cycle_fraction"]
+            if band is None:
+                continue
+            simulated = (anterior_onset - posterior_onset) / cycle_period
+            result[posterior] = {
+                "simulated": simulated,
+                "observed_p10": band.p10,
+                "observed_median": band.median,
+                "observed_p90": band.p90,
+                "inside_observed_p10_p90": band.contains(simulated),
+            }
+        return result
 
     def _labels(self) -> list[str]:
         labels = ["environment_touch_receptor"]
