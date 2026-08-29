@@ -116,6 +116,19 @@ class MuscleIdentityRecruitmentFrame:
 
 
 @dataclass(frozen=True, slots=True)
+class BilateralMuscleIdentityRecruitmentFrame:
+    activations: Mapping[str, float]
+    segment_by_fiber: Mapping[str, str]
+    side_by_fiber: Mapping[str, str]
+    provenance: str = "MODEL_FITTED"
+    individual_geometry_executed: bool = False
+
+    @property
+    def active_fiber_count(self) -> int:
+        return sum(value > 0.0 for value in self.activations.values())
+
+
+@dataclass(frozen=True, slots=True)
 class AggregateMuscleIdentityProjection:
     """Research proxy from aggregate activation through named A1-A6 fibers.
 
@@ -190,6 +203,82 @@ class AggregateMuscleIdentityProjection:
             activations=activations,
             segment_by_fiber=self.segment_by_fiber,
         )
+
+    def project_bilateral(
+        self,
+        segment_activations: Mapping[str, tuple[float, float]],
+        *,
+        lesioned_channels: tuple[tuple[str, str], ...] = (),
+    ) -> BilateralMuscleIdentityRecruitmentFrame:
+        valid_channels = {
+            (segment, side)
+            for segment in self.atlas.supported_segments
+            for side in SIDES
+        }
+        unknown_lesions = set(lesioned_channels) - valid_channels
+        if unknown_lesions:
+            raise ValueError(
+                f"bilateral muscle lesion outside A1-A6 atlas: {sorted(unknown_lesions)}"
+            )
+        for segment_id, pair in segment_activations.items():
+            if len(pair) != 2 or any(
+                not 0.0 <= float(value) <= 1.0 for value in pair
+            ):
+                raise ValueError(
+                    f"bilateral activation for {segment_id} must be a left/right pair in [0, 1]"
+                )
+        lesioned = set(lesioned_channels)
+        activations = {}
+        side_by_fiber = {}
+        for identity, fiber in zip(self.identities, self.fibers, strict=True):
+            pair = segment_activations.get(fiber.segment_id, (0.0, 0.0))
+            side_index = SIDES.index(fiber.side)
+            activations[identity] = (
+                0.0
+                if (fiber.segment_id, fiber.side) in lesioned
+                else float(pair[side_index])
+            )
+            side_by_fiber[identity] = fiber.side
+        return BilateralMuscleIdentityRecruitmentFrame(
+            activations=activations,
+            segment_by_fiber=self.segment_by_fiber,
+            side_by_fiber=side_by_fiber,
+        )
+
+    def bilateral_axial_proxy(
+        self,
+        frame: BilateralMuscleIdentityRecruitmentFrame,
+        segment_activations: Mapping[str, tuple[float, float]],
+    ) -> dict[str, tuple[float, float]]:
+        result = {
+            key: (float(value[0]), float(value[1]))
+            for key, value in segment_activations.items()
+        }
+        sums = {
+            (segment_id, side): 0.0
+            for segment_id in self.atlas.supported_segments
+            for side in SIDES
+        }
+        counts = {channel: 0 for channel in sums}
+        for identity, activation in frame.activations.items():
+            channel = (
+                frame.segment_by_fiber[identity],
+                frame.side_by_fiber[identity],
+            )
+            sums[channel] += activation
+            counts[channel] += 1
+        for segment_id in self.atlas.supported_segments:
+            expected_per_side = self.expected_counts[segment_id] // 2
+            values = []
+            for side in SIDES:
+                channel = (segment_id, side)
+                if counts[channel] != expected_per_side:
+                    raise ValueError(
+                        f"incomplete bilateral identity recruitment for {segment_id}:{side}"
+                    )
+                values.append(sums[channel] / counts[channel])
+            result[segment_id] = (values[0], values[1])
+        return result
 
     def axial_proxy(
         self,

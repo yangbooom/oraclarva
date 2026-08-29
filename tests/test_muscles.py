@@ -83,3 +83,59 @@ def test_identity_segment_lesion_zeroes_named_fibers_before_axial_aggregation():
     assert len(a4_values) == 60
     assert set(a4_values) == {0.0}
     assert projection.axial_proxy(frame, segment_activation)["A4"] == 0.0
+
+
+def test_bilateral_identity_projection_preserves_side_before_aggregation():
+    projection = AggregateMuscleIdentityProjection(load_muscle_atlas())
+    activation = {
+        "A1": (0.2, 0.8),
+        "A2": (0.3, 0.7),
+        "A3": (0.4, 0.6),
+        "A4": (0.5, 0.5),
+        "A5": (0.6, 0.4),
+        "A6": (0.7, 0.3),
+        "A7": (0.8, 0.2),
+        "T3": (0.9, 0.1),
+    }
+    frame = projection.project_bilateral(activation)
+    assert len(frame.activations) == 358
+    assert frame.active_fiber_count == 358
+    assert frame.activations["A1:left:M1:DA1"] == pytest.approx(0.2)
+    assert frame.activations["A1:right:M1:DA1"] == pytest.approx(0.8)
+    axial = projection.bilateral_axial_proxy(frame, activation)
+    assert set(axial) == set(activation)
+    for segment, pair in activation.items():
+        assert axial[segment] == pytest.approx(pair)
+
+
+def test_unilateral_muscle_lesion_zeroes_only_named_side_fibers():
+    projection = AggregateMuscleIdentityProjection(load_muscle_atlas())
+    activation = {
+        segment: (0.5, 0.5)
+        for segment in ("A1", "A2", "A3", "A4", "A5", "A6")
+    }
+    frame = projection.project_bilateral(
+        activation, lesioned_channels=(("A4", "left"),)
+    )
+    a4_left = [
+        value
+        for identity, value in frame.activations.items()
+        if frame.segment_by_fiber[identity] == "A4"
+        and frame.side_by_fiber[identity] == "left"
+    ]
+    a4_right = [
+        value
+        for identity, value in frame.activations.items()
+        if frame.segment_by_fiber[identity] == "A4"
+        and frame.side_by_fiber[identity] == "right"
+    ]
+    assert len(a4_left) == len(a4_right) == 30
+    assert set(a4_left) == {0.0}
+    assert set(a4_right) == {0.5}
+    assert projection.bilateral_axial_proxy(frame, activation)["A4"] == pytest.approx(
+        (0.0, 0.5)
+    )
+    with pytest.raises(ValueError, match="outside A1-A6"):
+        projection.project_bilateral(
+            activation, lesioned_channels=(("T3", "left"),)
+        )

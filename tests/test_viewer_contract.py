@@ -7,11 +7,11 @@ VIEWER_HTML = (ROOT / "viewer" / "index.html").read_text()
 
 
 def test_viewer_consumes_closed_loop_nodes_through_a_separate_skin():
-    assert 'l1_closed_loop_v0.json' in VIEWER_SOURCE
+    assert 'l1_bilateral_steering_v0.json' in VIEWER_SOURCE
     assert 'function sampleTrajectory' in VIEWER_SOURCE
     assert 'sample.nodes.map(physicsNodeToWorld)' in VIEWER_SOURCE
     assert 'bodyMesh.userData.continuousSurface = true' in VIEWER_SOURCE
-    assert 'closedLoopTrajectory.release_validated !== false' in VIEWER_SOURCE
+    assert 'bilateralTrajectory.release_validated !== false' in VIEWER_SOURCE
 
 
 def test_viewer_has_no_renderer_authored_gait_controls_or_wave():
@@ -27,3 +27,6 @@ def test_viewer_has_no_renderer_authored_gait_controls_or_wave():
     assert 'id="bend"' not in VIEWER_HTML
     assert 'id="timeline"' in VIEWER_HTML
     assert 'id="speed"' in VIEWER_HTML
+    assert 'segment_activation_left' in VIEWER_SOURCE
+    assert 'segment_activation_right' in VIEWER_SOURCE
+    assert '126-LIF' in VIEWER_HTML

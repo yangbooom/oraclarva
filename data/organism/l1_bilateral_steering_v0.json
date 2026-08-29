@@ -1,0 +1,71 @@
+{
+  "model_id": "dmel_l1_bilateral_steering_v0",
+  "status": "research_approximation",
+  "stage": "L1",
+  "base_model_id": "dmel_l1_closed_loop_v0",
+  "sides": ["left", "right"],
+  "causal_contract": [
+    "environment",
+    "bilateral_sensory_transduction",
+    "bilateral_neural_dynamics",
+    "side_resolved_motor_neurons",
+    "bilateral_muscle_activation",
+    "active_curvature_body_physics",
+    "environment"
+  ],
+  "topology": {
+    "provenance": "ANATOMY_DERIVED",
+    "description": "Two mirrored copies of the reduced forward-wave circuit preserve left/right sensory, premotor, inhibitory, motor-pool, motor-identity, muscle, and proprioceptive channels. Either receptor can recruit the shared symmetric posterior wave. A rectified left-right sensory difference recruits an asymmetric T3-A2 anterior pulse on the stronger side. No directional behavior command is present.",
+    "limitations": [
+      "This is not a complete bilateral brain or VNC connectome.",
+      "The rectified opponent transform is a reduced sensory-interneuron proxy, not an identified complete commissural circuit.",
+      "Modality-specific approach/avoidance signs are not yet modeled.",
+      "The mirrored circuit tests neuromechanical steering capacity before an interactive environment is introduced."
+    ]
+  },
+  "parameters": {
+    "active_curvature_gain": 0.1,
+    "active_bending_stiffness_ratio": 0.25,
+    "asymmetric_sensory_current_a": 3e-09,
+    "asymmetric_synaptic_current_a": 3e-09,
+    "asymmetric_anterior_segments": ["T3", "A1", "A2"],
+    "asymmetric_anterior_delay_s_by_segment": {
+      "T3": 0.0,
+      "A1": 0.03,
+      "A2": 0.06
+    },
+    "stimulus_intensity_min": 0.0,
+    "stimulus_intensity_max": 1.0
+  },
+  "parameter_provenance": {
+    "provenance": "MODEL_FITTED",
+    "objective": "Preserve a symmetric posterior-to-anterior forward wave while a rectified left-right sensory difference produces a mirrored asymmetric anterior T3-A2 contraction and lateral curvature.",
+    "fit_status": "mirror_symmetry_and_stable_steering_fixture_only",
+    "uncertainty": "The active-curvature gain, bending-stiffness ratio, opponent sensory currents, anterior delays, and selected T3-A2 projection are research parameters, not measured L1 synaptic currents, muscle moment arms, or bending constants. Berni 2015 and Pulver et al. 2015 support anterior unilateral activity during turning, but do not supply these numeric values."
+  },
+  "evidence": [
+    {
+      "doi": "10.1016/j.cub.2015.03.023",
+      "used_for": "turn-associated unilateral output in T2, T3, A1, and A2 and the requirement for midline connectivity"
+    },
+    {
+      "doi": "10.1152/jn.00731.2015",
+      "used_for": "fictive left-right asymmetric activity across the same anterior segments as intact-larva turning"
+    }
+  ],
+  "motor_identity_projection": {
+    "mapping_provenance": "MEASURED_PUBLISHED",
+    "gain_provenance": "MODEL_FITTED",
+    "resolved_identities": 58,
+    "a1_identities_per_side": 28,
+    "a2_diagnostic_identities_per_side": 1,
+    "release_ready": false
+  },
+  "muscle_identity_projection": {
+    "provenance": "MODEL_FITTED",
+    "supported_fibers": 358,
+    "side_resolved": true,
+    "individual_geometry_executed": false
+  },
+  "release_validated": false
+}

@@ -19,7 +19,9 @@ jobs:
       - run: python -m pip install -e '.[test]'
       - run: pytest
       - run: python tools/export_closed_loop_trajectory.py --check
+      - run: python tools/export_bilateral_trajectory.py --check
       - run: python tools/export_native_closed_loop_fixture.py --check
+      - run: python tools/export_native_bilateral_fixture.py --check
       - run: python tools/compile_l1_motor_map.py --check
       - run: oraclarva-motor-map-audit
       - run: oraclarva-smoke
@@ -48,5 +50,5 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: python -m pip install -e '.[test]'
-      - run: pytest tests/test_native_parity.py tests/test_native_closed_loop_parity.py
+      - run: pytest tests/test_native_parity.py tests/test_native_closed_loop_parity.py tests/test_native_bilateral_parity.py
       - run: python tools/check_native_viewer_trajectory.py

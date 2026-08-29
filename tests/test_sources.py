@@ -6,7 +6,7 @@ def source(**kw):
 def manifest(tmp_path,records):
     p=tmp_path/"sources.yaml"; p.write_text(json.dumps(records)); return p
 def test_repository_manifest():
-    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==4
+    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==6
 def test_unknown_stage_is_reference_only(tmp_path):
     r=audit_source_manifest(manifest(tmp_path,[source(stage="unknown",allowed_uses=["reference","calibration"])])); assert any("reference-only" in e for e in r.errors)
 def test_coordinates_need_scale(tmp_path):
