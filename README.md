@@ -117,9 +117,16 @@ checked-in viewer artifact matches the current 91-LIF Python reference.
 oracle and native binary consume the same versioned synthetic LIF fixture and
 compare every step's spikes, voltage, excitatory current, and inhibitory current,
 including an interneuron lesion. Run `pytest tests/test_native_parity.py`.
-Passing this fixture covers the LIF integrator only; it does not yet establish
-native parity for the 91-neuron research circuit, muscles, XPBD body, contact, or
-proprioceptive feedback.
+The second shared fixture covers the current embodied approximation itself. C++
+directly executes all 91 neurons, continuous segment activation, the 358-fiber
+aggregate proxy, XPBD body, substrate contact, and proprioceptive feedback. Its
+normal, no-stimulus, and three lesion runs match Python on spikes, first-spike
+times, peak activation/shortening, displacement, and every sampled 13-node
+trajectory frame. Run `pytest tests/test_native_closed_loop_parity.py`.
+
+This establishes native numerical parity for the research approximation, not a
+complete L1 brain/VNC, individual muscle mechanics, held-out biological
+validation, or on-device performance.
 
 ## Non-goals for the reference core
 

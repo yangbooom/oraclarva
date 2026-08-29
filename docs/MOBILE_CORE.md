@@ -30,7 +30,20 @@ Given the same network, initial state, stimulus schedule, lesion set, and floati
 The first executable gate is now `data/parity/lif_smoke_v0.tsv`. Python and the
 dependency-free C++17 core consume that same synthetic fixture and compare every
 step's spike identities, membrane voltages, and separate excitatory/inhibitory
-currents in both normal and interneuron-lesioned conditions. This proves only LIF
-numerical parity. The 91-neuron research network, continuous muscle activation,
-XPBD body, contacts, proprioceptive feedback, and mobile performance are not yet
-native-parity validated.
+currents in both normal and interneuron-lesioned conditions. This proves LIF
+numerical parity independently of the embodied model.
+
+The second executable gate compiles the repository's provenance-aware Python
+configuration into `data/parity/closed_loop_native_v1.tsv`. The C++17 core then
+executes the full current approximation: 91 LIF neurons, 90 sparse synapses,
+58 motor identities, continuous activation through the 358-fiber aggregate
+proxy, 13-node XPBD mechanics, asymmetric substrate contact, and
+shortening-sensitive proprioceptive feedback. Normal, no-stimulus, A4 premotor
+lesion, A4 muscle lesion, and A1 motor-identity lesion runs match Python on all
+neuron spike counts and first-spike times, peak activation and shortening,
+displacement, and all 151 sampled node/activation frames.
+
+This is correctness parity for the current `research_approximation`, not
+biological validation or a performance result. The full brain/VNC, individual
+muscle attachments and force gains, held-out behavior validation, and mobile
+device benchmarks remain absent.
