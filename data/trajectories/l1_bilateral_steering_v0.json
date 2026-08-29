@@ -14838,9 +14838,9 @@
     "right_touch_intensity": 0.0
   },
   "result_summary": {
-    "displacement_x_um": -11.462702354940598,
-    "displacement_y_um": -1.806575295327761,
-    "heading_change_deg": 2.4601197809437036,
-    "maximum_abs_lateral_um": 102.53780851986265
+    "displacement_x_um": -11.462702355,
+    "displacement_y_um": -1.806575295,
+    "heading_change_deg": 2.460119781,
+    "maximum_abs_lateral_um": 102.53780852
   }
 }

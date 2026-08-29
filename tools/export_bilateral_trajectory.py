@@ -28,10 +28,14 @@ def render_trajectory() -> str:
         "right_touch_intensity": 0.0,
     }
     artifact["result_summary"] = {
-        "displacement_x_um": result.displacement_x_um,
-        "displacement_y_um": result.displacement_y_um,
-        "heading_change_deg": result.heading_change_deg,
-        "maximum_abs_lateral_um": result.maximum_abs_lateral_um,
+        # Match the trajectory coordinate quantization so libm tail bits do not
+        # make the checked artifact platform-dependent.
+        "displacement_x_um": round(result.displacement_x_um, 9),
+        "displacement_y_um": round(result.displacement_y_um, 9),
+        "heading_change_deg": round(result.heading_change_deg, 9),
+        "maximum_abs_lateral_um": round(
+            result.maximum_abs_lateral_um, 9
+        ),
     }
     return json.dumps(artifact, indent=2, ensure_ascii=False) + "\n"
 
