@@ -109,7 +109,10 @@ npm run dev
 The displayed L1 length, width, and per-region profile remain explicit v0
 hypotheses, and the trajectory is model output rather than motion capture. Run
 `python tools/export_closed_loop_trajectory.py --check` to verify that the
-checked-in viewer artifact matches the current 91-LIF Python reference.
+checked-in viewer artifact matches the current 91-LIF Python reference. Run
+`python tools/check_native_viewer_trajectory.py` to compile the C++ core and
+verify all 151 native frames against the same artifact with zero relative
+tolerance and a 2e-9 µm absolute node-coordinate ceiling.
 
 ## Native parity
 

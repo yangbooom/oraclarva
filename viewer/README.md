@@ -23,7 +23,14 @@ Regenerate or audit the trajectory from the repository root:
 ```bash
 python tools/export_closed_loop_trajectory.py
 python tools/export_closed_loop_trajectory.py --check
+python tools/check_native_viewer_trajectory.py
 ```
+
+The third command compiles and runs the C++17 embodied core, then compares all
+151 native frames with this viewer artifact using zero relative tolerance. The
+current cross-libm maximum is 1e-9 µm for node coordinates and zero for segment
+activation; CI rejects node error above 2e-9 µm or activation error above
+5.1e-10.
 
 ## What playback means
 

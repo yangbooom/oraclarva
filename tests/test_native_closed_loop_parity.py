@@ -155,7 +155,7 @@ def assert_optional_time_matches(
     if expected is None:
         assert actual is None
     else:
-        assert actual == pytest.approx(expected, abs=1e-15)
+        assert actual == pytest.approx(expected, rel=0.0, abs=1e-15)
 
 
 @pytest.mark.parametrize("case", CASES)
@@ -171,7 +171,9 @@ def test_native_embodied_loop_matches_python_all_causal_conditions(
         "research_approximation",
         "release_validated=false",
     )
-    assert actual.displacement_um == pytest.approx(expected.displacement_um, abs=1e-9)
+    assert actual.displacement_um == pytest.approx(
+        expected.displacement_um, rel=0.0, abs=1e-9
+    )
     assert actual.active_motor_identities == expected.motor_identity_summary[
         "active_identities"
     ]
@@ -185,10 +187,10 @@ def test_native_embodied_loop_matches_python_all_causal_conditions(
     assert set(actual.waves) == set(expected.peak_activation)
     for segment, (peak_activation, peak_shortening) in actual.waves.items():
         assert peak_activation == pytest.approx(
-            expected.peak_activation[segment], abs=1e-13
+            expected.peak_activation[segment], rel=0.0, abs=1e-13
         )
         assert peak_shortening == pytest.approx(
-            expected.peak_shortening_fraction[segment], abs=1e-12
+            expected.peak_shortening_fraction[segment], rel=0.0, abs=1e-12
         )
 
 
@@ -205,14 +207,18 @@ def test_native_embodied_trajectory_matches_python_nodes_and_activation(
         expected["frames"],
         strict=True,
     ):
-        assert native_frame.time_s == pytest.approx(python_frame["time_s"], abs=1e-15)
+        assert native_frame.time_s == pytest.approx(
+            python_frame["time_s"], rel=0.0, abs=1e-15
+        )
         native_nodes = tuple(value for node in native_frame.nodes_um for value in node)
         python_nodes = tuple(
             value for node in python_frame["nodes_um"] for value in node
         )
-        assert native_nodes == pytest.approx(python_nodes, abs=5.1e-10)
+        assert native_nodes == pytest.approx(
+            python_nodes, rel=0.0, abs=2e-9
+        )
         assert native_frame.activation == pytest.approx(
-            python_frame["segment_activation"], abs=5.1e-10
+            python_frame["segment_activation"], rel=0.0, abs=5.1e-10
         )
 
 
