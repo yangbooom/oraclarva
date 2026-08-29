@@ -12,6 +12,7 @@ from .body import load_body_spec
 from .body3d import ScientificBody3D, Vec3
 from .kinematics import load_kinematic_targets
 from .lif import SparseLIFNetwork, Synapse
+from .muscles import AggregateMuscleIdentityProjection, load_muscle_atlas
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +32,9 @@ class ClosedLoopResult:
     contraction_kinematics: dict[str, dict[str, float | None]]
     contraction_fit: dict[str, dict[str, dict[str, float | bool | None]]]
     contraction_fit_passed: bool
+    muscle_identity_summary: dict[str, Any]
     lesion: str | None
+    muscle_lesion: str | None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -54,7 +57,9 @@ class ClosedLoopResult:
             "calibration_scope": (
                 "in-sample Greaney 2026 L1 plausibility fit; no held-out cohort"
             ),
+            "muscle_identity_summary": self.muscle_identity_summary,
             "lesion": self.lesion,
+            "muscle_lesion": self.muscle_lesion,
             "claim_boundary": "reduced embodied neural research model; not a complete L1 brain emulation",
         }
 
@@ -71,6 +76,13 @@ def load_closed_loop_config(path: str | Path | None = None) -> dict[str, Any]:
         raise ValueError("reduced circuit topology must be anatomy-derived")
     if raw.get("parameter_provenance", {}).get("provenance") != "MODEL_FITTED":
         raise ValueError("unmeasured closed-loop parameters must be model-fitted")
+    identity_projection = raw.get("muscle_identity_projection", {})
+    if identity_projection.get("provenance") != "MODEL_FITTED":
+        raise ValueError("equal muscle-identity recruitment must remain model-fitted")
+    if identity_projection.get("individual_geometry_executed") is not False:
+        raise ValueError("identity proxy must not claim individual muscle geometry")
+    if int(identity_projection.get("supported_fibers", 0)) != 358:
+        raise ValueError("identity proxy must preserve the audited 358-fiber scope")
     expected = ["environment", "sensory_transduction", "neural_dynamics", "motor_neurons", "muscle_activation", "body_physics", "environment"]
     if raw.get("causal_contract") != expected:
         raise ValueError("closed-loop causal contract is incomplete or reordered")
@@ -119,7 +131,13 @@ def load_closed_loop_config(path: str | Path | None = None) -> dict[str, Any]:
 class ClosedLoopLarva:
     """Reduced embodied circuit with no crawl, turn, FSM, or animation commands."""
 
-    def __init__(self, config: dict[str, Any] | None = None, *, lesion_premotor_segment: str | None = None) -> None:
+    def __init__(
+        self,
+        config: dict[str, Any] | None = None,
+        *,
+        lesion_premotor_segment: str | None = None,
+        lesion_muscle_segment: str | None = None,
+    ) -> None:
         self.config = config or load_closed_loop_config()
         self.params = self.config["parameters"]
         self.segments = tuple(self.config["wave_segments_posterior_to_anterior"])
@@ -130,11 +148,21 @@ class ClosedLoopLarva:
             ],
         )
         self.body_indices = {segment.id: index for index, segment in enumerate(self.body.geometry)}
+        self.muscle_atlas = load_muscle_atlas()
+        self.muscle_identity_projection = AggregateMuscleIdentityProjection(
+            self.muscle_atlas
+        )
         if any(segment not in self.body_indices for segment in self.segments):
             raise ValueError("closed-loop circuit references an unknown body segment")
         if lesion_premotor_segment is not None and lesion_premotor_segment not in self.segments:
             raise ValueError("lesion must name a modeled wave segment")
+        if (
+            lesion_muscle_segment is not None
+            and lesion_muscle_segment not in self.muscle_atlas.supported_segments
+        ):
+            raise ValueError("muscle lesion must name an A1-A6 atlas segment")
         self.lesion = lesion_premotor_segment
+        self.muscle_lesion = lesion_muscle_segment
         count = len(self.segments)
         self.touch = 0
         self.proprioceptor_offset = 1
@@ -198,6 +226,7 @@ class ClosedLoopLarva:
         length_history = [[length] for length in previous_length]
         peak_activation = [0.0] * len(self.segments)
         peak_shortening = [0.0] * len(self.segments)
+        peak_recruited_fibers = 0
         labels = self._labels()
         spike_counts = {label: 0 for label in labels}
         first_spike = {label: None for label in labels}
@@ -258,7 +287,22 @@ class ClosedLoopLarva:
                 ) * coupling
                 activation[i] = min(1.0, max(0.0, activation[i]))
                 peak_activation[i] = max(peak_activation[i], activation[i])
-            self.body.set_activations(dict(zip(self.segments, activation, strict=True)))
+            segment_activation = dict(
+                zip(self.segments, activation, strict=True)
+            )
+            identity_frame = self.muscle_identity_projection.project(
+                segment_activation,
+                lesioned_segments=(
+                    () if self.muscle_lesion is None else (self.muscle_lesion,)
+                ),
+            )
+            peak_recruited_fibers = max(
+                peak_recruited_fibers, identity_frame.active_fiber_count
+            )
+            applied_activation = self.muscle_identity_projection.axial_proxy(
+                identity_frame, segment_activation
+            )
+            self.body.set_activations(applied_activation)
             self.body.step(
                 dt,
                 gravity=Vec3(0.0, 0.0, -9.81),
@@ -302,7 +346,17 @@ class ClosedLoopLarva:
                     for metric in segment.values()
                 )
             ),
+            muscle_identity_summary={
+                "atlas_model_id": self.muscle_atlas.model_id,
+                "projection_provenance": "MODEL_FITTED",
+                "supported_segments": list(self.muscle_atlas.supported_segments),
+                "supported_fibers": len(self.muscle_atlas.all_supported_fibers),
+                "peak_recruited_fibers": peak_recruited_fibers,
+                "individual_geometry_executed": False,
+                "aggregation": "equal recruitment -> mean axial segment proxy",
+            },
             lesion=self.lesion,
+            muscle_lesion=self.muscle_lesion,
         )
 
     @staticmethod
@@ -432,9 +486,18 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the research-mode embodied L1 closed-loop reference")
     parser.add_argument("--lesion-premotor", choices=load_closed_loop_config()["wave_segments_posterior_to_anterior"])
     parser.add_argument("--config", default=None)
+    parser.add_argument(
+        "--lesion-muscle-segment",
+        choices=load_muscle_atlas().supported_segments,
+        help="zero all named muscle-identity proxies in one A1-A6 segment",
+    )
     parser.add_argument("--no-touch", action="store_true", help="run the unstimulated control")
     args = parser.parse_args(argv)
-    result = ClosedLoopLarva(load_closed_loop_config(args.config), lesion_premotor_segment=args.lesion_premotor).run(stimulate=not args.no_touch)
+    result = ClosedLoopLarva(
+        load_closed_loop_config(args.config),
+        lesion_premotor_segment=args.lesion_premotor,
+        lesion_muscle_segment=args.lesion_muscle_segment,
+    ).run(stimulate=not args.no_touch)
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
 

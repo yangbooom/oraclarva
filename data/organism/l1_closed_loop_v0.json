@@ -129,5 +129,25 @@
       "doi": "10.1523/JNEUROSCI.1623-25.2026",
       "used_for": "L1 posterior-to-anterior segment order and in-sample kinematic fitting targets"
     }
-  ]
+  ],
+  "muscle_identity_projection": {
+    "atlas_model_id": "dmel_l1_abdominal_muscle_template_v0",
+    "supported_segments": [
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5",
+      "A6"
+    ],
+    "supported_fibers": 358,
+    "provenance": "MODEL_FITTED",
+    "method": "equal identity recruitment aggregated by arithmetic mean to the calibrated axial segment actuator",
+    "individual_geometry_executed": false,
+    "limitations": [
+      "No individual attachment coordinates, lines of action, CSA, or force gains are implied.",
+      "T3 and A7 remain reduced aggregate actuators because the atlas blocks homology outside A1-A6.",
+      "Equal recruitment is an explicit proxy pending L1 muscle recruitment measurements."
+    ]
+  }
 }

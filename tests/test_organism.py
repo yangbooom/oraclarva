@@ -17,6 +17,10 @@ def test_config_keeps_approximations_and_causal_contract_explicit():
     assert config["parameters"]["pmsi_recruitment_delay_s"] == 0.002
     assert config["parameters"]["pmsi_inhibitory_current_a"] > 0
     assert config["parameters"]["fitted_cycle_period_s"] == 2.5
+    identity_projection = config["muscle_identity_projection"]
+    assert identity_projection["provenance"] == "MODEL_FITTED"
+    assert identity_projection["supported_fibers"] == 358
+    assert not identity_projection["individual_geometry_executed"]
     assert config["causal_contract"] == [
         "environment", "sensory_transduction", "neural_dynamics",
         "motor_neurons", "muscle_activation", "body_physics", "environment",
@@ -46,6 +50,9 @@ def test_touch_produces_ordered_neural_wave_contraction_and_forward_motion():
     assert result.phase_fit_passed
     assert result.contraction_fit_passed
     assert result.to_dict()["release_validated"] is False
+    assert result.muscle_identity_summary["supported_fibers"] == 358
+    assert result.muscle_identity_summary["peak_recruited_fibers"] == 358
+    assert not result.muscle_identity_summary["individual_geometry_executed"]
     assert set(result.contraction_kinematics) == set(SEGMENTS)
     assert all(
         metric["inside_observed_p10_p90"]
@@ -106,3 +113,16 @@ def test_segment_activation_maps_must_be_complete(tmp_path):
     fixture.write_text(json.dumps(config))
     with pytest.raises(ValueError, match="must cover every modeled segment"):
         load_closed_loop_config(fixture)
+
+
+def test_a4_muscle_identity_lesion_breaks_feedback_after_motor_firing():
+    result = ClosedLoopLarva(lesion_muscle_segment="A4").run()
+    assert result.spike_counts["motor_pool:A4"] == 1
+    assert result.spike_counts["proprioceptor:A4"] == 0
+    for segment in ("A3", "A2", "A1", "T3"):
+        assert result.spike_counts[f"motor_pool:{segment}"] == 0
+    assert result.peak_shortening_fraction["A4"] < 0.001
+    assert result.muscle_identity_summary["peak_recruited_fibers"] == 120
+    assert result.muscle_lesion == "A4"
+    assert not result.phase_fit_passed
+    assert not result.contraction_fit_passed
