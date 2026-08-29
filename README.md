@@ -44,11 +44,14 @@ A1-A6 (58 in A1 and 60 in each of A2-A6). It does not fabricate 3D attachments,
 force gains, or thoracic/terminal homology, so it still cannot actuate the body.
 
 A research-only embodied vertical slice now closes the loop from posterior touch
-through an A27h-like LIF premotor chain, motor pools, continuous muscle activation,
-XPBD body deformation, substrate contact, and shortening-sensitive proprioception.
-It produces neural-causal forward displacement and lesion effects, but its reduced
-topology is `ANATOMY_DERIVED` and all numeric gains are explicitly `MODEL_FITTED`.
-See `docs/CLOSED_LOOP_L1_V0.md`; run `oraclarva-organism`.
+through an A27h-like LIF premotor chain, motor pools, PMSI-like inhibitory pools,
+continuous muscle activation, XPBD body deformation, substrate contact, and
+shortening-sensitive proprioception. It produces neural-causal forward
+displacement and lesion effects, but its reduced topology is `ANATOMY_DERIVED`
+and all numeric gains are explicitly `MODEL_FITTED`. Adjacent onset phase is
+fitted; the emitted contraction-amplitude, rate, and duration screen currently
+fails and remains visible rather than being treated as validation. See
+`docs/CLOSED_LOOP_L1_V0.md`; run `oraclarva-organism`.
 
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 

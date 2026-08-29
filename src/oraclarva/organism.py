@@ -28,6 +28,9 @@ class ClosedLoopResult:
     causal_contract: tuple[str, ...]
     phase_fit: dict[str, dict[str, float | bool]]
     phase_fit_passed: bool
+    contraction_kinematics: dict[str, dict[str, float | None]]
+    contraction_fit: dict[str, dict[str, dict[str, float | bool | None]]]
+    contraction_fit_passed: bool
     lesion: str | None
 
     def to_dict(self) -> dict[str, Any]:
@@ -44,6 +47,9 @@ class ClosedLoopResult:
             "causal_contract": list(self.causal_contract),
             "phase_fit": self.phase_fit,
             "phase_fit_passed": self.phase_fit_passed,
+            "contraction_kinematics": self.contraction_kinematics,
+            "contraction_fit": self.contraction_fit,
+            "contraction_fit_passed": self.contraction_fit_passed,
             "lesion": self.lesion,
             "claim_boundary": "reduced embodied neural research model; not a complete L1 brain emulation",
         }
@@ -64,6 +70,11 @@ def load_closed_loop_config(path: str | Path | None = None) -> dict[str, Any]:
     expected = ["environment", "sensory_transduction", "neural_dynamics", "motor_neurons", "muscle_activation", "body_physics", "environment"]
     if raw.get("causal_contract") != expected:
         raise ValueError("closed-loop causal contract is incomplete or reordered")
+    parameters = raw.get("parameters", {})
+    if float(parameters.get("pmsi_recruitment_delay_s", -1.0)) < 0:
+        raise ValueError("PMSI recruitment delay must be non-negative")
+    if float(parameters.get("pmsi_inhibitory_current_a", 0.0)) <= 0:
+        raise ValueError("PMSI inhibitory current must be positive")
     return raw
 
 
@@ -85,11 +96,34 @@ class ClosedLoopLarva:
         self.touch = 0
         self.proprioceptor_offset = 1
         self.premotor_offset = 1 + count
-        self.motor_offset = 1 + 2 * count
+        self.inhibitory_offset = 1 + 2 * count
+        self.motor_offset = 1 + 3 * count
         current = float(self.params["synaptic_current_a"])
         synapses = [Synapse(self.touch, self.premotor_offset, current)]
         synapses.extend(
             Synapse(self.premotor_offset + i, self.motor_offset + i, current)
+            for i in range(count)
+        )
+        inhibitory_delay_steps = round(
+            float(self.params["pmsi_recruitment_delay_s"])
+            / float(self.params["dt_s"])
+        )
+        synapses.extend(
+            Synapse(
+                self.premotor_offset + i,
+                self.inhibitory_offset + i,
+                current,
+                delay_steps=inhibitory_delay_steps,
+            )
+            for i in range(count)
+        )
+        synapses.extend(
+            Synapse(
+                self.inhibitory_offset + i,
+                self.motor_offset + i,
+                float(self.params["pmsi_inhibitory_current_a"]),
+                kind="inhibitory",
+            )
             for i in range(count)
         )
         relay_delays = self.params["intersegmental_relay_delay_s"]
@@ -106,7 +140,7 @@ class ClosedLoopLarva:
             )
             for i, segment in enumerate(self.segments[:-1])
         )
-        self.network = SparseLIFNetwork(1 + 3 * count, synapses)
+        self.network = SparseLIFNetwork(1 + 4 * count, synapses)
         if self.lesion is not None:
             self.network.lesion([self.premotor_offset + self.segments.index(self.lesion)])
 
@@ -117,6 +151,7 @@ class ClosedLoopLarva:
         activation = [0.0] * len(self.segments)
         adaptation = [0.0] * len(self.segments)
         previous_length = [self.body.segment_length_m(self.body_indices[s]) for s in self.segments]
+        length_history = [[length] for length in previous_length]
         peak_activation = [0.0] * len(self.segments)
         peak_shortening = [0.0] * len(self.segments)
         labels = self._labels()
@@ -166,8 +201,17 @@ class ClosedLoopLarva:
                 velocity_retention=float(p["body_velocity_retention"]),
                 ground_velocity_retention_x=(float(p["ground_negative_x_retention"]), float(p["ground_positive_x_retention"])),
             )
+            for i, segment in enumerate(self.segments):
+                length_history[i].append(
+                    self.body.segment_length_m(self.body_indices[segment])
+                )
 
         phase_fit = self._phase_fit(first_spike)
+        contraction_kinematics = {
+            segment: self._contraction_kinematics(length_history[i], dt)
+            for i, segment in enumerate(self.segments)
+        }
+        contraction_fit = self._contraction_fit(contraction_kinematics)
         return ClosedLoopResult(
             model_id=str(self.config["model_id"]), status=str(self.config["status"]), duration_s=steps * dt,
             displacement_um=(self._center_x() - initial_center) * 1e6, forward_axis="negative_x (posterior-to-anterior body coordinate)",
@@ -183,8 +227,105 @@ class ClosedLoopLarva:
                     for item in phase_fit.values()
                 )
             ),
+            contraction_kinematics=contraction_kinematics,
+            contraction_fit=contraction_fit,
+            contraction_fit_passed=(
+                len(contraction_fit) == len(self.segments)
+                and all(
+                    bool(metric["inside_observed_p10_p90"])
+                    for segment in contraction_fit.values()
+                    for metric in segment.values()
+                )
+            ),
             lesion=self.lesion,
         )
+
+    @staticmethod
+    def _contraction_kinematics(
+        length_history_m: list[float], dt_s: float
+    ) -> dict[str, float | None]:
+        """Extract one contraction using Greaney's 75%-amplitude crossings.
+
+        This is a simulation-side implementation of the source paper's
+        segment-length definition. It is not a neural or behavioral command.
+        """
+        minimum_index = min(range(len(length_history_m)), key=length_history_m.__getitem__)
+        pre_peak_index = max(
+            range(minimum_index + 1), key=length_history_m.__getitem__
+        )
+        rest_before = length_history_m[pre_peak_index]
+        minimum = length_history_m[minimum_index]
+        amplitude = rest_before - minimum
+        max_shortening_rate = max(
+            (left - right) / dt_s
+            for left, right in zip(length_history_m[:-1], length_history_m[1:], strict=True)
+        )
+        if amplitude <= 0:
+            return {
+                "contraction_amplitude_percent": 0.0,
+                "shortening_rate_um_s": max(0.0, max_shortening_rate * 1e6),
+                "contraction_duration_s": None,
+            }
+
+        onset_threshold = rest_before - 0.75 * amplitude
+        onset_time_s = None
+        for index in range(pre_peak_index + 1, minimum_index + 1):
+            before = length_history_m[index - 1]
+            after = length_history_m[index]
+            if before > onset_threshold >= after:
+                fraction = (before - onset_threshold) / (before - after)
+                onset_time_s = (index - 1 + fraction) * dt_s
+                break
+
+        post_rest = max(length_history_m[minimum_index:])
+        offset_threshold = minimum + 0.75 * (post_rest - minimum)
+        offset_time_s = None
+        for index in range(minimum_index + 1, len(length_history_m)):
+            before = length_history_m[index - 1]
+            after = length_history_m[index]
+            if before < offset_threshold <= after:
+                fraction = (offset_threshold - before) / (after - before)
+                offset_time_s = (index - 1 + fraction) * dt_s
+                break
+        duration = (
+            None
+            if onset_time_s is None or offset_time_s is None
+            else offset_time_s - onset_time_s
+        )
+        return {
+            "contraction_amplitude_percent": 100.0 * amplitude / rest_before,
+            "shortening_rate_um_s": max(0.0, max_shortening_rate * 1e6),
+            "contraction_duration_s": duration,
+        }
+
+    def _contraction_fit(
+        self,
+        simulated: dict[str, dict[str, float | None]],
+    ) -> dict[str, dict[str, dict[str, float | bool | None]]]:
+        targets = load_kinematic_targets()
+        metrics = (
+            "contraction_amplitude_percent",
+            "shortening_rate_um_s",
+            "contraction_duration_s",
+        )
+        result: dict[str, dict[str, dict[str, float | bool | None]]] = {}
+        for segment in self.segments:
+            result[segment] = {}
+            for metric in metrics:
+                band = targets.targets[segment][metric]
+                if band is None:
+                    continue
+                value = simulated[segment][metric]
+                result[segment][metric] = {
+                    "simulated": value,
+                    "observed_p10": band.p10,
+                    "observed_median": band.median,
+                    "observed_p90": band.p90,
+                    "inside_observed_p10_p90": (
+                        value is not None and band.contains(value)
+                    ),
+                }
+        return result
 
     def _phase_fit(
         self, first_spike: dict[str, float | None]
@@ -214,6 +355,7 @@ class ClosedLoopLarva:
         labels = ["environment_touch_receptor"]
         labels.extend(f"proprioceptor:{segment}" for segment in self.segments)
         labels.extend(f"premotor_A27h_like:{segment}" for segment in self.segments)
+        labels.extend(f"inhibitory_PMSI_like:{segment}" for segment in self.segments)
         labels.extend(f"motor_pool:{segment}" for segment in self.segments)
         return labels
 

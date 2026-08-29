@@ -23,11 +23,12 @@
   ],
   "topology": {
     "provenance": "ANATOMY_DERIVED",
-    "description": "Reduced forward-wave circuit: posterior touch receptor initiates A27h-like premotor activity; each premotor excites its segment motor pool; shortening-sensitive proprioception excites the next anterior premotor pool.",
+    "description": "Reduced forward-wave circuit: posterior touch initiates A27h-like premotor activity; each premotor excites a segment motor pool and a local PMSI-like inhibitory termination pool; shortening-sensitive proprioception excites the next anterior premotor pool.",
     "limitations": [
       "Not a complete brain or VNC connectome.",
       "The reduced proprioceptor-to-next-premotor edge is a circuit-level approximation, not a claimed identified monosynaptic connection.",
-      "One bilateral longitudinal motor pool represents many neurons and muscles per segment."
+      "One bilateral longitudinal motor pool represents many neurons and muscles per segment.",
+      "Each PMSI-like pool is a reduced inhibitory termination motif, not a claim that one identified neuron or monosynaptic edge implements the entire segmental off-switch."
     ]
   },
   "parameters": {
@@ -56,13 +57,15 @@
       "A3": 0.3302,
       "A2": 0.2892,
       "A1": 0.1748
-    }
+    },
+    "pmsi_recruitment_delay_s": 0.002,
+    "pmsi_inhibitory_current_a": 4e-09
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
-    "objective": "Produce a stable posterior-to-anterior neural and contraction wave whose adjacent motor-onset phase delays fall inside the Greaney 2026 L1 animal-level p10-p90 bands, while preserving continuous biophysical interfaces.",
-    "fit_status": "phase_fitted_research_baseline",
-    "uncertainty": "The 2.5 s cycle period and reduced relay delays are MODEL_FITTED because the checked-in target supplies phase fractions, not an absolute stride period. Other numeric neural, sensory, activation, adaptation, and contact parameters remain engineering estimates; none is a measured L1 constant."
+    "objective": "Produce a stable posterior-to-anterior neural and contraction wave whose adjacent motor-onset phase delays fall inside the Greaney 2026 L1 animal-level p10-p90 bands; add a fitted PMSI-like inhibitory termination motif; and expose contraction amplitude, rate, and duration failures without disguising them as validation.",
+    "fit_status": "phase_fitted_with_unfitted_contraction_screen",
+    "uncertainty": "The 2.5 s cycle period, reduced relay delays, 2 ms PMSI recruitment, and inhibitory current are MODEL_FITTED because the checked-in target does not identify these reduced-circuit parameters. The PMSI delay is not claimed as a measured L1 single-synapse latency. Contraction amplitude, shortening rate, and duration remain outside target bands. Other numeric neural, sensory, activation, adaptation, and contact parameters remain engineering estimates; none is a measured L1 constant."
   },
   "sources": [
     {
@@ -74,6 +77,11 @@
       "source_id": "hughes_thomas_2007",
       "doi": "10.1016/j.mcn.2007.04.001",
       "used_for": "proprioceptive mission-accomplished feedback concept"
+    },
+    {
+      "source_id": "kohsaka_2014",
+      "doi": "10.1016/j.cub.2014.09.026",
+      "used_for": "larval PMSI inhibitory premotor motif and motor-burst limitation; topology prior only, not an L1 numeric parameter"
     },
     {
       "source_id": "pehlevan_2016",
