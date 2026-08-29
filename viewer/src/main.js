@@ -1,7 +1,19 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import bodySpec from "../../data/body/l1_body_v0.json";
+import closedLoopTrajectory from "../../data/trajectories/l1_closed_loop_v0.json";
 import "./style.css";
+
+const expectedSegmentIds = bodySpec.segments.map((segment) => segment.id);
+if (
+  closedLoopTrajectory.schema_version !== 1
+  || closedLoopTrajectory.node_count !== expectedSegmentIds.length + 1
+  || closedLoopTrajectory.body_segment_ids.join(",") !== expectedSegmentIds.join(",")
+  || closedLoopTrajectory.frames.length < 2
+  || closedLoopTrajectory.release_validated !== false
+) {
+  throw new Error("closed-loop trajectory does not match the body/viewer contract");
+}
 
 const sceneHost = document.querySelector("#scene");
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -47,7 +59,7 @@ const radialSamples = 28;
 const axialSubdivisions = 6;
 const ringCount = bodySpec.segments.length * axialSubdivisions + 1;
 const bodyGroup = new THREE.Group();
-bodyGroup.rotation.z = -0.018;
+bodyGroup.rotation.z = 0;
 scene.add(bodyGroup);
 
 const baseLengths = bodySpec.segments.map((segment) => segment.length_fraction * worldLength);
@@ -150,9 +162,15 @@ const pointer = new THREE.Vector2();
 let selectedIndex = 4;
 let evidenceMode = true;
 let playing = false;
-let contraction = 0.35;
-let bend = 0.18;
-let phase = 0;
+let playbackTimeS = 0;
+let playbackSpeed = 1;
+let previousAnimationTimeMs = null;
+const trajectoryDurationS = closedLoopTrajectory.frames.at(-1).time_s;
+const trajectoryInitialCenterXUm = closedLoopTrajectory.frames[0].nodes_um.reduce(
+  (sum, node) => sum + node[0],
+  0,
+) / closedLoopTrajectory.node_count;
+const worldPerUm = worldLength / nominalLengthUm;
 
 const anatomyLabels = {
   pseudocephalon: "pseudocephalon",
@@ -192,13 +210,13 @@ bodySpec.segments.forEach((segment, index) => {
 });
 setSelected(selectedIndex);
 
-document.querySelector("#contraction").addEventListener("input", (event) => {
-  contraction = Number(event.target.value) / 100;
-  document.querySelector("#contraction-value").textContent = `${event.target.value}%`;
+document.querySelector("#timeline").addEventListener("input", (event) => {
+  playbackTimeS = trajectoryDurationS * Number(event.target.value) / 1000;
+  document.querySelector("#time-value").textContent = playbackTimeS.toFixed(2) + " s";
 });
-document.querySelector("#bend").addEventListener("input", (event) => {
-  bend = Number(event.target.value) / 100;
-  document.querySelector("#bend-value").textContent = `${event.target.value}%`;
+document.querySelector("#speed").addEventListener("input", (event) => {
+  playbackSpeed = Number(event.target.value) / 100;
+  document.querySelector("#speed-value").textContent = playbackSpeed.toFixed(2) + "×";
 });
 document.querySelector("#play").addEventListener("click", (event) => {
   playing = !playing;
@@ -225,33 +243,68 @@ function smoothstep(amount) {
   return amount * amount * (3 - 2 * amount);
 }
 
-function centerline(x, displayedLength) {
-  const normalized = x / Math.max(displayedLength / 2, 0.001);
+function sampleTrajectory(timeS) {
+  const framePosition = timeS / closedLoopTrajectory.sample_interval_s;
+  const leftIndex = Math.min(
+    Math.floor(framePosition),
+    closedLoopTrajectory.frames.length - 1,
+  );
+  const rightIndex = Math.min(
+    leftIndex + 1,
+    closedLoopTrajectory.frames.length - 1,
+  );
+  const amount = Math.min(1, Math.max(0, framePosition - leftIndex));
+  const left = closedLoopTrajectory.frames[leftIndex];
+  const right = closedLoopTrajectory.frames[rightIndex];
   return {
-    y: 0.08 + Math.cos(normalized * Math.PI * 1.6) * bend * 0.13,
-    z: Math.sin((normalized + 1) * Math.PI) * bend * 0.82,
+    nodes: left.nodes_um.map((node, nodeIndex) => node.map(
+      (value, axis) => value * (1 - amount) + right.nodes_um[nodeIndex][axis] * amount,
+    )),
+    activations: left.segment_activation.map(
+      (value, segmentIndex) => (
+        value * (1 - amount) + right.segment_activation[segmentIndex] * amount
+      ),
+    ),
   };
 }
 
-function writeRing(ringIndex, x, width, height, displayedLength) {
-  const center = centerline(x, displayedLength);
+function physicsNodeToWorld(nodeUm) {
+  return [
+    (nodeUm[0] - trajectoryInitialCenterXUm) * worldPerUm,
+    floor.position.y + nodeUm[2] * worldPerUm,
+    nodeUm[1] * worldPerUm,
+  ];
+}
+
+function writeRing(ringIndex, center, width, height) {
   for (let radialIndex = 0; radialIndex < radialSamples; radialIndex += 1) {
     const angle = (2 * Math.PI * radialIndex) / radialSamples;
     const offset = (ringIndex * radialSamples + radialIndex) * 3;
-    positionArray[offset] = x;
-    positionArray[offset + 1] = center.y + Math.sin(angle) * height * 0.5;
-    positionArray[offset + 2] = center.z + Math.cos(angle) * width * 0.5;
+    positionArray[offset] = center[0];
+    positionArray[offset + 1] = center[1] + Math.sin(angle) * height * 0.5;
+    positionArray[offset + 2] = center[2] + Math.cos(angle) * width * 0.5;
   }
-  return center;
 }
 
-function updateBody(time) {
-  if (playing) phase = (time * 0.00022) % 1;
-  const waveCenter = playing ? 11 - phase * 14 : selectedIndex;
-  const currentLengths = baseLengths.map((length, index) => {
-    const distance = Math.abs(index - waveCenter);
-    const activation = Math.exp(-(distance * distance) / 1.5) * contraction;
-    return length * (1 - activation * 0.45);
+function updateBody(timeMs) {
+  if (previousAnimationTimeMs === null) previousAnimationTimeMs = timeMs;
+  const elapsedS = Math.max(0, (timeMs - previousAnimationTimeMs) / 1000);
+  previousAnimationTimeMs = timeMs;
+  if (playing) {
+    playbackTimeS = (playbackTimeS + elapsedS * playbackSpeed) % trajectoryDurationS;
+  }
+  document.querySelector("#timeline").value = String(
+    Math.round(playbackTimeS / trajectoryDurationS * 1000),
+  );
+  document.querySelector("#time-value").textContent = playbackTimeS.toFixed(2) + " s";
+
+  const sample = sampleTrajectory(playbackTimeS);
+  const nodeCenters = sample.nodes.map(physicsNodeToWorld);
+  const currentLengths = bodySpec.segments.map((segment, index) => {
+    const delta = nodeCenters[index + 1].map(
+      (value, axis) => value - nodeCenters[index][axis],
+    );
+    return Math.hypot(...delta);
   });
   const restVolumeProxy = baseLengths.reduce(
     (sum, length, index) => sum + length * baseWidths[index] * baseHeights[index],
@@ -262,9 +315,6 @@ function updateBody(time) {
     0,
   );
   const cavityScale = Math.sqrt(restVolumeProxy / currentVolumeProxy);
-  const displayedLength = currentLengths.reduce((sum, length) => sum + length, 0);
-  const nodeX = [-displayedLength / 2];
-  currentLengths.forEach((length) => nodeX.push(nodeX.at(-1) + length));
 
   let ringIndex = 0;
   bodySpec.segments.forEach((segment, segmentIndex) => {
@@ -277,12 +327,21 @@ function updateBody(time) {
       const height = (
         nodeHeights[segmentIndex] * (1 - profile) + nodeHeights[segmentIndex + 1] * profile
       ) * cavityScale;
-      const x = nodeX[segmentIndex] * (1 - amount) + nodeX[segmentIndex + 1] * amount;
-      writeRing(ringIndex, x, width, height, displayedLength);
+      const center = nodeCenters[segmentIndex].map(
+        (value, axis) => (
+          value * (1 - amount) + nodeCenters[segmentIndex + 1][axis] * amount
+        ),
+      );
+      writeRing(ringIndex, center, width, height);
       ringIndex += 1;
     }
   });
-  writeRing(ringIndex, nodeX.at(-1), nodeWidths.at(-1) * cavityScale, nodeHeights.at(-1) * cavityScale, displayedLength);
+  writeRing(
+    ringIndex,
+    nodeCenters.at(-1),
+    nodeWidths.at(-1) * cavityScale,
+    nodeHeights.at(-1) * cavityScale,
+  );
 
   for (let boundaryIndex = 0; boundaryIndex < boundaryRings.length; boundaryIndex += 1) {
     const sourceRing = boundaryIndex * axialSubdivisions;
@@ -297,24 +356,24 @@ function updateBody(time) {
     boundaryRings[boundaryIndex].geometry.attributes.position.needsUpdate = true;
   }
 
-  const startCenter = centerline(nodeX[0], displayedLength);
-  const endCenter = centerline(nodeX.at(-1), displayedLength);
-  positionArray[startCenterIndex * 3] = nodeX[0];
-  positionArray[startCenterIndex * 3 + 1] = startCenter.y;
-  positionArray[startCenterIndex * 3 + 2] = startCenter.z;
-  positionArray[endCenterIndex * 3] = nodeX.at(-1);
-  positionArray[endCenterIndex * 3 + 1] = endCenter.y;
-  positionArray[endCenterIndex * 3 + 2] = endCenter.z;
+  const startCenter = nodeCenters[0];
+  const endCenter = nodeCenters.at(-1);
+  positionArray[startCenterIndex * 3] = startCenter[0];
+  positionArray[startCenterIndex * 3 + 1] = startCenter[1];
+  positionArray[startCenterIndex * 3 + 2] = startCenter[2];
+  positionArray[endCenterIndex * 3] = endCenter[0];
+  positionArray[endCenterIndex * 3 + 1] = endCenter[1];
+  positionArray[endCenterIndex * 3 + 2] = endCenter[2];
   geometry.attributes.position.needsUpdate = true;
   geometry.computeVertexNormals();
   geometry.computeBoundingSphere();
 
-  mouth.position.set(nodeX[0] - 0.03, startCenter.y, startCenter.z);
+  mouth.position.set(startCenter[0] - 0.03, startCenter[1], startCenter[2]);
   sensoryOrgans.forEach((organ) => {
     organ.position.set(
-      nodeX[0] + 0.15,
-      startCenter.y + 0.16,
-      startCenter.z + organ.userData.side * nodeWidths[0] * cavityScale * 0.3,
+      startCenter[0] + 0.15,
+      startCenter[1] + 0.16,
+      startCenter[2] + organ.userData.side * nodeWidths[0] * cavityScale * 0.3,
     );
   });
 
@@ -323,7 +382,9 @@ function updateBody(time) {
     const hypothesisColor = index === 0 ? 0xd8a56c : index > 9 ? 0xb98264 : index % 2 ? 0xe5bd86 : 0xdcae75;
     material.color.setHex(evidenceMode ? hypothesisColor : 0xd9b785);
     material.emissive.setHex(isSelected ? 0x6e2b31 : 0x2b1625);
-    material.emissiveIntensity = isSelected ? 0.85 : 0.2;
+    material.emissiveIntensity = isSelected
+      ? 0.85
+      : 0.2 + sample.activations[index] * 0.45;
   });
 }
 

@@ -86,6 +86,11 @@ registration must be reconciled against calibrated raw images first.
 
 ## Numerical representation
 
+The diagnostic viewer consumes a deterministic 30 ms trajectory exported from
+this Python solver. It interpolates 13 internal nodes beneath a separate
+continuous skin and no longer synthesizes its own contraction wave or bend.
+The generated artifact is model output, not measured motion capture.
+
 `ScientificBody3D` is a dependency-free XPBD axial reference. It uses the
 instantaneous SLS stiffness (`k1 + k2`) for stable compliant length constraints.
 Active shortening changes region target length. Because Drosophila abdominal
@@ -100,7 +105,10 @@ The v1 crosswalk preserves the published muscle spatial groups (DL, DO, VL, VA,
 VO, T, and Broad), individual muscle numbers and synonyms, synapse types, side,
 segment, and exact CATMAID skeleton IDs. It does not collapse these anatomical
 groups into a made-up longitudinal/transverse actuator. The current A1/A2 map is
-therefore identity-curated but not yet mechanically executable.
+therefore identity-curated but not yet mechanically executable for release.
+The research fixture instantiates its 58 resolved identities and uses a
+`MODEL_FITTED` normalized A1 aggregate proxy; this does not fill the null gains
+or execute individual lines of action.
 
 Synthetic mappings are permitted only when a test explicitly opts in. A release
 simulation fails closed until every enabled projection carries an observed

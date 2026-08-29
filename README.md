@@ -92,12 +92,13 @@ muscle identity and geometry boundary is in `docs/L1_BODY_WALL_MUSCLE_ATLAS.md`.
 
 ## Interactive L1 body viewer
 
-The `viewer/` app renders the same `data/body/l1_body_v0.json` bundle with
-Three.js. It exposes all twelve mechanical regions on one continuous surface,
-per-region nominal geometry, evidence status, orbit/zoom controls, and a
-posterior-to-anterior contraction wave. Active shortening is compensated by one
-aggregate body-cavity volume constraint rather than twelve sealed spherical
-segments.
+The `viewer/` app renders the shared `data/body/l1_body_v0.json` morphology
+and the generated `data/trajectories/l1_closed_loop_v0.json` Python trajectory.
+Its 151 frames contain 13 internal XPBD nodes and 12 activation channels sampled
+every 30 ms. Three.js interpolates those nodes under one continuous surface; it
+contains no independent gait, Gaussian contraction wave, bend animation, or
+render-driven translation. Active shortening still uses one aggregate body-cavity
+volume constraint rather than twelve sealed spherical segments.
 
 ```bash
 cd viewer
@@ -106,7 +107,9 @@ npm run dev
 ```
 
 The displayed L1 length, width, and per-region profile remain explicit v0
-hypotheses. The viewer does not turn them into observations.
+hypotheses, and the trajectory is model output rather than motion capture. Run
+`python tools/export_closed_loop_trajectory.py --check` to verify that the
+checked-in viewer artifact matches the current 91-LIF Python reference.
 
 ## Non-goals for the reference core
 

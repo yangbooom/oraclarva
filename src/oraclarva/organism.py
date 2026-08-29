@@ -35,6 +35,8 @@ class ClosedLoopResult:
     contraction_fit_passed: bool
     muscle_identity_summary: dict[str, Any]
     motor_identity_summary: dict[str, Any]
+    trajectory_samples: tuple[dict[str, Any], ...]
+    trajectory_sample_interval_s: float | None
     lesion: str | None
     muscle_lesion: str | None
     motor_identity_lesion: str | None
@@ -62,11 +64,38 @@ class ClosedLoopResult:
             ),
             "muscle_identity_summary": self.muscle_identity_summary,
             "motor_identity_summary": self.motor_identity_summary,
+            "trajectory_frames": len(self.trajectory_samples),
+            "trajectory_sample_interval_s": self.trajectory_sample_interval_s,
             "lesion": self.lesion,
             "muscle_lesion": self.muscle_lesion,
             "motor_identity_lesion": self.motor_identity_lesion,
             "claim_boundary": "reduced embodied neural research model; not a complete L1 brain emulation",
         }
+
+    def trajectory_artifact(self) -> dict[str, Any]:
+        if not self.trajectory_samples or self.trajectory_sample_interval_s is None:
+            raise ValueError("run must record trajectory samples first")
+        return {
+            "schema_version": 1,
+            "model_id": self.model_id,
+            "status": self.status,
+            "release_validated": False,
+            "causal_contract": list(self.causal_contract),
+            "units": {"time": "second", "position": "micrometre"},
+            "sample_interval_s": self.trajectory_sample_interval_s,
+            "body_segment_ids": [
+                "PSC", "T1", "T2", "T3", "A1", "A2",
+                "A3", "A4", "A5", "A6", "A7", "A8",
+            ],
+            "node_count": 13,
+            "frames": list(self.trajectory_samples),
+            "limitations": [
+                "Generated from the research approximation, not measured motion capture.",
+                "Physics nodes are internal; the viewer renders a separate continuous skin.",
+                "All fitted and geometry claim boundaries remain in the source configs.",
+            ],
+        }
+
 
 
 def default_closed_loop_path() -> Path:
@@ -279,10 +308,28 @@ class ClosedLoopLarva:
                 ]
             )
 
-    def run(self, *, stimulate: bool = True) -> ClosedLoopResult:
+    def run(
+        self,
+        *,
+        stimulate: bool = True,
+        record_trajectory_interval_s: float | None = None,
+    ) -> ClosedLoopResult:
         p = self.params
         dt = float(p["dt_s"])
         steps = round(float(p["duration_s"]) / dt)
+        if (
+            record_trajectory_interval_s is not None
+            and record_trajectory_interval_s <= 0
+        ):
+            raise ValueError("trajectory sample interval must be positive")
+        trajectory_stride = (
+            None
+            if record_trajectory_interval_s is None
+            else max(1, round(record_trajectory_interval_s / dt))
+        )
+        actual_trajectory_interval = (
+            None if trajectory_stride is None else trajectory_stride * dt
+        )
         excitation = [0.0] * len(self.segments)
         activation = [0.0] * len(self.segments)
         adaptation = [0.0] * len(self.segments)
@@ -296,6 +343,11 @@ class ClosedLoopLarva:
         spike_counts = {label: 0 for label in labels}
         first_spike = {label: None for label in labels}
         initial_center = self._center_x()
+        trajectory_samples: list[dict[str, Any]] = []
+        if trajectory_stride is not None:
+            trajectory_samples.append(
+                self._trajectory_sample(0.0, [0.0] * len(self.segments))
+            )
 
         for step in range(steps):
             time_s = step * dt
@@ -396,6 +448,12 @@ class ClosedLoopLarva:
                 length_history[i].append(
                     self.body.segment_length_m(self.body_indices[segment])
                 )
+            if trajectory_stride is not None and (
+                (step + 1) % trajectory_stride == 0 or step + 1 == steps
+            ):
+                trajectory_samples.append(
+                    self._trajectory_sample((step + 1) * dt, applied_activation)
+                )
 
         phase_fit = self._phase_fit(first_spike)
         contraction_kinematics = {
@@ -457,10 +515,43 @@ class ClosedLoopLarva:
                 "individual_geometry_executed": False,
                 "aggregation": "equal recruitment -> mean axial segment proxy",
             },
+            trajectory_samples=tuple(trajectory_samples),
+            trajectory_sample_interval_s=actual_trajectory_interval,
             lesion=self.lesion,
             muscle_lesion=self.muscle_lesion,
             motor_identity_lesion=self.motor_identity_lesion,
         )
+
+    def _trajectory_sample(
+        self,
+        time_s: float,
+        segment_activation: list[float] | dict[str, float],
+    ) -> dict[str, Any]:
+        if isinstance(segment_activation, dict):
+            activations = [
+                round(float(segment_activation.get(segment.id, 0.0)), 9)
+                for segment in self.body.geometry
+            ]
+        else:
+            by_segment = dict(
+                zip(self.segments, segment_activation, strict=True)
+            )
+            activations = [
+                round(float(by_segment.get(segment.id, 0.0)), 9)
+                for segment in self.body.geometry
+            ]
+        return {
+            "time_s": round(time_s, 9),
+            "nodes_um": [
+                [
+                    round(particle.position.x * 1e6, 9),
+                    round(particle.position.y * 1e6, 9),
+                    round(particle.position.z * 1e6, 9),
+                ]
+                for particle in self.body.particles
+            ],
+            "segment_activation": activations,
+        }
 
     @staticmethod
     def _contraction_kinematics(

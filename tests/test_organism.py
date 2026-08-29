@@ -57,6 +57,7 @@ def test_touch_produces_ordered_neural_wave_contraction_and_forward_motion():
     assert result.phase_fit_passed
     assert result.contraction_fit_passed
     assert result.to_dict()["release_validated"] is False
+    assert result.to_dict()["trajectory_frames"] == 0
     assert result.motor_identity_summary["network_neurons"] == 91
     assert result.motor_identity_summary["reduced_core_neurons"] == 33
     assert result.motor_identity_summary["resolved_identities"] == 58
@@ -169,3 +170,27 @@ def test_a1_motor_identity_lesion_preserves_pool_spike_but_blocks_t3():
     assert result.motor_identity_lesion == "A1"
     assert not result.phase_fit_passed
     assert not result.contraction_fit_passed
+
+
+def test_trajectory_records_internal_nodes_without_changing_default_result():
+    config = deepcopy(load_closed_loop_config())
+    config["parameters"]["duration_s"] = 0.06
+    result = ClosedLoopLarva(config).run(
+        record_trajectory_interval_s=0.03
+    )
+    artifact = result.trajectory_artifact()
+    assert artifact["node_count"] == 13
+    assert artifact["body_segment_ids"] == [
+        "PSC", "T1", "T2", "T3", "A1", "A2",
+        "A3", "A4", "A5", "A6", "A7", "A8",
+    ]
+    assert artifact["sample_interval_s"] == pytest.approx(0.03)
+    assert [frame["time_s"] for frame in artifact["frames"]] == [
+        0.0, 0.03, 0.06,
+    ]
+    assert all(len(frame["nodes_um"]) == 13 for frame in artifact["frames"])
+    assert all(
+        len(frame["segment_activation"]) == 12
+        for frame in artifact["frames"]
+    )
+    assert artifact["release_validated"] is False
