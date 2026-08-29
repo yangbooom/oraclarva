@@ -45,12 +45,14 @@ force gains, or thoracic/terminal homology, so it still cannot actuate the body.
 
 A research-only embodied vertical slice now closes the loop from posterior touch
 through an A27h-like LIF premotor chain, motor pools, PMSI-like inhibitory pools,
-continuous muscle activation, XPBD body deformation, substrate contact, and
-shortening-sensitive proprioception. It produces neural-causal forward
-displacement and lesion effects, but its reduced topology is `ANATOMY_DERIVED`
-and all numeric gains are explicitly `MODEL_FITTED`. Adjacent onset phase is
-fitted; the emitted contraction-amplitude, rate, and duration screen currently
-fails and remains visible rather than being treated as validation. See
+thresholded motor excitation, continuous asymmetric muscle activation, XPBD body
+deformation, substrate contact, and shortening-sensitive proprioception. It
+produces neural-causal forward displacement and lesion effects, but its reduced
+topology is `ANATOMY_DERIVED` and all unmeasured numeric gains are explicitly
+`MODEL_FITTED`. The current in-sample calibration places all seven adjacent
+onset-phase comparisons and all 24 T3-A7 amplitude/rate/duration comparisons
+inside the checked-in animal-level p10-p90 bands. This is not held-out or
+whole-body validation; the runtime reports `release_validated: false`. See
 `docs/CLOSED_LOOP_L1_V0.md`; run `oraclarva-organism`.
 
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.

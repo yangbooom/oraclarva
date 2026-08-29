@@ -50,6 +50,10 @@ class ClosedLoopResult:
             "contraction_kinematics": self.contraction_kinematics,
             "contraction_fit": self.contraction_fit,
             "contraction_fit_passed": self.contraction_fit_passed,
+            "release_validated": False,
+            "calibration_scope": (
+                "in-sample Greaney 2026 L1 plausibility fit; no held-out cohort"
+            ),
             "lesion": self.lesion,
             "claim_boundary": "reduced embodied neural research model; not a complete L1 brain emulation",
         }
@@ -75,6 +79,40 @@ def load_closed_loop_config(path: str | Path | None = None) -> dict[str, Any]:
         raise ValueError("PMSI recruitment delay must be non-negative")
     if float(parameters.get("pmsi_inhibitory_current_a", 0.0)) <= 0:
         raise ValueError("PMSI inhibitory current must be positive")
+    positive_parameters = (
+        "motor_excitation_tau_s",
+        "excitation_per_motor_spike",
+        "muscle_activation_excitation_threshold",
+    )
+    if any(float(parameters.get(name, 0.0)) <= 0 for name in positive_parameters):
+        raise ValueError("motor-excitation and activation parameters must be positive")
+    if float(parameters["muscle_activation_excitation_threshold"]) >= float(
+        parameters["excitation_per_motor_spike"]
+    ):
+        raise ValueError(
+            "activation threshold must be below one motor-spike excitation"
+        )
+    modeled_segments = set(raw.get("wave_segments_posterior_to_anterior", ()))
+    for map_name in (
+        "maximum_shortening_fraction_by_segment",
+        "muscle_activation_rise_tau_s_by_segment",
+        "muscle_activation_fall_tau_s_by_segment",
+    ):
+        values = parameters.get(map_name, {})
+        if set(values) != modeled_segments:
+            raise ValueError(f"{map_name} must cover every modeled segment")
+        if any(float(value) <= 0 for value in values.values()):
+            raise ValueError(f"{map_name} values must be positive")
+    shortening_upper = load_body_spec().maximum_shortening_fraction.upper
+    if any(
+        float(value) > shortening_upper
+        for value in parameters[
+            "maximum_shortening_fraction_by_segment"
+        ].values()
+    ):
+        raise ValueError(
+            "segment shortening capacity exceeds the body-model upper bound"
+        )
     return raw
 
 
@@ -85,7 +123,12 @@ class ClosedLoopLarva:
         self.config = config or load_closed_loop_config()
         self.params = self.config["parameters"]
         self.segments = tuple(self.config["wave_segments_posterior_to_anterior"])
-        self.body = ScientificBody3D(load_body_spec())
+        self.body = ScientificBody3D(
+            load_body_spec(),
+            maximum_shortening_by_segment=self.params[
+                "maximum_shortening_fraction_by_segment"
+            ],
+        )
         self.body_indices = {segment.id: index for index, segment in enumerate(self.body.geometry)}
         if any(segment not in self.body_indices for segment in self.segments):
             raise ValueError("closed-loop circuit references an unknown body segment")
@@ -148,6 +191,7 @@ class ClosedLoopLarva:
         p = self.params
         dt = float(p["dt_s"])
         steps = round(float(p["duration_s"]) / dt)
+        excitation = [0.0] * len(self.segments)
         activation = [0.0] * len(self.segments)
         adaptation = [0.0] * len(self.segments)
         previous_length = [self.body.segment_length_m(self.body_indices[s]) for s in self.segments]
@@ -188,10 +232,31 @@ class ClosedLoopLarva:
                 spike_counts[label] += 1
                 if first_spike[label] is None:
                     first_spike[label] = time_s
+            excitation_decay = exp(
+                -dt / float(p["motor_excitation_tau_s"])
+            )
+            excitation_threshold = float(
+                p["muscle_activation_excitation_threshold"]
+            )
             for i in range(len(self.segments)):
-                activation[i] *= exp(-dt / float(p["muscle_activation_tau_s"]))
+                excitation[i] *= excitation_decay
                 if self.motor_offset + i in spikes:
-                    activation[i] = min(1.0, activation[i] + float(p["activation_per_motor_spike"]))
+                    excitation[i] += float(p["excitation_per_motor_spike"])
+                activation_target = (
+                    1.0 if excitation[i] >= excitation_threshold else 0.0
+                )
+                tau_map_key = (
+                    "muscle_activation_rise_tau_s_by_segment"
+                    if activation_target > activation[i]
+                    else "muscle_activation_fall_tau_s_by_segment"
+                )
+                coupling = 1.0 - exp(
+                    -dt / float(p[tau_map_key][self.segments[i]])
+                )
+                activation[i] += (
+                    activation_target - activation[i]
+                ) * coupling
+                activation[i] = min(1.0, max(0.0, activation[i]))
                 peak_activation[i] = max(peak_activation[i], activation[i])
             self.body.set_activations(dict(zip(self.segments, activation, strict=True)))
             self.body.step(

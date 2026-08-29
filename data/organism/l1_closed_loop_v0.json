@@ -37,8 +37,6 @@
     "synaptic_current_a": 1.8e-09,
     "posterior_touch_current_a": 4e-09,
     "posterior_touch_duration_s": 0.1,
-    "muscle_activation_tau_s": 0.18,
-    "activation_per_motor_spike": 0.12,
     "proprioceptor_min_strain": 0.05,
     "proprioceptor_min_shortening_rate_m_s": 1e-05,
     "proprioceptor_current_gain_a_s_m": 0.0002,
@@ -50,22 +48,55 @@
     "ground_positive_x_retention": 0.1,
     "fitted_cycle_period_s": 2.5,
     "intersegmental_relay_delay_s": {
-      "A7": 0.1672,
-      "A6": 0.1607,
-      "A5": 0.2764,
-      "A4": 0.3835,
-      "A3": 0.3302,
-      "A2": 0.2892,
-      "A1": 0.1748
+      "A7": 0.1074,
+      "A6": 0.1004,
+      "A5": 0.2158,
+      "A4": 0.323,
+      "A3": 0.2704,
+      "A2": 0.2264,
+      "A1": 0.1106
     },
     "pmsi_recruitment_delay_s": 0.002,
-    "pmsi_inhibitory_current_a": 4e-09
+    "pmsi_inhibitory_current_a": 4e-09,
+    "motor_excitation_tau_s": 0.8,
+    "excitation_per_motor_spike": 1.0,
+    "maximum_shortening_fraction_by_segment": {
+      "A7": 0.51401679,
+      "A6": 0.51304524,
+      "A5": 0.50260593,
+      "A4": 0.542,
+      "A3": 0.51386468,
+      "A2": 0.48953133,
+      "A1": 0.4812055,
+      "T3": 0.35057285
+    },
+    "muscle_activation_excitation_threshold": 0.10539922456186433,
+    "muscle_activation_rise_tau_s_by_segment": {
+      "A7": 0.59,
+      "A6": 0.6,
+      "A5": 0.6,
+      "A4": 0.75,
+      "A3": 0.6,
+      "A2": 0.6,
+      "A1": 0.6,
+      "T3": 0.6
+    },
+    "muscle_activation_fall_tau_s_by_segment": {
+      "A7": 0.71,
+      "A6": 0.72,
+      "A5": 0.72,
+      "A4": 0.87,
+      "A3": 0.72,
+      "A2": 0.72,
+      "A1": 0.72,
+      "T3": 0.72
+    }
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
-    "objective": "Produce a stable posterior-to-anterior neural and contraction wave whose adjacent motor-onset phase delays fall inside the Greaney 2026 L1 animal-level p10-p90 bands; add a fitted PMSI-like inhibitory termination motif; and expose contraction amplitude, rate, and duration failures without disguising them as validation.",
-    "fit_status": "phase_fitted_with_unfitted_contraction_screen",
-    "uncertainty": "The 2.5 s cycle period, reduced relay delays, 2 ms PMSI recruitment, and inhibitory current are MODEL_FITTED because the checked-in target does not identify these reduced-circuit parameters. The PMSI delay is not claimed as a measured L1 single-synapse latency. Contraction amplitude, shortening rate, and duration remain outside target bands. Other numeric neural, sensory, activation, adaptation, and contact parameters remain engineering estimates; none is a measured L1 constant."
+    "objective": "Produce a stable posterior-to-anterior neural and contraction wave whose adjacent motor-onset phase delays fall inside the Greaney 2026 L1 animal-level p10-p90 bands; use a PMSI-like inhibitory motif to constrain motor bursts; and fit continuous motor-excitation and muscle-activation dynamics to the published segment contraction amplitude, shortening-rate, and duration bands.",
+    "fit_status": "phase_and_contraction_fitted_research_baseline",
+    "uncertainty": "The 2.5 s cycle period, reduced relay delays, PMSI recruitment/current, thresholded two-stage activation dynamics, segment-specific activation and relaxation time constants, and shortening capacities are MODEL_FITTED. The capacities use Greaney L1 segment-amplitude medians as in-sample targets, not direct muscle maximum-shortening measurements. Passing the checked-in bands is calibration, not held-out validation, and none of these values is a measured single-neuron, muscle, or single-synapse constant."
   },
   "sources": [
     {
@@ -96,7 +127,7 @@
     {
       "source_id": "greaney_2026",
       "doi": "10.1523/JNEUROSCI.1623-25.2026",
-      "used_for": "L1 posterior-to-anterior segment order and future kinematic fitting targets"
+      "used_for": "L1 posterior-to-anterior segment order and in-sample kinematic fitting targets"
     }
   ]
 }

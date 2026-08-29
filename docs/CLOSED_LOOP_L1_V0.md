@@ -9,7 +9,7 @@ posterior environmental touch
   -> touch receptor LIF spikes
   -> A27h-like segmental premotor LIF spikes
   -> motor-pool LIF spikes + local PMSI-like inhibitory LIF spikes
-  -> low-pass muscle activation
+  -> thresholded motor-excitation and asymmetric muscle activation dynamics
   -> XPBD segment shortening and ground contact
   -> shortening-sensitive proprioceptor current
   -> next anterior premotor population
@@ -17,7 +17,7 @@ posterior environmental touch
 
 A single posterior stimulus propagates from A7 through T3. No function chooses `crawl`, a direction, a gait phase, or a prerecorded pose. Forward displacement is the numerical result of internal force, body deformation, gravity, contact, and direction-dependent tangential retention. The body coordinate increases anterior-to-posterior, so forward motion has negative x displacement.
 
-The phase-fitted v0 fixture currently moves its center about 3.7 µm during a 4.5 s run. A7 motor activity begins near 0.006 s and the wave reaches T3 near 1.830 s. All seven simulated adjacent onset delays fall inside the checked-in Greaney L1 animal-level p10-p90 bands. This is an in-sample calibration result, not held-out validation. Each segment's PMSI-like pool now inhibits its motor pool and reduces repeated motor firing while preserving the A7-to-T3 wave. An A4 premotor lesion preserves A7-A5 activation but eliminates A4-T3 motor spikes and active shortening, establishing a traceable neural lesion effect. With `--no-touch`, no neuron spikes, no muscle activates, and the body stays at rest.
+The phase-and-contraction-fitted v0 fixture currently moves its center about 15.8 µm during a 4.5 s run. A7 motor activity begins near 0.006 s and the wave reaches T3 near 1.846 s. All seven simulated adjacent onset delays and all 24 contraction amplitude, shortening-rate, and duration comparisons fall inside the checked-in Greaney L1 animal-level p10-p90 bands. These are in-sample calibration results, not held-out validation. Each segment's PMSI-like pool inhibits its motor pool and limits repeated motor firing while preserving the A7-to-T3 wave. An A4 premotor lesion preserves A7-A5 activation but eliminates A4-T3 motor spikes and active shortening. With `--no-touch`, no neuron spikes, no muscle activates, and the body stays at rest.
 
 ## Evidence and approximation boundary
 
@@ -28,17 +28,32 @@ The reduced topology combines several published observations and modeling preced
 - Kohsaka et al. showed that larval PMSIs are inhibitory segmental premotor interneurons that limit motor-burst duration (`10.1016/j.cub.2014.09.026`). This supports the motif only; it does not supply the v0 L1 current or timing.
 - Pehlevan, Paoletti, and Mahadevan modeled stretch-threshold feedback to the next anterior controller together with frictional neuromechanics (`10.7554/eLife.11031`).
 - Zarin et al. reconstructed a full segment of motor and premotor circuitry and showed distributed motor recruitment (`10.7554/eLife.51781`).
-- Greaney et al. provide the L1 segment-level kinematic bands that future fitting must target (`10.1523/JNEUROSCI.1623-25.2026`).
+- Greaney et al. provide the L1 segment-level kinematic bands used for the explicit in-sample plausibility fit (`10.1523/JNEUROSCI.1623-25.2026`).
 
-This evidence supports the architecture, not the v0 numeric values. The proprioceptor-to-next-premotor edge and PMSI-like termination motif are `ANATOMY_DERIVED`; neither is represented as a complete identified monosynaptic circuit. Every numeric neural, transduction, activation, adaptation, inhibition, and contact value in `data/organism/l1_closed_loop_v0.json` is `MODEL_FITTED`. The reduced polysynaptic relay delays are fitted to the Greaney adjacent phase bands. The assumed 2.5 s cycle period, PMSI current, and 2 ms reduced recruitment delay are also fitted because the checked-in source artifact does not identify them. These parameters are not represented as measured single-neuron constants.
+This evidence supports the architecture, not the v0 numeric values. The proprioceptor-to-next-premotor edge and PMSI-like termination motif are `ANATOMY_DERIVED`; neither is represented as a complete identified monosynaptic circuit. Every numeric neural, transduction, activation, adaptation, inhibition, and contact value in `data/organism/l1_closed_loop_v0.json` is `MODEL_FITTED`. The reduced relay delays, assumed 2.5 s cycle period, PMSI timing/current, activation thresholds, time constants, and segment shortening capacities are fitted. The capacity fit uses L1 segment kinematics; it is not a direct measurement of individual muscle maximum shortening.
 
-## Known failures and next calibration
+## Motor-to-muscle equations
 
-The simulator now extracts contraction amplitude, maximum shortening rate, and duration from every segment-length trace using linearly interpolated 75%-amplitude crossings, matching the source analysis definition. The current model deliberately fails this screen: all 24 segment-metric comparisons are outside the Greaney p10-p90 bands. For example, A7 reaches only about 5.4% shortening versus an observed p10 of 47.3%, its numerical shortening rate is about 3640 µm/s versus an observed p90 of 93.5 µm/s, and its duration is about 0.25 s versus an observed p10 of 1.64 s. This identifies the instantaneous target-length response and activation model as the next calibration problem rather than turning a visually moving body into a biological claim.
+For every simulated step, a motor spike adds a dimensionless excitation impulse and the excitation state decays exponentially:
 
-The motor and PMSI-like pools still collapse many bilateral neurons and muscles into one excitatory and one inhibitory population per region. Relaxation timing, left-right circuits, T1/T2/PSC/A8 coverage, full connectome identities, real attachment geometry, and free-surface friction measurements remain absent.
+```text
+e(t + dt) = e(t) exp(-dt / tau_e) + motor_spike * delta_e
+u(t) = 1 when e(t) >= theta_e, otherwise 0
+a(t + dt) = a(t) + (u(t) - a(t)) * (1 - exp(-dt / tau_on_or_off))
+L_target_i(t) = L_rest_i * (1 - shortening_capacity_i * a_i(t))
+```
 
-Therefore this is evidence of a working embodied neural causal loop, an explicit inhibitory termination motif, and an in-sample phase fit—not a validated L1 brain or gait. The next iteration must fit activation/relaxation dynamics against contraction duration, amplitude, and shortening rate, then expand each reduced motor pool through the curated MN-muscle identities without relabeling fitted gains as measurements.
+The activation and relaxation time constants can differ by segment, but every value is positive, every modeled segment must be present, and each shortening capacity is rejected if it exceeds the declared body-model upper bound. These equations smooth neural events into continuous forces; they do not select a behavior or prescribe a trajectory.
+
+## Calibration result and remaining boundary
+
+The simulator extracts contraction amplitude, maximum shortening rate, and duration from every segment-length trace using linearly interpolated 75%-amplitude crossings. A thresholded motor-excitation state drives continuous first-order muscle activation with separate activation and relaxation time constants. Segment shortening capacities remain bounded by the body-model prior. No pose, gait phase, or displacement is prescribed.
+
+The current in-sample screen passes all 24 T3-A7 contraction comparisons. Examples: A7 reaches 49.0% shortening, 58.7 µm/s, and 2.00 s; A4 reaches 49.3%, 61.8 µm/s, and 1.93 s; T3 reaches 33.3%, 45.4 µm/s, and 1.58 s. All are within their source animal-level p10-p90 bands. The seven adjacent onset-phase comparisons also pass.
+
+Passing does not establish a validated L1 gait. The same Greaney cohort was used to fit these parameters, its environment was a water-saturated agarose channel rather than an unconstrained free surface, and it did not observe L1 muscle recruitment. Absolute segment rest lengths are not fitted because the v0 body segmentation remains a separate 0.9 mm geometry hypothesis. PSC, T1, T2, A8, left-right circuitry, real 3D attachments, and independent held-out animals remain absent. The runtime therefore emits `release_validated: false`.
+
+The motor and PMSI-like pools still collapse many bilateral neurons and muscles into one excitatory and one inhibitory population per region. The next iteration should expand those pools through the curated MN-muscle identities, preserve the calibrated aggregate dynamics as a regression fixture, and connect the physical trajectory to the continuous-surface diagnostic viewer and future native mobile core.
 
 ## Commands
 

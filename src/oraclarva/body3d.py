@@ -62,11 +62,41 @@ class ScientificBody3D:
     only continuous segment activations in [0, 1].
     """
 
-    def __init__(self, spec: BodyModelSpec, pinned_nodes: Iterable[int] = ()) -> None:
+    def __init__(
+        self,
+        spec: BodyModelSpec,
+        pinned_nodes: Iterable[int] = (),
+        *,
+        maximum_shortening_by_segment: Mapping[str, float] | None = None,
+    ) -> None:
         self.spec = spec
         self.geometry: tuple[SegmentGeometry, ...] = spec.segment_geometry()
         self.pinned_nodes = set(pinned_nodes)
         self.activations = [0.0] * len(self.geometry)
+        shortening_overrides = maximum_shortening_by_segment or {}
+        known_segments = {segment.id for segment in self.geometry}
+        unknown_segments = set(shortening_overrides) - known_segments
+        if unknown_segments:
+            raise KeyError(
+                f"unknown segment shortening capacities: {sorted(unknown_segments)}"
+            )
+        upper = spec.maximum_shortening_fraction.upper
+        if any(
+            not 0.0 <= float(value) <= upper
+            for value in shortening_overrides.values()
+        ):
+            raise ValueError(
+                "segment shortening capacity must be non-negative and no greater "
+                "than the declared body-model upper bound"
+            )
+        self.maximum_shortening_fractions = [
+            float(
+                shortening_overrides.get(
+                    segment.id, spec.maximum_shortening_fraction.nominal
+                )
+            )
+            for segment in self.geometry
+        ]
         self._instantaneous_stiffness = spec.scaled_mechanics().instantaneous_stiffness_n_per_m
         node_masses = [0.0] * (len(self.geometry) + 1)
         for index, segment in enumerate(self.geometry):
@@ -103,7 +133,9 @@ class ScientificBody3D:
             self.activations[by_id[segment_id]] = float(activation)
 
     def target_length_m(self, index: int) -> float:
-        shortening = self.spec.maximum_shortening_fraction.nominal * self.activations[index]
+        shortening = (
+            self.maximum_shortening_fractions[index] * self.activations[index]
+        )
         return self.geometry[index].rest_length_m * (1.0 - shortening)
 
     def segment_length_m(self, index: int) -> float:

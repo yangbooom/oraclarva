@@ -85,3 +85,26 @@ def test_ground_tangential_retention_is_a_bounded_physical_parameter():
     with pytest.raises(ValueError, match="tangential retention"):
         body.step(0.001, ground_velocity_retention_x=(1.1, 0.1))
     body.step(0.001, ground_velocity_retention_x=(0.9, 0.1))
+
+
+def test_segment_specific_shortening_capacity_is_bounded_and_changes_target():
+    spec = load_body_spec()
+    body = ScientificBody3D(
+        spec, maximum_shortening_by_segment={"A4": 0.5}
+    )
+    index = next(i for i, segment in enumerate(body.geometry) if segment.id == "A4")
+    body.set_activations({"A4": 1.0})
+    assert body.target_length_m(index) == pytest.approx(
+        body.geometry[index].rest_length_m * 0.5
+    )
+    with pytest.raises(ValueError, match="shortening capacity"):
+        ScientificBody3D(
+            spec,
+            maximum_shortening_by_segment={
+                "A4": spec.maximum_shortening_fraction.upper + 0.01
+            },
+        )
+    with pytest.raises(KeyError, match="unknown segment"):
+        ScientificBody3D(
+            spec, maximum_shortening_by_segment={"crawl": 0.5}
+        )
