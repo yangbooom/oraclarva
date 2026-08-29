@@ -33,3 +33,17 @@ def test_inhibitory_current_suppresses_target():
 def test_lesion_breaks_causal_motor_path():
     assert run_smoke()["motor"] > 0
     assert run_smoke(lesion_interneuron=True)["motor"] == 0
+
+
+def test_delayed_synapse_preserves_configured_neural_latency():
+    network = SparseLIFNetwork(2, [Synapse(0, 1, 4e-9, delay_steps=5)])
+    events = network.run(12, {0: {0: 4e-9}})
+    pre_step = next(i for i, event in enumerate(events) if 0 in event)
+    post_step = next(i for i, event in enumerate(events) if 1 in event)
+    assert post_step - pre_step >= 5
+
+
+def test_negative_synaptic_delay_is_rejected():
+    import pytest
+    with pytest.raises(ValueError, match="delay_steps"):
+        Synapse(0, 1, 1e-9, delay_steps=-1)

@@ -1,0 +1,196 @@
+from copy import deepcopy
+import json
+
+import pytest
+
+from oraclarva.organism import ClosedLoopLarva, load_closed_loop_config
+
+SEGMENTS = ("A7", "A6", "A5", "A4", "A3", "A2", "A1", "T3")
+
+
+def test_config_keeps_approximations_and_causal_contract_explicit():
+    config = load_closed_loop_config()
+    assert config["status"] == "research_approximation"
+    assert config["topology"]["provenance"] == "ANATOMY_DERIVED"
+    assert config["parameter_provenance"]["provenance"] == "MODEL_FITTED"
+    assert config["parameter_provenance"]["fit_status"] == "phase_and_contraction_fitted_research_baseline"
+    assert config["parameters"]["pmsi_recruitment_delay_s"] == 0.002
+    assert config["parameters"]["pmsi_inhibitory_current_a"] > 0
+    assert config["parameters"]["fitted_cycle_period_s"] == 2.5
+    motor_identity_projection = config["motor_identity_projection"]
+    assert motor_identity_projection["mapping_provenance"] == "MEASURED_PUBLISHED"
+    assert motor_identity_projection["gain_provenance"] == "MODEL_FITTED"
+    assert motor_identity_projection["resolved_identities"] == 58
+    assert motor_identity_projection["causal_proxy_segments"] == ["A1"]
+    assert motor_identity_projection["diagnostic_only_segments"] == ["A2"]
+    assert not motor_identity_projection["release_ready"]
+    identity_projection = config["muscle_identity_projection"]
+    assert identity_projection["provenance"] == "MODEL_FITTED"
+    assert identity_projection["supported_fibers"] == 358
+    assert not identity_projection["individual_geometry_executed"]
+    assert config["causal_contract"] == [
+        "environment", "sensory_transduction", "neural_dynamics",
+        "motor_neurons", "muscle_activation", "body_physics", "environment",
+    ]
+
+
+def test_touch_produces_ordered_neural_wave_contraction_and_forward_motion():
+    result = ClosedLoopLarva().run()
+    motor_onsets = [result.first_spike_s[f"motor_pool:{segment}"] for segment in SEGMENTS]
+    assert all(onset is not None for onset in motor_onsets)
+    assert motor_onsets == sorted(motor_onsets)
+    assert len(set(motor_onsets)) == len(motor_onsets)
+    for segment in SEGMENTS:
+        premotor = result.first_spike_s[f"premotor_A27h_like:{segment}"]
+        motor = result.first_spike_s[f"motor_pool:{segment}"]
+        proprioceptor = result.first_spike_s[f"proprioceptor:{segment}"]
+        inhibitory = result.first_spike_s[f"inhibitory_PMSI_like:{segment}"]
+        assert premotor is not None and motor is not None and proprioceptor is not None
+        assert inhibitory is not None
+        assert premotor < motor < proprioceptor
+        assert premotor < motor < inhibitory
+        assert result.spike_counts[f"inhibitory_PMSI_like:{segment}"] > 0
+        assert result.spike_counts[f"motor_pool:{segment}"] == 1
+        assert result.peak_activation[segment] > 0
+        assert result.peak_shortening_fraction[segment] >= 0.05
+    assert result.displacement_um < -1.0
+    assert result.phase_fit_passed
+    assert result.contraction_fit_passed
+    assert result.to_dict()["release_validated"] is False
+    assert result.to_dict()["trajectory_frames"] == 0
+    assert result.motor_identity_summary["network_neurons"] == 91
+    assert result.motor_identity_summary["reduced_core_neurons"] == 33
+    assert result.motor_identity_summary["resolved_identities"] == 58
+    assert result.motor_identity_summary["active_identities"] == 58
+    assert result.motor_identity_summary["a1_causal_proxy_identities"] == 56
+    assert result.motor_identity_summary["a2_diagnostic_only_identities"] == 2
+    assert not result.motor_identity_summary["release_ready"]
+    identity_counts = {
+        label: count
+        for label, count in result.spike_counts.items()
+        if label.startswith("motor_identity:")
+    }
+    assert len(identity_counts) == 58
+    assert set(identity_counts.values()) == {1}
+    assert result.muscle_identity_summary["supported_fibers"] == 358
+    assert result.muscle_identity_summary["peak_recruited_fibers"] == 358
+    assert not result.muscle_identity_summary["individual_geometry_executed"]
+    assert set(result.contraction_kinematics) == set(SEGMENTS)
+    assert all(
+        metric["inside_observed_p10_p90"]
+        for segment in result.contraction_fit.values()
+        for metric in segment.values()
+    )
+    assert set(result.phase_fit) == set(SEGMENTS[:-1])
+    assert all(
+        item["inside_observed_p10_p90"] for item in result.phase_fit.values()
+    )
+
+
+def test_without_environmental_touch_nervous_system_and_body_remain_at_rest():
+    result = ClosedLoopLarva().run(stimulate=False)
+    assert sum(result.spike_counts.values()) == 0
+    assert all(value == 0 for value in result.peak_activation.values())
+    assert abs(result.displacement_um) < 1e-6
+    assert not result.phase_fit_passed
+    assert not result.contraction_fit_passed
+
+
+def test_premotor_lesion_breaks_downstream_wave_instead_of_invoking_fallback_action():
+    result = ClosedLoopLarva(lesion_premotor_segment="A4").run()
+    for segment in ("A7", "A6", "A5"):
+        assert result.spike_counts[f"motor_pool:{segment}"] > 0
+    for segment in ("A4", "A3", "A2", "A1", "T3"):
+        assert result.spike_counts[f"motor_pool:{segment}"] == 0
+        assert result.peak_activation[segment] == 0
+    assert not result.phase_fit_passed
+    assert not result.contraction_fit_passed
+    assert not hasattr(ClosedLoopLarva, "crawl")
+    assert not hasattr(ClosedLoopLarva, "turn_left")
+
+
+def test_pmsi_parameters_fail_closed_instead_of_silently_disabling_inhibition(tmp_path):
+    config = deepcopy(load_closed_loop_config())
+    config["parameters"]["pmsi_inhibitory_current_a"] = 0.0
+    fixture = tmp_path / "invalid_closed_loop.json"
+    fixture.write_text(json.dumps(config))
+    with pytest.raises(ValueError, match="PMSI inhibitory current"):
+        load_closed_loop_config(fixture)
+
+
+def test_contraction_extractor_uses_75_percent_crossings():
+    trace_um = [100.0, 100.0, 90.0, 75.0, 50.0, 60.0, 75.0, 90.0, 100.0]
+    metrics = ClosedLoopLarva._contraction_kinematics(
+        [value * 1e-6 for value in trace_um], 0.1
+    )
+    assert metrics["contraction_amplitude_percent"] == pytest.approx(50.0)
+    assert metrics["shortening_rate_um_s"] == pytest.approx(250.0)
+    assert metrics["contraction_duration_s"] == pytest.approx(1.0 / 3.0)
+
+
+def test_segment_activation_maps_must_be_complete(tmp_path):
+    config = deepcopy(load_closed_loop_config())
+    del config["parameters"]["muscle_activation_rise_tau_s_by_segment"]["A4"]
+    fixture = tmp_path / "incomplete_activation_map.json"
+    fixture.write_text(json.dumps(config))
+    with pytest.raises(ValueError, match="must cover every modeled segment"):
+        load_closed_loop_config(fixture)
+
+
+def test_a4_muscle_identity_lesion_breaks_feedback_after_motor_firing():
+    result = ClosedLoopLarva(lesion_muscle_segment="A4").run()
+    assert result.spike_counts["motor_pool:A4"] == 1
+    assert result.spike_counts["proprioceptor:A4"] == 0
+    for segment in ("A3", "A2", "A1", "T3"):
+        assert result.spike_counts[f"motor_pool:{segment}"] == 0
+    assert result.peak_shortening_fraction["A4"] < 0.001
+    assert result.muscle_identity_summary["peak_recruited_fibers"] == 120
+    assert result.muscle_lesion == "A4"
+    assert not result.phase_fit_passed
+    assert not result.contraction_fit_passed
+
+
+def test_a1_motor_identity_lesion_preserves_pool_spike_but_blocks_t3():
+    organism = ClosedLoopLarva(lesion_motor_identity_segment="A1")
+    a1_identity_ids = [
+        projection.neuron_id
+        for projection in organism.motor_identities_by_segment["A1"]
+    ]
+    result = organism.run()
+    assert result.spike_counts["motor_pool:A1"] == 1
+    assert result.spike_counts["proprioceptor:A1"] == 0
+    assert result.spike_counts["motor_pool:T3"] == 0
+    a1_identity_counts = [
+        result.spike_counts[f"motor_identity:{neuron_id}"]
+        for neuron_id in a1_identity_ids
+    ]
+    assert set(a1_identity_counts) == {0}
+    assert result.motor_identity_summary["active_identities"] == 2
+    assert result.peak_shortening_fraction["A1"] < 0.001
+    assert result.motor_identity_lesion == "A1"
+    assert not result.phase_fit_passed
+    assert not result.contraction_fit_passed
+
+
+def test_trajectory_records_internal_nodes_without_changing_default_result():
+    config = deepcopy(load_closed_loop_config())
+    config["parameters"]["duration_s"] = 0.06
+    result = ClosedLoopLarva(config).run(
+        record_trajectory_interval_s=0.03
+    )
+    artifact = result.trajectory_artifact()
+    assert artifact["node_count"] == 13
+    assert artifact["body_segment_ids"] == [
+        "PSC", "T1", "T2", "T3", "A1", "A2",
+        "A3", "A4", "A5", "A6", "A7", "A8",
+    ]
+    assert artifact["sample_interval_s"] == pytest.approx(0.03)
+    assert [frame["time_s"] for frame in artifact["frames"]] == [
+        0.0, 0.03, 0.06,
+    ]
+    assert all(len(frame["nodes_um"]) == 13 for frame in artifact["frames"])
+    assert all(
+        len(frame["segment_activation"]) == 12
+        for frame in artifact["frames"]
+    )
+    assert artifact["release_validated"] is False

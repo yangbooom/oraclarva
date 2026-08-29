@@ -62,11 +62,41 @@ class ScientificBody3D:
     only continuous segment activations in [0, 1].
     """
 
-    def __init__(self, spec: BodyModelSpec, pinned_nodes: Iterable[int] = ()) -> None:
+    def __init__(
+        self,
+        spec: BodyModelSpec,
+        pinned_nodes: Iterable[int] = (),
+        *,
+        maximum_shortening_by_segment: Mapping[str, float] | None = None,
+    ) -> None:
         self.spec = spec
         self.geometry: tuple[SegmentGeometry, ...] = spec.segment_geometry()
         self.pinned_nodes = set(pinned_nodes)
         self.activations = [0.0] * len(self.geometry)
+        shortening_overrides = maximum_shortening_by_segment or {}
+        known_segments = {segment.id for segment in self.geometry}
+        unknown_segments = set(shortening_overrides) - known_segments
+        if unknown_segments:
+            raise KeyError(
+                f"unknown segment shortening capacities: {sorted(unknown_segments)}"
+            )
+        upper = spec.maximum_shortening_fraction.upper
+        if any(
+            not 0.0 <= float(value) <= upper
+            for value in shortening_overrides.values()
+        ):
+            raise ValueError(
+                "segment shortening capacity must be non-negative and no greater "
+                "than the declared body-model upper bound"
+            )
+        self.maximum_shortening_fractions = [
+            float(
+                shortening_overrides.get(
+                    segment.id, spec.maximum_shortening_fraction.nominal
+                )
+            )
+            for segment in self.geometry
+        ]
         self._instantaneous_stiffness = spec.scaled_mechanics().instantaneous_stiffness_n_per_m
         node_masses = [0.0] * (len(self.geometry) + 1)
         for index, segment in enumerate(self.geometry):
@@ -103,7 +133,9 @@ class ScientificBody3D:
             self.activations[by_id[segment_id]] = float(activation)
 
     def target_length_m(self, index: int) -> float:
-        shortening = self.spec.maximum_shortening_fraction.nominal * self.activations[index]
+        shortening = (
+            self.maximum_shortening_fractions[index] * self.activations[index]
+        )
         return self.geometry[index].rest_length_m * (1.0 - shortening)
 
     def segment_length_m(self, index: int) -> float:
@@ -144,16 +176,31 @@ class ScientificBody3D:
         ground_z: float | None = 0.0,
         iterations: int = 12,
         velocity_retention: float = 0.98,
+        ground_velocity_retention_x: tuple[float, float] | None = None,
     ) -> None:
         if dt_s <= 0 or iterations <= 0:
             raise ValueError("dt and iterations must be positive")
         if not 0 <= velocity_retention <= 1:
             raise ValueError("velocity_retention must be in [0, 1]")
+        if ground_velocity_retention_x is not None and any(
+            not 0 <= value <= 1 for value in ground_velocity_retention_x
+        ):
+            raise ValueError("ground tangential retention must be in [0, 1]")
 
         for index, particle in enumerate(self.particles):
             if particle.inverse_mass == 0:
                 continue
             velocity = (particle.position - particle.previous_position) * velocity_retention
+            if ground_z is not None and ground_velocity_retention_x is not None:
+                clearance = self._node_clearance(index)
+                if particle.position.z <= ground_z + clearance + 1e-15:
+                    negative_x, positive_x = ground_velocity_retention_x
+                    tangential_retention = negative_x if velocity.x < 0 else positive_x
+                    velocity = Vec3(
+                        velocity.x * tangential_retention,
+                        velocity.y * min(negative_x, positive_x),
+                        velocity.z,
+                    )
             old_position = particle.position
             particle.position = particle.position + velocity + gravity * (dt_s * dt_s)
             particle.previous_position = old_position

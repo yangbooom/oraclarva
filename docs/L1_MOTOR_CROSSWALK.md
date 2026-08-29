@@ -30,6 +30,24 @@ Type-II VUM classes. They remain explicitly unresolved.
 Run `python tools/compile_l1_motor_map.py --check` to detect stale generated
 data, and `oraclarva-motor-map-audit` to inspect coverage and blockers.
 
+## Research-mode closed-loop integration
+
+The embodied v0 research fixture now instantiates one LIF identity neuron for
+each of the 58 resolved CATMAID skeletons. The 56 A1 identities receive the
+A1 aggregate motor-pool event and their normalized spike fraction drives the
+already calibrated A1 aggregate muscle actuator. The two A2 MN25 identities
+are recorded for diagnostics only because they are not complete A2 coverage.
+
+This does not fill the null gains in `l1_motor_map_v1.json`. The common
+identity input and normalized A1 pooling are explicitly `MODEL_FITTED`, the
+three unresolved skeletons remain absent, and no identity-specific attachment
+or force is executed. The runtime therefore retains `release_validated: false`.
+
+An A1 identity-population lesion is a causal audit: the aggregate A1 pool
+still spikes, but A1 contraction/proprioception and downstream T3 recruitment
+disappear. This establishes that the research body passes through the named
+identity layer without claiming a release-ready neuromuscular map.
+
 ## Why this map still cannot move the release body
 
 Table 1 establishes anatomical targets, not calibrated force gains, activation
@@ -47,9 +65,11 @@ remain available only to explicit software fixtures.
 
 Create a per-muscle A1 geometry model from published or newly measured origin,
 insertion, and orientation data; then fit activation-to-force dynamics against
-muscle shortening or force recordings. Only after that should A1 neural output
-drive A1 deformation. Homologous copies across A2-A7 must be labeled derived or
-hypothetical unless segment-specific IDs and targets are independently audited.
+muscle shortening or force recordings. Only after that should identity-specific A1 neural outputs drive individual
+A1
+fiber deformation; the current research proxy drives only the aggregate axial
+actuator. Homologous copies across A2-A7 must be labeled derived or hypothetical
+unless segment-specific IDs and targets are independently audited.
 
 ## Primary sources
 

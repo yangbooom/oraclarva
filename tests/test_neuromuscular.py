@@ -130,3 +130,21 @@ def test_neuromuscular_schema_rejects_behavior_commands_and_invalid_activity():
     valid.validate()
     with pytest.raises(ValueError):
         valid.project({"mn": 1.2}, allow_unvalidated=True)
+
+
+def test_neuromuscular_schema_rejects_duplicate_identity_ids():
+    spec = load_body_spec()
+    projection = MotorProjection(
+        neuron_id="duplicate",
+        channel=MuscleChannel("A1", "left", "longitudinal"),
+        weight=1.0,
+        provenance="synthetic",
+    )
+    mapping = NeuromuscularMap(
+        model_id="duplicate-fixture",
+        status="fixture",
+        projections=(projection, projection),
+        body_segment_ids=tuple(segment.id for segment in spec.segments),
+    )
+    with pytest.raises(ValueError, match="one projection per neuron"):
+        mapping.validate()

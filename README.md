@@ -43,6 +43,27 @@ The abdominal muscle atlas now enumerates 358 bilateral fiber identities across
 A1-A6 (58 in A1 and 60 in each of A2-A6). It does not fabricate 3D attachments,
 force gains, or thoracic/terminal homology, so it still cannot actuate the body.
 
+A research-only embodied vertical slice now closes the loop from posterior touch
+through an A27h-like LIF premotor chain, aggregate motor pools, 58 curated
+A1/A2 motor-identity LIF neurons, PMSI-like inhibitory pools, thresholded
+motor excitation, continuous asymmetric muscle activation, 358 named
+A1-A6 fiber proxies, XPBD body deformation, substrate contact, and
+shortening-sensitive proprioception. It produces neural-causal displacement and
+lesion effects, but its reduced topology is `ANATOMY_DERIVED` and all unmeasured
+numeric gains are explicitly `MODEL_FITTED`. The in-sample calibration places
+all seven adjacent onset-phase and all 24 T3-A7 amplitude/rate/duration
+comparisons inside the checked-in animal-level p10-p90 bands.
+
+The executable reference network contains 91 LIF neurons (33 reduced core + 58 identities). All 58 resolved motor identities fire normally; lesioning the 56 causal A1
+identities preserves the aggregate A1 pool spike but blocks A1 proprioception
+and T3 recruitment. A2's two MN25 identities remain diagnostic-only.
+An A4 identity-segment lesion preserves A4 motor firing but blocks A4
+proprioception and downstream A3-T3 recruitment. Individual attachments and
+force gains remain unexecuted; equal identity recruitment is a `MODEL_FITTED`
+aggregate proxy. This is not held-out or whole-body validation; the runtime
+reports `release_validated: false`. See `docs/CLOSED_LOOP_L1_V0.md`; run
+`oraclarva-organism`.
+
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
 ## Quick start
@@ -71,12 +92,13 @@ muscle identity and geometry boundary is in `docs/L1_BODY_WALL_MUSCLE_ATLAS.md`.
 
 ## Interactive L1 body viewer
 
-The `viewer/` app renders the same `data/body/l1_body_v0.json` bundle with
-Three.js. It exposes all twelve mechanical regions on one continuous surface,
-per-region nominal geometry, evidence status, orbit/zoom controls, and a
-posterior-to-anterior contraction wave. Active shortening is compensated by one
-aggregate body-cavity volume constraint rather than twelve sealed spherical
-segments.
+The `viewer/` app renders the shared `data/body/l1_body_v0.json` morphology
+and the generated `data/trajectories/l1_closed_loop_v0.json` Python trajectory.
+Its 151 frames contain 13 internal XPBD nodes and 12 activation channels sampled
+every 30 ms. Three.js interpolates those nodes under one continuous surface; it
+contains no independent gait, Gaussian contraction wave, bend animation, or
+render-driven translation. Active shortening still uses one aggregate body-cavity
+volume constraint rather than twelve sealed spherical segments.
 
 ```bash
 cd viewer
@@ -85,7 +107,29 @@ npm run dev
 ```
 
 The displayed L1 length, width, and per-region profile remain explicit v0
-hypotheses. The viewer does not turn them into observations.
+hypotheses, and the trajectory is model output rather than motion capture. Run
+`python tools/export_closed_loop_trajectory.py --check` to verify that the
+checked-in viewer artifact matches the current 91-LIF Python reference. Run
+`python tools/check_native_viewer_trajectory.py` to compile the C++ core and
+verify all 151 native frames against the same artifact with zero relative
+tolerance and a 2e-9 µm absolute node-coordinate ceiling.
+
+## Native parity
+
+`native/` contains the first dependency-free C++17 numerical port. The Python
+oracle and native binary consume the same versioned synthetic LIF fixture and
+compare every step's spikes, voltage, excitatory current, and inhibitory current,
+including an interneuron lesion. Run `pytest tests/test_native_parity.py`.
+The second shared fixture covers the current embodied approximation itself. C++
+directly executes all 91 neurons, continuous segment activation, the 358-fiber
+aggregate proxy, XPBD body, substrate contact, and proprioceptive feedback. Its
+normal, no-stimulus, and three lesion runs match Python on spikes, first-spike
+times, peak activation/shortening, displacement, and every sampled 13-node
+trajectory frame. Run `pytest tests/test_native_closed_loop_parity.py`.
+
+This establishes native numerical parity for the research approximation, not a
+complete L1 brain/VNC, individual muscle mechanics, held-out biological
+validation, or on-device performance.
 
 ## Non-goals for the reference core
 

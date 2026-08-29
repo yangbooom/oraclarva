@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from .neuromuscular import SPATIAL_GROUPS
 
@@ -101,6 +101,116 @@ class AbdominalMuscleAtlas:
             "full_body_ready": self.is_full_body_ready,
             "geometry_gate": self.geometry_gate,
         }
+
+
+@dataclass(frozen=True, slots=True)
+class MuscleIdentityRecruitmentFrame:
+    activations: Mapping[str, float]
+    segment_by_fiber: Mapping[str, str]
+    provenance: str = "MODEL_FITTED"
+    individual_geometry_executed: bool = False
+
+    @property
+    def active_fiber_count(self) -> int:
+        return sum(value > 0.0 for value in self.activations.values())
+
+
+@dataclass(frozen=True, slots=True)
+class AggregateMuscleIdentityProjection:
+    """Research proxy from aggregate activation through named A1-A6 fibers.
+
+    Equal recruitment is MODEL_FITTED and is aggregated back to one axial
+    actuator per segment. No individual attachment, line of action, CSA, or
+    force gain is implied.
+    """
+
+    atlas: AbdominalMuscleAtlas
+    fibers: tuple[MuscleFiberIdentity, ...] = field(init=False, repr=False)
+    identities: tuple[str, ...] = field(init=False, repr=False)
+    segment_by_fiber: Mapping[str, str] = field(init=False, repr=False)
+    expected_counts: Mapping[str, int] = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        fibers = self.atlas.all_supported_fibers
+        identities = tuple(self.fiber_id(fiber) for fiber in fibers)
+        object.__setattr__(self, "fibers", fibers)
+        object.__setattr__(self, "identities", identities)
+        object.__setattr__(
+            self,
+            "segment_by_fiber",
+            {
+                identity: fiber.segment_id
+                for identity, fiber in zip(identities, fibers, strict=True)
+            },
+        )
+        object.__setattr__(
+            self,
+            "expected_counts",
+            {
+                segment_id: len(self.atlas.fibers_for_segment(segment_id))
+                for segment_id in self.atlas.supported_segments
+            },
+        )
+
+    @staticmethod
+    def fiber_id(fiber: MuscleFiberIdentity) -> str:
+        return (
+            f"{fiber.segment_id}:{fiber.side}:"
+            f"M{fiber.muscle.number}:{fiber.muscle.synonym}"
+        )
+
+    def project(
+        self,
+        segment_activations: Mapping[str, float],
+        *,
+        lesioned_segments: tuple[str, ...] = (),
+    ) -> MuscleIdentityRecruitmentFrame:
+        unknown_lesions = set(lesioned_segments) - set(self.atlas.supported_segments)
+        if unknown_lesions:
+            raise ValueError(
+                f"muscle identity lesion outside A1-A6 atlas: {sorted(unknown_lesions)}"
+            )
+        for segment_id, activation in segment_activations.items():
+            if not 0.0 <= float(activation) <= 1.0:
+                raise ValueError(
+                    f"aggregate activation for {segment_id} must be in [0, 1]"
+                )
+        lesioned = set(lesioned_segments)
+        activations = {
+            identity: (
+                0.0
+                if fiber.segment_id in lesioned
+                else float(segment_activations.get(fiber.segment_id, 0.0))
+            )
+            for identity, fiber in zip(
+                self.identities, self.fibers, strict=True
+            )
+        }
+        return MuscleIdentityRecruitmentFrame(
+            activations=activations,
+            segment_by_fiber=self.segment_by_fiber,
+        )
+
+    def axial_proxy(
+        self,
+        frame: MuscleIdentityRecruitmentFrame,
+        segment_activations: Mapping[str, float],
+    ) -> dict[str, float]:
+        result = {key: float(value) for key, value in segment_activations.items()}
+        sums = {segment_id: 0.0 for segment_id in self.atlas.supported_segments}
+        counts = {segment_id: 0 for segment_id in self.atlas.supported_segments}
+        for identity, activation in frame.activations.items():
+            segment_id = frame.segment_by_fiber[identity]
+            sums[segment_id] += activation
+            counts[segment_id] += 1
+        for segment_id in self.atlas.supported_segments:
+            expected = self.expected_counts[segment_id]
+            if counts[segment_id] != expected:
+                raise ValueError(
+                    f"incomplete identity recruitment for {segment_id}"
+                )
+            result[segment_id] = sums[segment_id] / counts[segment_id]
+        return result
 
 
 def default_muscle_atlas_path() -> Path:

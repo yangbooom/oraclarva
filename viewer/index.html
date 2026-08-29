@@ -21,7 +21,7 @@
               <h1>L1 neuromechanical body</h1>
             </div>
           </div>
-          <div class="status"><span></span> scientific model v0</div>
+          <div class="status"><span></span> closed-loop research trajectory</div>
         </header>
 
         <div class="viewer-shell">
@@ -38,19 +38,19 @@
         <aside class="control-panel">
           <div class="panel-heading">
             <div>
-              <p>BODY INPUT</p>
-              <h2>형태와 수축</h2>
+              <p>CLOSED LOOP</p>
+              <h2>신경–물리 궤적</h2>
             </div>
-            <button id="play" type="button" aria-pressed="false"><span>▶</span> 파동 재생</button>
+            <button id="play" type="button" aria-pressed="false"><span>▶</span> 폐루프 재생</button>
           </div>
 
-          <label class="slider-row" for="contraction">
-            <span>수축 강도 <output id="contraction-value">35%</output></span>
-            <input id="contraction" type="range" min="0" max="100" value="35" />
+          <label class="slider-row" for="timeline">
+            <span>시뮬레이션 시간 <output id="time-value">0.00 s</output></span>
+            <input id="timeline" type="range" min="0" max="1000" value="0" />
           </label>
-          <label class="slider-row" for="bend">
-            <span>측면 굽힘 <output id="bend-value">18%</output></span>
-            <input id="bend" type="range" min="0" max="100" value="18" />
+          <label class="slider-row" for="speed">
+            <span>재생 속도 <output id="speed-value">1.00×</output></span>
+            <input id="speed" type="range" min="25" max="200" step="25" value="100" />
           </label>
 
           <div class="switch-row">
@@ -83,7 +83,7 @@
         <div><span class="dot observed"></span><strong>OBSERVED</strong><small>L1 분절 정체성, L3 물성</small></div>
         <div><span class="dot derived"></span><strong>DERIVED</strong><small>L3 → L1 상사 스케일링</small></div>
         <div><span class="dot hypothesis"></span><strong>HYPOTHESIS</strong><small>L1 길이·폭·분철 프로파일</small></div>
-        <p>이 뷰어는 생물학적 실측 형상을 주장하지 않습니다. 다음 단계는 보정된 L1 dorsal/lateral 영상 코호트로 현재 가설 프로파일을 교체하는 것입니다.</p>
+        <p>외피는 가설 형상이지만 움직임은 Python의 91-LIF 폐루프와 XPBD가 생성한 13개 내부 node 궤적입니다. 미리 만든 파동이나 렌더링 기반 위치 이동은 사용하지 않습니다.</p>
       </section>
     </main>
     <script type="module" src="/src/main.js"></script>

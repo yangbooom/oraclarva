@@ -11,6 +11,7 @@ dependencies = []
 
 [project.optional-dependencies]
 test = ["pytest>=8,<9"]
+media = ["Pillow>=11,<12"]
 
 [project.scripts]
 oraclarva-audit = "oraclarva.audit:main"
@@ -20,6 +21,7 @@ oraclarva-motor-map-audit = "oraclarva.neuromuscular:main"
 oraclarva-kinematics-targets = "oraclarva.kinematics:main"
 oraclarva-muscle-atlas-audit = "oraclarva.muscles:main"
 oraclarva-source-audit = "oraclarva.sources:main"
+oraclarva-organism = "oraclarva.organism:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

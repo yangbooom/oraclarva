@@ -45,6 +45,7 @@ class Synapse:
     post: int
     current_a: float
     kind: str = "excitatory"
+    delay_steps: int = 0
 
     def __post_init__(self) -> None:
         if self.pre < 0 or self.post < 0:
@@ -53,6 +54,8 @@ class Synapse:
             raise ValueError("current_a is an unsigned magnitude and must be positive")
         if self.kind not in {"excitatory", "inhibitory"}:
             raise ValueError("kind must be excitatory or inhibitory")
+        if self.delay_steps < 0:
+            raise ValueError("delay_steps must be non-negative")
 
 
 class SparseLIFNetwork:
@@ -74,6 +77,7 @@ class SparseLIFNetwork:
         self.refractory_steps = [0] * neuron_count
         self.lesioned: set[int] = set()
         self.step_index = 0
+        self.pending_synapses: dict[int, list[Synapse]] = {}
         self.outgoing: list[list[Synapse]] = [[] for _ in range(neuron_count)]
         for synapse in synapses:
             if synapse.pre >= neuron_count or synapse.post >= neuron_count:
@@ -91,6 +95,8 @@ class SparseLIFNetwork:
     def step(self, external_current_a: Mapping[int, float] | None = None) -> tuple[int, ...]:
         cfg = self.config
         external = external_current_a or {}
+        for synapse in self.pending_synapses.pop(self.step_index, []):
+            self._deliver(synapse)
         for neuron_id in external:
             self._check_neuron(neuron_id)
 
@@ -126,12 +132,11 @@ class SparseLIFNetwork:
             self.voltage_v[neuron_id] = cfg.v_reset_v
             self.refractory_steps[neuron_id] = refractory_steps
             for synapse in self.outgoing[neuron_id]:
-                if synapse.post in self.lesioned:
-                    continue
-                if synapse.kind == "excitatory":
-                    self.excitatory_current_a[synapse.post] += synapse.current_a
+                if synapse.delay_steps:
+                    delivery_step = self.step_index + synapse.delay_steps
+                    self.pending_synapses.setdefault(delivery_step, []).append(synapse)
                 else:
-                    self.inhibitory_current_a[synapse.post] += synapse.current_a
+                    self._deliver(synapse)
 
         self.step_index += 1
         return tuple(spikes)
@@ -145,6 +150,14 @@ class SparseLIFNetwork:
             raise ValueError("steps must be non-negative")
         schedule = stimulus or {}
         return [self.step(schedule.get(i)) for i in range(steps)]
+
+    def _deliver(self, synapse: Synapse) -> None:
+        if synapse.post in self.lesioned:
+            return
+        if synapse.kind == "excitatory":
+            self.excitatory_current_a[synapse.post] += synapse.current_a
+        else:
+            self.inhibitory_current_a[synapse.post] += synapse.current_a
 
     def _check_neuron(self, neuron_id: int) -> None:
         if not 0 <= neuron_id < self.neuron_count:

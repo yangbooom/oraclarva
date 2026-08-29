@@ -1,6 +1,6 @@
 import pytest
 
-from oraclarva.muscles import load_muscle_atlas
+from oraclarva.muscles import AggregateMuscleIdentityProjection, load_muscle_atlas
 
 
 def test_abdominal_atlas_has_exact_a1_to_a6_identity_counts():
@@ -48,3 +48,38 @@ def test_audit_reports_geometry_blockers():
     }
     assert summary["supported_fibers"] == 358
     assert not summary["geometry_gate"]["attachment_coordinates_complete"]
+
+
+def test_aggregate_identity_projection_names_all_fibers_without_claiming_geometry():
+    projection = AggregateMuscleIdentityProjection(load_muscle_atlas())
+    segment_activation = {
+        "A1": 0.2, "A2": 0.3, "A3": 0.4,
+        "A4": 0.5, "A5": 0.6, "A6": 0.7,
+        "A7": 0.8, "T3": 0.9,
+    }
+    frame = projection.project(segment_activation)
+    assert len(frame.activations) == 358
+    assert frame.active_fiber_count == 358
+    assert frame.provenance == "MODEL_FITTED"
+    assert not frame.individual_geometry_executed
+    assert "A1:left:M1:DA1" in frame.activations
+    axial = projection.axial_proxy(frame, segment_activation)
+    assert axial == pytest.approx(segment_activation)
+
+
+def test_identity_segment_lesion_zeroes_named_fibers_before_axial_aggregation():
+    projection = AggregateMuscleIdentityProjection(load_muscle_atlas())
+    segment_activation = {
+        segment: 0.5 for segment in ("A1", "A2", "A3", "A4", "A5", "A6")
+    }
+    frame = projection.project(
+        segment_activation, lesioned_segments=("A4",)
+    )
+    a4_values = [
+        value
+        for identity, value in frame.activations.items()
+        if frame.segment_by_fiber[identity] == "A4"
+    ]
+    assert len(a4_values) == 60
+    assert set(a4_values) == {0.0}
+    assert projection.axial_proxy(frame, segment_activation)["A4"] == 0.0
