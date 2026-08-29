@@ -90,7 +90,8 @@
       "A2": 0.72,
       "A1": 0.72,
       "T3": 0.72
-    }
+    },
+    "motor_identity_synaptic_current_a": 1.8e-09
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
@@ -148,6 +149,28 @@
       "No individual attachment coordinates, lines of action, CSA, or force gains are implied.",
       "T3 and A7 remain reduced aggregate actuators because the atlas blocks homology outside A1-A6.",
       "Equal recruitment is an explicit proxy pending L1 muscle recruitment measurements."
+    ]
+  },
+  "motor_identity_projection": {
+    "map_model_id": "dmel_l1_motor_map_v1",
+    "dataset_id": "vfb_l1em_catmaid_project_1",
+    "resolved_identities": 58,
+    "unresolved_identities": 3,
+    "mapping_provenance": "MEASURED_PUBLISHED",
+    "gain_provenance": "MODEL_FITTED",
+    "causal_proxy_segments": [
+      "A1"
+    ],
+    "diagnostic_only_segments": [
+      "A2"
+    ],
+    "method": "A1 uses the mean spike fraction of 56 resolved identity LIF neurons; two A2 MN25 identities are diagnostic because A2 coverage is partial",
+    "release_ready": false,
+    "limitations": [
+      "Resolved CATMAID skeleton names and muscle targets are observed, but identity synaptic current and equal normalized pooling are fitted.",
+      "The three unresolved supplementary skeleton IDs remain absent.",
+      "A2 contains only the left/right MN25 identities and must not be treated as complete.",
+      "A3-A7 and T3 retain reduced aggregate motor pools."
     ]
   }
 }

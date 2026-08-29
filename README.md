@@ -44,8 +44,9 @@ A1-A6 (58 in A1 and 60 in each of A2-A6). It does not fabricate 3D attachments,
 force gains, or thoracic/terminal homology, so it still cannot actuate the body.
 
 A research-only embodied vertical slice now closes the loop from posterior touch
-through an A27h-like LIF premotor chain, motor pools, PMSI-like inhibitory pools,
-thresholded motor excitation, continuous asymmetric muscle activation, 358 named
+through an A27h-like LIF premotor chain, aggregate motor pools, 58 curated
+A1/A2 motor-identity LIF neurons, PMSI-like inhibitory pools, thresholded
+motor excitation, continuous asymmetric muscle activation, 358 named
 A1-A6 fiber proxies, XPBD body deformation, substrate contact, and
 shortening-sensitive proprioception. It produces neural-causal displacement and
 lesion effects, but its reduced topology is `ANATOMY_DERIVED` and all unmeasured
@@ -53,6 +54,9 @@ numeric gains are explicitly `MODEL_FITTED`. The in-sample calibration places
 all seven adjacent onset-phase and all 24 T3-A7 amplitude/rate/duration
 comparisons inside the checked-in animal-level p10-p90 bands.
 
+The executable reference network contains 91 LIF neurons (33 reduced core + 58 identities). All 58 resolved motor identities fire normally; lesioning the 56 causal A1
+identities preserves the aggregate A1 pool spike but blocks A1 proprioception
+and T3 recruitment. A2's two MN25 identities remain diagnostic-only.
 An A4 identity-segment lesion preserves A4 motor firing but blocks A4
 proprioception and downstream A3-T3 recruitment. Individual attachments and
 force gains remain unexecuted; equal identity recruitment is a `MODEL_FITTED`

@@ -13,6 +13,7 @@ from .body3d import ScientificBody3D, Vec3
 from .kinematics import load_kinematic_targets
 from .lif import SparseLIFNetwork, Synapse
 from .muscles import AggregateMuscleIdentityProjection, load_muscle_atlas
+from .neuromuscular import load_neuromuscular_map
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,8 +34,10 @@ class ClosedLoopResult:
     contraction_fit: dict[str, dict[str, dict[str, float | bool | None]]]
     contraction_fit_passed: bool
     muscle_identity_summary: dict[str, Any]
+    motor_identity_summary: dict[str, Any]
     lesion: str | None
     muscle_lesion: str | None
+    motor_identity_lesion: str | None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -58,8 +61,10 @@ class ClosedLoopResult:
                 "in-sample Greaney 2026 L1 plausibility fit; no held-out cohort"
             ),
             "muscle_identity_summary": self.muscle_identity_summary,
+            "motor_identity_summary": self.motor_identity_summary,
             "lesion": self.lesion,
             "muscle_lesion": self.muscle_lesion,
+            "motor_identity_lesion": self.motor_identity_lesion,
             "claim_boundary": "reduced embodied neural research model; not a complete L1 brain emulation",
         }
 
@@ -76,6 +81,17 @@ def load_closed_loop_config(path: str | Path | None = None) -> dict[str, Any]:
         raise ValueError("reduced circuit topology must be anatomy-derived")
     if raw.get("parameter_provenance", {}).get("provenance") != "MODEL_FITTED":
         raise ValueError("unmeasured closed-loop parameters must be model-fitted")
+    motor_identity_projection = raw.get("motor_identity_projection", {})
+    if motor_identity_projection.get("mapping_provenance") != "MEASURED_PUBLISHED":
+        raise ValueError("motor identity names and targets must remain source-backed")
+    if motor_identity_projection.get("gain_provenance") != "MODEL_FITTED":
+        raise ValueError("motor identity pooling gains must remain model-fitted")
+    if int(motor_identity_projection.get("resolved_identities", 0)) != 58:
+        raise ValueError("motor identity proxy must preserve 58 resolved skeletons")
+    if motor_identity_projection.get("causal_proxy_segments") != ["A1"]:
+        raise ValueError("only A1 has causal identity proxy coverage in v0")
+    if motor_identity_projection.get("release_ready") is not False:
+        raise ValueError("partial motor identity projection cannot be release-ready")
     identity_projection = raw.get("muscle_identity_projection", {})
     if identity_projection.get("provenance") != "MODEL_FITTED":
         raise ValueError("equal muscle-identity recruitment must remain model-fitted")
@@ -95,6 +111,7 @@ def load_closed_loop_config(path: str | Path | None = None) -> dict[str, Any]:
         "motor_excitation_tau_s",
         "excitation_per_motor_spike",
         "muscle_activation_excitation_threshold",
+        "motor_identity_synaptic_current_a",
     )
     if any(float(parameters.get(name, 0.0)) <= 0 for name in positive_parameters):
         raise ValueError("motor-excitation and activation parameters must be positive")
@@ -137,6 +154,7 @@ class ClosedLoopLarva:
         *,
         lesion_premotor_segment: str | None = None,
         lesion_muscle_segment: str | None = None,
+        lesion_motor_identity_segment: str | None = None,
     ) -> None:
         self.config = config or load_closed_loop_config()
         self.params = self.config["parameters"]
@@ -148,6 +166,16 @@ class ClosedLoopLarva:
             ],
         )
         self.body_indices = {segment.id: index for index, segment in enumerate(self.body.geometry)}
+        self.neuromuscular_map = load_neuromuscular_map(self.body.spec)
+        self.motor_identities = self.neuromuscular_map.projections
+        self.motor_identities_by_segment = {
+            segment: tuple(
+                projection
+                for projection in self.motor_identities
+                if projection.channel.segment_id == segment
+            )
+            for segment in ("A1", "A2")
+        }
         self.muscle_atlas = load_muscle_atlas()
         self.muscle_identity_projection = AggregateMuscleIdentityProjection(
             self.muscle_atlas
@@ -161,14 +189,27 @@ class ClosedLoopLarva:
             and lesion_muscle_segment not in self.muscle_atlas.supported_segments
         ):
             raise ValueError("muscle lesion must name an A1-A6 atlas segment")
+        if (
+            lesion_motor_identity_segment is not None
+            and lesion_motor_identity_segment != "A1"
+        ):
+            raise ValueError(
+                "only A1 has causal motor-identity proxy coverage in v0"
+            )
         self.lesion = lesion_premotor_segment
         self.muscle_lesion = lesion_muscle_segment
+        self.motor_identity_lesion = lesion_motor_identity_segment
         count = len(self.segments)
         self.touch = 0
         self.proprioceptor_offset = 1
         self.premotor_offset = 1 + count
         self.inhibitory_offset = 1 + 2 * count
         self.motor_offset = 1 + 3 * count
+        self.motor_identity_offset = 1 + 4 * count
+        self.motor_identity_indices = {
+            projection.neuron_id: self.motor_identity_offset + index
+            for index, projection in enumerate(self.motor_identities)
+        }
         current = float(self.params["synaptic_current_a"])
         synapses = [Synapse(self.touch, self.premotor_offset, current)]
         synapses.extend(
@@ -197,6 +238,19 @@ class ClosedLoopLarva:
             )
             for i in range(count)
         )
+        identity_current = float(
+            self.params["motor_identity_synaptic_current_a"]
+        )
+        synapses.extend(
+            Synapse(
+                self.motor_offset + self.segments.index(
+                    projection.channel.segment_id
+                ),
+                self.motor_identity_indices[projection.neuron_id],
+                identity_current,
+            )
+            for projection in self.motor_identities
+        )
         relay_delays = self.params["intersegmental_relay_delay_s"]
         expected_relays = set(self.segments[:-1])
         if set(relay_delays) != expected_relays:
@@ -211,9 +265,19 @@ class ClosedLoopLarva:
             )
             for i, segment in enumerate(self.segments[:-1])
         )
-        self.network = SparseLIFNetwork(1 + 4 * count, synapses)
+        self.network = SparseLIFNetwork(
+            self.motor_identity_offset + len(self.motor_identities),
+            synapses,
+        )
         if self.lesion is not None:
             self.network.lesion([self.premotor_offset + self.segments.index(self.lesion)])
+        if self.motor_identity_lesion is not None:
+            self.network.lesion(
+                self.motor_identity_indices[projection.neuron_id]
+                for projection in self.motor_identities_by_segment[
+                    self.motor_identity_lesion
+                ]
+            )
 
     def run(self, *, stimulate: bool = True) -> ClosedLoopResult:
         p = self.params
@@ -227,6 +291,7 @@ class ClosedLoopLarva:
         peak_activation = [0.0] * len(self.segments)
         peak_shortening = [0.0] * len(self.segments)
         peak_recruited_fibers = 0
+        active_motor_identity_ids: set[str] = set()
         labels = self._labels()
         spike_counts = {label: 0 for label in labels}
         first_spike = {label: None for label in labels}
@@ -261,15 +326,32 @@ class ClosedLoopLarva:
                 spike_counts[label] += 1
                 if first_spike[label] is None:
                     first_spike[label] = time_s
+                if neuron >= self.motor_identity_offset:
+                    active_motor_identity_ids.add(
+                        self.motor_identities[
+                            neuron - self.motor_identity_offset
+                        ].neuron_id
+                    )
             excitation_decay = exp(
                 -dt / float(p["motor_excitation_tau_s"])
             )
             excitation_threshold = float(
                 p["muscle_activation_excitation_threshold"]
             )
-            for i in range(len(self.segments)):
+            for i, segment in enumerate(self.segments):
                 excitation[i] *= excitation_decay
-                if self.motor_offset + i in spikes:
+                if segment == "A1":
+                    a1_identities = self.motor_identities_by_segment["A1"]
+                    identity_spike_fraction = sum(
+                        self.motor_identity_indices[projection.neuron_id]
+                        in spikes
+                        for projection in a1_identities
+                    ) / len(a1_identities)
+                    excitation[i] += (
+                        float(p["excitation_per_motor_spike"])
+                        * identity_spike_fraction
+                    )
+                elif self.motor_offset + i in spikes:
                     excitation[i] += float(p["excitation_per_motor_spike"])
                 activation_target = (
                     1.0 if excitation[i] >= excitation_threshold else 0.0
@@ -346,6 +428,26 @@ class ClosedLoopLarva:
                     for metric in segment.values()
                 )
             ),
+            motor_identity_summary={
+                "map_model_id": self.neuromuscular_map.model_id,
+                "dataset_id": self.neuromuscular_map.dataset_id,
+                "mapping_provenance": "MEASURED_PUBLISHED",
+                "gain_provenance": "MODEL_FITTED",
+                "network_neurons": self.network.neuron_count,
+                "reduced_core_neurons": self.motor_identity_offset,
+                "resolved_identities": len(self.motor_identities),
+                "active_identities": len(active_motor_identity_ids),
+                "a1_causal_proxy_identities": len(
+                    self.motor_identities_by_segment["A1"]
+                ),
+                "a2_diagnostic_only_identities": len(
+                    self.motor_identities_by_segment["A2"]
+                ),
+                "unresolved_neuron_ids": list(
+                    self.neuromuscular_map.unresolved_neuron_ids
+                ),
+                "release_ready": False,
+            },
             muscle_identity_summary={
                 "atlas_model_id": self.muscle_atlas.model_id,
                 "projection_provenance": "MODEL_FITTED",
@@ -357,6 +459,7 @@ class ClosedLoopLarva:
             },
             lesion=self.lesion,
             muscle_lesion=self.muscle_lesion,
+            motor_identity_lesion=self.motor_identity_lesion,
         )
 
     @staticmethod
@@ -476,6 +579,10 @@ class ClosedLoopLarva:
         labels.extend(f"premotor_A27h_like:{segment}" for segment in self.segments)
         labels.extend(f"inhibitory_PMSI_like:{segment}" for segment in self.segments)
         labels.extend(f"motor_pool:{segment}" for segment in self.segments)
+        labels.extend(
+            f"motor_identity:{projection.neuron_id}"
+            for projection in self.motor_identities
+        )
         return labels
 
     def _center_x(self) -> float:
@@ -491,12 +598,18 @@ def main(argv: list[str] | None = None) -> int:
         choices=load_muscle_atlas().supported_segments,
         help="zero all named muscle-identity proxies in one A1-A6 segment",
     )
+    parser.add_argument(
+        "--lesion-motor-identity-segment",
+        choices=("A1",),
+        help="lesion all resolved causal motor-identity neurons in A1",
+    )
     parser.add_argument("--no-touch", action="store_true", help="run the unstimulated control")
     args = parser.parse_args(argv)
     result = ClosedLoopLarva(
         load_closed_loop_config(args.config),
         lesion_premotor_segment=args.lesion_premotor,
         lesion_muscle_segment=args.lesion_muscle_segment,
+        lesion_motor_identity_segment=args.lesion_motor_identity_segment,
     ).run(stimulate=not args.no_touch)
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0

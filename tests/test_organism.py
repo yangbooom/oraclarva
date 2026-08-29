@@ -17,6 +17,13 @@ def test_config_keeps_approximations_and_causal_contract_explicit():
     assert config["parameters"]["pmsi_recruitment_delay_s"] == 0.002
     assert config["parameters"]["pmsi_inhibitory_current_a"] > 0
     assert config["parameters"]["fitted_cycle_period_s"] == 2.5
+    motor_identity_projection = config["motor_identity_projection"]
+    assert motor_identity_projection["mapping_provenance"] == "MEASURED_PUBLISHED"
+    assert motor_identity_projection["gain_provenance"] == "MODEL_FITTED"
+    assert motor_identity_projection["resolved_identities"] == 58
+    assert motor_identity_projection["causal_proxy_segments"] == ["A1"]
+    assert motor_identity_projection["diagnostic_only_segments"] == ["A2"]
+    assert not motor_identity_projection["release_ready"]
     identity_projection = config["muscle_identity_projection"]
     assert identity_projection["provenance"] == "MODEL_FITTED"
     assert identity_projection["supported_fibers"] == 358
@@ -50,6 +57,20 @@ def test_touch_produces_ordered_neural_wave_contraction_and_forward_motion():
     assert result.phase_fit_passed
     assert result.contraction_fit_passed
     assert result.to_dict()["release_validated"] is False
+    assert result.motor_identity_summary["network_neurons"] == 91
+    assert result.motor_identity_summary["reduced_core_neurons"] == 33
+    assert result.motor_identity_summary["resolved_identities"] == 58
+    assert result.motor_identity_summary["active_identities"] == 58
+    assert result.motor_identity_summary["a1_causal_proxy_identities"] == 56
+    assert result.motor_identity_summary["a2_diagnostic_only_identities"] == 2
+    assert not result.motor_identity_summary["release_ready"]
+    identity_counts = {
+        label: count
+        for label, count in result.spike_counts.items()
+        if label.startswith("motor_identity:")
+    }
+    assert len(identity_counts) == 58
+    assert set(identity_counts.values()) == {1}
     assert result.muscle_identity_summary["supported_fibers"] == 358
     assert result.muscle_identity_summary["peak_recruited_fibers"] == 358
     assert not result.muscle_identity_summary["individual_geometry_executed"]
@@ -124,5 +145,27 @@ def test_a4_muscle_identity_lesion_breaks_feedback_after_motor_firing():
     assert result.peak_shortening_fraction["A4"] < 0.001
     assert result.muscle_identity_summary["peak_recruited_fibers"] == 120
     assert result.muscle_lesion == "A4"
+    assert not result.phase_fit_passed
+    assert not result.contraction_fit_passed
+
+
+def test_a1_motor_identity_lesion_preserves_pool_spike_but_blocks_t3():
+    organism = ClosedLoopLarva(lesion_motor_identity_segment="A1")
+    a1_identity_ids = [
+        projection.neuron_id
+        for projection in organism.motor_identities_by_segment["A1"]
+    ]
+    result = organism.run()
+    assert result.spike_counts["motor_pool:A1"] == 1
+    assert result.spike_counts["proprioceptor:A1"] == 0
+    assert result.spike_counts["motor_pool:T3"] == 0
+    a1_identity_counts = [
+        result.spike_counts[f"motor_identity:{neuron_id}"]
+        for neuron_id in a1_identity_ids
+    ]
+    assert set(a1_identity_counts) == {0}
+    assert result.motor_identity_summary["active_identities"] == 2
+    assert result.peak_shortening_fraction["A1"] < 0.001
+    assert result.motor_identity_lesion == "A1"
     assert not result.phase_fit_passed
     assert not result.contraction_fit_passed

@@ -84,6 +84,11 @@ class NeuromuscularMap:
 
     def validate(self) -> None:
         segment_ids = set(self.body_segment_ids)
+        neuron_ids = [projection.neuron_id for projection in self.projections]
+        if len(neuron_ids) != len(set(neuron_ids)):
+            raise ValueError(
+                "v1 motor identity crosswalk requires one projection per neuron"
+            )
         for projection in self.projections:
             if not projection.neuron_id:
                 raise ValueError("motor projection requires a neuron id")
