@@ -75,6 +75,23 @@ reported anterior unilateral activity during larval turning, not a complete or
 measured L1 turning connectome. See `docs/BILATERAL_STEERING_V0.md`; run
 `oraclarva-bilateral --left 1 --right 0`.
 
+A four-receptor spatial extension now adds dorsal/ventral head sensing and
+local-binormal pitch without changing the causal contract. The combined core
+executes 168 LIF neurons and 188 synapses, projects continuous output through
+the published dorsal/ventral muscle spatial groups, and drives yaw plus pitch
+on one XPBD body. Zero input is exact rest, and an arbitrary 73-degree initial
+yaw rotates every one of the 151 physical trajectory frames within a 3e-9 um
+coordinate tolerance.
+
+A passive 3D contact world supplies plane and sphere signed-distance constraints
+and four receptor samples; it never supplies a movement or orientation. The
+checked research fixtures climb a 20% plane without penetration and use receptor
+distance differences to steer clear of an offset sphere before contact. All
+sensory cadence, thoracic overrides, curvature gains, and contact friction are
+explicitly `MODEL_FITTED`; the ramp and sphere are synthetic diagnostics rather
+than an L1 habitat. See `docs/SPATIAL_STEERING_AND_ENVIRONMENT_V0.md`; run
+`oraclarva-spatial --left 1 --right 0 --dorsal 1 --ventral 0 --free`.
+
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
 ## Quick start
@@ -92,6 +109,8 @@ oraclarva-motor-map-audit
 oraclarva-kinematics-targets
 oraclarva-muscle-atlas-audit
 oraclarva-bilateral --left 1 --right 0
+oraclarva-pitch --dorsal 1 --ventral 0 --free
+oraclarva-spatial --left 1 --right 0 --dorsal 1 --ventral 0 --free
 oraclarva-audit neurons.csv synapses.csv
 ```
 
@@ -127,6 +146,20 @@ checked-in viewer artifact matches the current 126-LIF Python reference. The
 bilateral C++ parity test compares all 151 native frames with a 2e-9 µm absolute
 node-coordinate ceiling across symmetric, left, right, zero-input, and lesion
 conditions.
+
+## Spatial and environment diagnostics
+
+The spatial artifact contains three model-authored 151-frame trajectories:
+combined free yaw/pitch, a symmetric 20% slope climb, and four-receptor
+offset-sphere avoidance. The GIF below is rendered only from those 13-node
+physics frames; it does not synthesize a gait or change position.
+
+![Free 3D, slope, and obstacle trajectories](docs/assets/oraclarva_spatial_environment.gif)
+
+```bash
+python tools/export_spatial_environment_trajectory.py --check
+python tools/render_spatial_environment_gif.py
+```
 
 ## Native parity
 

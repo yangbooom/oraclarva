@@ -1,0 +1,123 @@
+{
+  "model_id": "dmel_l1_spatial_steering_v0",
+  "status": "research_approximation",
+  "stage": "L1",
+  "base_model_ids": [
+    "dmel_l1_bilateral_steering_v0",
+    "dmel_l1_dorsoventral_pitch_v0"
+  ],
+  "channels": [
+    "left",
+    "right",
+    "dorsal",
+    "ventral"
+  ],
+  "wave_segments_posterior_to_anterior": [
+    "A7",
+    "A6",
+    "A5",
+    "A4",
+    "A3",
+    "A2",
+    "A1",
+    "T3",
+    "T2",
+    "T1"
+  ],
+  "causal_contract": [
+    "environment",
+    "four_receptor_sensory_transduction",
+    "sparse_spatial_neural_dynamics",
+    "four_opposed_motor_pools",
+    "side_and_spatial_group_muscle_activation",
+    "yaw_and_pitch_body_physics",
+    "environment"
+  ],
+  "topology": {
+    "provenance": "ANATOMY_DERIVED",
+    "description": "Four opposed channels share sensory recruitment of a reduced forward wave. Rectified left/right and dorsal/ventral differences add axis-specific anterior activity; continuous motor activation drives one body with simultaneous yaw and local-binormal pitch.",
+    "limitations": [
+      "This combines two reduced circuit priors; it is not a complete identified L1 spatial steering connectome.",
+      "The four motor pools are aggregate research populations and do not add unobserved individual thoracic motor identities.",
+      "Roll control, individual attachment coordinates, CSA, force gains, and measured 3D joint moments are absent."
+    ]
+  },
+  "parameters": {
+    "active_yaw_curvature_gain": 0.1,
+    "active_pitch_curvature_gain": 0.2,
+    "active_bending_stiffness_ratio": 0.25,
+    "asymmetric_sensory_current_a": 3e-09,
+    "asymmetric_synaptic_current_a": 3e-09,
+    "yaw_asymmetric_segments": [
+      "T3",
+      "A1",
+      "A2"
+    ],
+    "yaw_asymmetric_delay_s_by_segment": {
+      "T3": 0,
+      "A1": 0.03,
+      "A2": 0.06
+    },
+    "pitch_asymmetric_segments": [
+      "T1",
+      "T2",
+      "T3",
+      "A1",
+      "A2"
+    ],
+    "pitch_asymmetric_delay_s_by_segment": {
+      "T1": 0,
+      "T2": 0.03,
+      "T3": 0.06,
+      "A1": 0.09,
+      "A2": 0.12
+    },
+    "maximum_shortening_fraction_by_segment_overrides": {
+      "T2": 0.35057285,
+      "T1": 0.35057285
+    },
+    "muscle_activation_rise_tau_s_by_segment_overrides": {
+      "T2": 0.6,
+      "T1": 0.6
+    },
+    "muscle_activation_fall_tau_s_by_segment_overrides": {
+      "T2": 0.72,
+      "T1": 0.72
+    },
+    "intersegmental_relay_delay_s_overrides": {
+      "T3": 0.1106,
+      "T2": 0.1106
+    },
+    "stimulus_intensity_min": 0,
+    "stimulus_intensity_max": 1,
+    "contact_friction_coefficient": 0.35
+  },
+  "parameter_provenance": {
+    "provenance": "MODEL_FITTED",
+    "objective": "Preserve zero-input rest and yaw rotational equivariance while simultaneous horizontal and dorsoventral receptor differences create nonzero 3D curvature in one body.",
+    "uncertainty": "All currents, delays, thoracic overrides, equal pool recruitment, curvature gains, virtual rails, and contact values are research parameters. Yaw 0.10 and pitch 0.20 retain the separately audited stable fixtures; they are not measured L1 constants. The terrain Coulomb coefficient 0.35 is a MODEL_FITTED contact value, not an L1 substrate measurement."
+  },
+  "evidence": [
+    {
+      "doi": "10.1016/j.cub.2015.03.023",
+      "used_for": "anterior unilateral activity topology prior for horizontal turning"
+    },
+    {
+      "doi": "10.1152/jn.00731.2015",
+      "used_for": "fictive anterior left-right asymmetry topology prior; L3 only"
+    },
+    {
+      "doi": "10.7554/eLife.51781",
+      "used_for": "published dorsal and ventral body-wall muscle spatial groups"
+    },
+    {
+      "doi": "10.7554/eLife.38740",
+      "used_for": "anterior paths to distinct dorsal and ventral motor targets; speculative head-sweep context"
+    },
+    {
+      "doi": "10.1371/journal.pone.0135011",
+      "used_for": "larval PaN motor neurons and dorsal protractor head-tilt context"
+    }
+  ],
+  "release_validated": false
+}
