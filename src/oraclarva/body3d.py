@@ -484,7 +484,62 @@ class ScientificBody3D:
                     left.position = left.position - direction * (left.inverse_mass * lagrange)
                 if right.inverse_mass:
                     right.position = right.position + direction * (right.inverse_mass * lagrange)
-            if active_curvature_gain or active_pitch_curvature_gain:
+            if active_curvature_gain and not active_pitch_curvature_gain:
+                # Preserve the original planar constraint arithmetic exactly.
+                # The generic 3D frame below is mathematically equivalent for
+                # zero pitch, but its normalization order perturbs archived
+                # trajectory coordinates at the final decimal place.
+                for index in range(1, len(self.particles) - 1):
+                    left = self.particles[index - 1]
+                    middle = self.particles[index]
+                    right = self.particles[index + 1]
+                    differential = 0.5 * (
+                        self.left_activations[index - 1]
+                        - self.right_activations[index - 1]
+                        + self.left_activations[index]
+                        - self.right_activations[index]
+                    )
+                    mean_rest_length = 0.5 * (
+                        self.geometry[index - 1].rest_length_m
+                        + self.geometry[index].rest_length_m
+                    )
+                    target_offset = (
+                        active_curvature_gain
+                        * mean_rest_length
+                        * differential
+                    )
+                    span = right.position - left.position
+                    planar_span = sqrt(span.x * span.x + span.y * span.y)
+                    if planar_span == 0:
+                        continue
+                    normal = Vec3(
+                        -span.y / planar_span, span.x / planar_span, 0.0
+                    )
+                    midpoint = (left.position + right.position) * 0.5
+                    constraint = (
+                        (middle.position - midpoint).dot(normal)
+                        - target_offset
+                    )
+                    denominator = (
+                        0.25 * left.inverse_mass
+                        + middle.inverse_mass
+                        + 0.25 * right.inverse_mass
+                        + bending_alpha
+                    )
+                    lagrange = -constraint / denominator
+                    if left.inverse_mass:
+                        left.position = left.position + normal * (
+                            -0.5 * left.inverse_mass * lagrange
+                        )
+                    if middle.inverse_mass:
+                        middle.position = middle.position + normal * (
+                            middle.inverse_mass * lagrange
+                        )
+                    if right.inverse_mass:
+                        right.position = right.position + normal * (
+                            -0.5 * right.inverse_mass * lagrange
+                        )
+            elif active_curvature_gain or active_pitch_curvature_gain:
                 for index in range(1, len(self.particles) - 1):
                     left = self.particles[index - 1]
                     middle = self.particles[index]
