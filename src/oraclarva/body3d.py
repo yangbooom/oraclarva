@@ -144,16 +144,31 @@ class ScientificBody3D:
         ground_z: float | None = 0.0,
         iterations: int = 12,
         velocity_retention: float = 0.98,
+        ground_velocity_retention_x: tuple[float, float] | None = None,
     ) -> None:
         if dt_s <= 0 or iterations <= 0:
             raise ValueError("dt and iterations must be positive")
         if not 0 <= velocity_retention <= 1:
             raise ValueError("velocity_retention must be in [0, 1]")
+        if ground_velocity_retention_x is not None and any(
+            not 0 <= value <= 1 for value in ground_velocity_retention_x
+        ):
+            raise ValueError("ground tangential retention must be in [0, 1]")
 
         for index, particle in enumerate(self.particles):
             if particle.inverse_mass == 0:
                 continue
             velocity = (particle.position - particle.previous_position) * velocity_retention
+            if ground_z is not None and ground_velocity_retention_x is not None:
+                clearance = self._node_clearance(index)
+                if particle.position.z <= ground_z + clearance + 1e-15:
+                    negative_x, positive_x = ground_velocity_retention_x
+                    tangential_retention = negative_x if velocity.x < 0 else positive_x
+                    velocity = Vec3(
+                        velocity.x * tangential_retention,
+                        velocity.y * min(negative_x, positive_x),
+                        velocity.z,
+                    )
             old_position = particle.position
             particle.position = particle.position + velocity + gravity * (dt_s * dt_s)
             particle.previous_position = old_position

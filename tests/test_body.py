@@ -78,3 +78,10 @@ def test_unstimulated_body_preserves_rest_lengths_without_gravity():
         body.step(0.001, gravity=Vec3(0.0, 0.0, 0.0), ground_z=None)
     after = [body.segment_length_m(i) for i in range(len(body.geometry))]
     assert after == pytest.approx(before, rel=1e-9, abs=1e-12)
+
+
+def test_ground_tangential_retention_is_a_bounded_physical_parameter():
+    body = ScientificBody3D(load_body_spec())
+    with pytest.raises(ValueError, match="tangential retention"):
+        body.step(0.001, ground_velocity_retention_x=(1.1, 0.1))
+    body.step(0.001, ground_velocity_retention_x=(0.9, 0.1))

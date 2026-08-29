@@ -1,0 +1,43 @@
+{
+  "model_id": "dmel_l1_closed_loop_v0",
+  "status": "research_approximation",
+  "stage": "L1",
+  "causal_contract": ["environment", "sensory_transduction", "neural_dynamics", "motor_neurons", "muscle_activation", "body_physics", "environment"],
+  "wave_segments_posterior_to_anterior": ["A7", "A6", "A5", "A4", "A3", "A2", "A1", "T3"],
+  "topology": {
+    "provenance": "ANATOMY_DERIVED",
+    "description": "Reduced forward-wave circuit: posterior touch receptor initiates A27h-like premotor activity; each premotor excites its segment motor pool; shortening-sensitive proprioception excites the next anterior premotor pool.",
+    "limitations": ["Not a complete brain or VNC connectome.", "The reduced proprioceptor-to-next-premotor edge is a circuit-level approximation, not a claimed identified monosynaptic connection.", "One bilateral longitudinal motor pool represents many neurons and muscles per segment."]
+  },
+  "parameters": {
+    "dt_s": 0.001,
+    "duration_s": 2.5,
+    "synaptic_current_a": 1.8e-9,
+    "posterior_touch_current_a": 4.0e-9,
+    "posterior_touch_duration_s": 0.1,
+    "muscle_activation_tau_s": 0.18,
+    "activation_per_motor_spike": 0.12,
+    "proprioceptor_min_strain": 0.05,
+    "proprioceptor_min_shortening_rate_m_s": 1.0e-5,
+    "proprioceptor_current_gain_a_s_m": 2.0e-4,
+    "proprioceptor_max_current_a": 4.0e-9,
+    "sensory_adaptation_tau_s": 0.4,
+    "sensory_adaptation_fraction": 0.2,
+    "body_velocity_retention": 0.5,
+    "ground_negative_x_retention": 0.9,
+    "ground_positive_x_retention": 0.1
+  },
+  "parameter_provenance": {
+    "provenance": "MODEL_FITTED",
+    "objective": "Produce one stable posterior-to-anterior neural and contraction wave in the existing reference body while preserving the published L1 segment order and remaining inside continuous biophysical interfaces.",
+    "fit_status": "engineering_baseline_not_kinematically_fitted",
+    "uncertainty": "All numeric neural, sensory, activation, adaptation, and contact parameters require fitting against held-out L1 recordings; none is a measured L1 constant."
+  },
+  "sources": [
+    {"source_id": "fushiki_2016", "doi": "10.7554/eLife.13253", "used_for": "A27h forward-wave premotor role and A27h-to-motor connectivity"},
+    {"source_id": "hughes_thomas_2007", "doi": "10.1016/j.mcn.2007.04.001", "used_for": "proprioceptive mission-accomplished feedback concept"},
+    {"source_id": "pehlevan_2016", "doi": "10.7554/eLife.11031", "used_for": "reduced proprioceptive propagation topology and frictional neuromechanics modeling precedent"},
+    {"source_id": "zarin_2019", "doi": "10.7554/eLife.51781", "used_for": "segmental premotor/motor architecture and distributed motor recruitment"},
+    {"source_id": "greaney_2026", "doi": "10.1523/JNEUROSCI.1623-25.2026", "used_for": "L1 posterior-to-anterior segment order and future kinematic fitting targets"}
+  ]
+}
