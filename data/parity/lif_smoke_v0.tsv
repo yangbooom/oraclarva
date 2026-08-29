@@ -1,0 +1,27 @@
+# Oraclarva native/Python numerical parity fixture.
+# status: synthetic_parity_fixture
+# allowed_use: numerical_regression_only
+# This is not measured biology and is not a locomotion policy.
+neuron_count	3
+steps	50
+config	dt_s	0.001
+config	tau_m_s	0.020
+config	tau_exc_s	0.005
+config	tau_inh_s	0.010
+config	resistance_ohm	100000000
+config	v_rest_v	-0.065
+config	v_reset_v	-0.065
+config	v_threshold_v	-0.050
+config	refractory_s	0.002
+synapse	0	1	1.25e-9	excitatory	0
+synapse	1	2	1.25e-9	excitatory	0
+stimulus	0	0	4e-9
+stimulus	4	0	4e-9
+stimulus	8	0	4e-9
+stimulus	12	0	4e-9
+stimulus	16	0	4e-9
+stimulus	20	0	4e-9
+stimulus	24	0	4e-9
+stimulus	28	0	4e-9
+stimulus	32	0	4e-9
+stimulus	36	0	4e-9

@@ -26,3 +26,11 @@ The player changes the environment or performs declared neural interventions. Th
 ## First native acceptance test
 
 Given the same network, initial state, stimulus schedule, lesion set, and floating-point mode, the native core must match the Python reference on spike counts, spike timing tolerance, membrane traces, and causal-path assertions. Performance is evaluated only after correctness passes.
+
+The first executable gate is now `data/parity/lif_smoke_v0.tsv`. Python and the
+dependency-free C++17 core consume that same synthetic fixture and compare every
+step's spike identities, membrane voltages, and separate excitatory/inhibitory
+currents in both normal and interneuron-lesioned conditions. This proves only LIF
+numerical parity. The 91-neuron research network, continuous muscle activation,
+XPBD body, contacts, proprioceptive feedback, and mobile performance are not yet
+native-parity validated.

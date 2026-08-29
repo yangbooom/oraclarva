@@ -111,6 +111,16 @@ hypotheses, and the trajectory is model output rather than motion capture. Run
 `python tools/export_closed_loop_trajectory.py --check` to verify that the
 checked-in viewer artifact matches the current 91-LIF Python reference.
 
+## Native parity
+
+`native/` contains the first dependency-free C++17 numerical port. The Python
+oracle and native binary consume the same versioned synthetic LIF fixture and
+compare every step's spikes, voltage, excitatory current, and inhibitory current,
+including an interneuron lesion. Run `pytest tests/test_native_parity.py`.
+Passing this fixture covers the LIF integrator only; it does not yet establish
+native parity for the 91-neuron research circuit, muscles, XPBD body, contact, or
+proprioceptive feedback.
+
 ## Non-goals for the reference core
 
 - claiming consciousness or a complete mind upload;
