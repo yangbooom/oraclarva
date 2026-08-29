@@ -1,9 +1,11 @@
 import inspect
+from math import cos, radians, sin
 
 import pytest
 
 from oraclarva.bilateral import (
     BilateralClosedLoopLarva,
+    BilateralSensoryState,
     BilateralStimulus,
     load_bilateral_config,
 )
@@ -12,6 +14,13 @@ from oraclarva.bilateral import (
 @pytest.fixture(scope="module")
 def symmetric_result():
     return BilateralClosedLoopLarva().run(
+        BilateralStimulus(1.0, 1.0), record_trajectory_interval_s=0.03
+    )
+
+
+@pytest.fixture(scope="module")
+def rotated_symmetric_result():
+    return BilateralClosedLoopLarva(initial_yaw_deg=73.0).run(
         BilateralStimulus(1.0, 1.0), record_trajectory_interval_s=0.03
     )
 
@@ -66,6 +75,43 @@ def test_symmetric_sensory_input_preserves_straight_bilateral_wave(
         assert peak["left"] == pytest.approx(peak["right"], abs=1e-12), segment
 
 
+def test_forward_wave_is_yaw_equivariant_for_every_screen_direction(
+    symmetric_result, rotated_symmetric_result
+):
+    angle = radians(73.0)
+    assert rotated_symmetric_result.displacement_x_um == pytest.approx(
+        cos(angle) * symmetric_result.displacement_x_um
+        - sin(angle) * symmetric_result.displacement_y_um,
+        abs=1e-9,
+    )
+    assert rotated_symmetric_result.displacement_y_um == pytest.approx(
+        sin(angle) * symmetric_result.displacement_x_um
+        + cos(angle) * symmetric_result.displacement_y_um,
+        abs=1e-9,
+    )
+    assert rotated_symmetric_result.heading_change_deg == pytest.approx(
+        symmetric_result.heading_change_deg, abs=1e-9
+    )
+    assert rotated_symmetric_result.maximum_abs_lateral_um == pytest.approx(
+        symmetric_result.maximum_abs_lateral_um, abs=1e-9
+    )
+    for base_frame, rotated_frame in zip(
+        symmetric_result.trajectory_samples,
+        rotated_symmetric_result.trajectory_samples,
+        strict=True,
+    ):
+        for base_node, rotated_node in zip(
+            base_frame["nodes_um"], rotated_frame["nodes_um"], strict=True
+        ):
+            assert rotated_node[0] == pytest.approx(
+                cos(angle) * base_node[0] - sin(angle) * base_node[1], abs=2e-9
+            )
+            assert rotated_node[1] == pytest.approx(
+                sin(angle) * base_node[0] + cos(angle) * base_node[1], abs=2e-9
+            )
+            assert rotated_node[2] == pytest.approx(base_node[2], abs=2e-9)
+
+
 def test_left_and_right_sensory_differences_create_exact_mirrored_steering(
     left_result,
     right_result,
@@ -98,6 +144,43 @@ def test_left_and_right_sensory_differences_create_exact_mirrored_steering(
             assert left_node[0] == pytest.approx(right_node[0], abs=2e-9)
             assert left_node[1] == pytest.approx(-right_node[1], abs=2e-9)
             assert left_node[2] == pytest.approx(right_node[2], abs=2e-9)
+
+
+def test_time_varying_stimulus_protocol_receives_read_only_head_state():
+    observed: list[tuple[float, BilateralSensoryState]] = []
+
+    def protocol(time_s, state):
+        observed.append((time_s, state))
+        return BilateralStimulus(0.0, 0.0)
+
+    result = BilateralClosedLoopLarva().run(
+        stimulus_protocol=protocol, duration_s=0.003
+    )
+
+    assert result.duration_s == pytest.approx(0.003)
+    assert [time_s for time_s, _ in observed] == pytest.approx(
+        [0.0, 0.001, 0.002]
+    )
+    assert all(isinstance(state, BilateralSensoryState) for _, state in observed)
+    first = observed[0][1]
+    assert first.left_head_position_m.y == pytest.approx(
+        -first.right_head_position_m.y
+    )
+    assert sum(result.spike_counts.values()) == 0
+
+
+def test_stimulus_protocol_api_fails_closed_on_ambiguous_or_invalid_input():
+    larva = BilateralClosedLoopLarva()
+    zero = lambda time_s, state: BilateralStimulus(0.0, 0.0)
+    with pytest.raises(ValueError, match="either a fixed stimulus"):
+        larva.run(BilateralStimulus(), stimulus_protocol=zero)
+    with pytest.raises(ValueError, match="duration must be positive"):
+        BilateralClosedLoopLarva().run(duration_s=0.0)
+    with pytest.raises(TypeError, match="must return BilateralStimulus"):
+        BilateralClosedLoopLarva().run(
+            stimulus_protocol=lambda time_s, state: (0.0, 0.0),
+            duration_s=0.001,
+        )
 
 
 def test_zero_sensory_input_leaves_network_muscles_and_body_at_rest():

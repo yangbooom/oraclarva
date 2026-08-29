@@ -108,6 +108,45 @@ def test_bilateral_identity_projection_preserves_side_before_aggregation():
         assert axial[segment] == pytest.approx(pair)
 
 
+def test_dorsoventral_projection_uses_published_spatial_groups_only():
+    projection = AggregateMuscleIdentityProjection(load_muscle_atlas())
+    activation = {
+        segment: (0.2, 0.8)
+        for segment in ("A1", "A2", "A3", "A4", "A5", "A6")
+    }
+    frame = projection.project_dorsoventral(activation)
+
+    assert len(frame.activations) == 358
+    assert frame.active_fiber_count == 276
+    assert frame.activations["A1:left:M1:DA1"] == pytest.approx(0.2)
+    assert frame.axis_by_fiber["A1:left:M1:DA1"] == "dorsal"
+    assert frame.activations["A1:right:M26:VA1"] == pytest.approx(0.8)
+    assert frame.axis_by_fiber["A1:right:M26:VA1"] == "ventral"
+    assert frame.activations["A1:left:M8:SBM"] == 0.0
+    assert frame.axis_by_fiber["A1:left:M8:SBM"] is None
+    axial = projection.dorsoventral_axial_proxy(frame, activation)
+    for segment, pair in activation.items():
+        assert axial[segment] == pytest.approx(pair)
+
+
+def test_dorsoventral_lesion_removes_only_one_spatial_group_channel():
+    projection = AggregateMuscleIdentityProjection(load_muscle_atlas())
+    activation = {
+        segment: (0.5, 0.5)
+        for segment in ("A1", "A2", "A3", "A4", "A5", "A6")
+    }
+    frame = projection.project_dorsoventral(
+        activation, lesioned_channels=(("A4", "dorsal"),)
+    )
+    axial = projection.dorsoventral_axial_proxy(frame, activation)
+    assert axial["A4"] == pytest.approx((0.0, 0.5))
+    assert axial["A3"] == pytest.approx((0.5, 0.5))
+    with pytest.raises(ValueError, match="outside A1-A6"):
+        projection.project_dorsoventral(
+            activation, lesioned_channels=(("T3", "dorsal"),)
+        )
+
+
 def test_unilateral_muscle_lesion_zeroes_only_named_side_fibers():
     projection = AggregateMuscleIdentityProjection(load_muscle_atlas())
     activation = {

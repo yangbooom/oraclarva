@@ -1,0 +1,40 @@
+{
+  "model_id": "dmel_l1_synthetic_3d_environment_v0",
+  "status": "research_approximation",
+  "stage": "L1",
+  "provenance": "MODEL_FITTED",
+  "causal_contract": [
+    "synthetic_contact_geometry",
+    "four_head_receptor_samples",
+    "phasic_sensory_transduction",
+    "spatial_neural_dynamics",
+    "motor_pools",
+    "muscle_activation",
+    "3d_contact_body_physics",
+    "synthetic_contact_geometry"
+  ],
+  "parameters": {
+    "sensing_range_m": 0.00012,
+    "pulse_period_s": 5,
+    "pulse_duration_s": 0.1,
+    "baseline_intensity": 0.5,
+    "obstacle_gain": 0.5,
+    "contact_friction_coefficient": 0.35
+  },
+  "validation_fixtures": {
+    "uphill_plane_slope_x": -0.2,
+    "obstacle_center_m": [
+      -0.000065,
+      -0.000025,
+      0.00002
+    ],
+    "obstacle_radius_m": 0.00002
+  },
+  "limitations": [
+    "The plane and sphere are synthetic diagnostic geometry, not a reconstruction of an L1 habitat.",
+    "No modality identity is claimed for the four proximity receptor samples.",
+    "The sensing range, phase period, pulse width, baseline, gain, and contact friction are fitted research values rather than measured L1 constants.",
+    "The environment supplies receptor intensities and contact constraints only; it does not select movement or orientation."
+  ],
+  "release_validated": false
+}

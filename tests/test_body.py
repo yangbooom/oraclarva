@@ -1,6 +1,7 @@
 from math import isclose, pi
 
 import pytest
+from math import atan2, degrees, hypot, pi
 
 from oraclarva.body import load_body_spec
 from oraclarva.body3d import ScientificBody3D, Vec3
@@ -140,6 +141,95 @@ def test_bilateral_activation_creates_mirrored_active_curvature():
     )
 
 
+def test_dorsoventral_activation_creates_opposed_local_binormal_pitch():
+    def simulate(pair):
+        body = ScientificBody3D(load_body_spec())
+        initial_axis = body.particles[-1].position - body.particles[0].position
+        initial_pitch = degrees(atan2(
+            initial_axis.z, hypot(initial_axis.x, initial_axis.y)
+        ))
+        body.set_dorsoventral_activations({
+            segment: pair for segment in ("A2", "A3", "A4", "A5", "A6")
+        })
+        for _ in range(50):
+            body.step(
+                0.001,
+                gravity=Vec3(0.0, 0.0, 0.0),
+                ground_z=None,
+                active_pitch_curvature_gain=0.05,
+            )
+        axis = body.particles[-1].position - body.particles[0].position
+        pitch_change = degrees(atan2(axis.z, hypot(axis.x, axis.y))) - initial_pitch
+        return body, pitch_change
+
+    dorsal, dorsal_pitch = simulate((1.0, 0.0))
+    ventral, ventral_pitch = simulate((0.0, 1.0))
+    symmetric, symmetric_pitch = simulate((0.5, 0.5))
+
+    assert ventral_pitch < symmetric_pitch < dorsal_pitch
+    assert dorsal_pitch == pytest.approx(-ventral_pitch, abs=0.3)
+    assert abs(symmetric_pitch) < 1.0
+    for body in (dorsal, ventral, symmetric):
+        assert [particle.position.y for particle in body.particles] == pytest.approx(
+            [0.0] * len(body.particles), abs=1e-15
+        )
+
+
+def test_spatial_activation_combines_yaw_and_pitch_without_double_counting():
+    body = ScientificBody3D(load_body_spec())
+    driven = ("A2", "A3", "A4", "A5", "A6")
+    body.set_spatial_activations(
+        {segment: (1.0, 0.0) for segment in driven},
+        {segment: (1.0, 0.0) for segment in driven},
+    )
+    for segment in driven:
+        index = next(
+            i for i, geometry in enumerate(body.geometry) if geometry.id == segment
+        )
+        assert body.activations[index] == pytest.approx(0.5)
+    for _ in range(50):
+        body.step(
+            0.001,
+            gravity=Vec3(0.0, 0.0, 0.0),
+            ground_z=None,
+            active_curvature_gain=0.05,
+            active_pitch_curvature_gain=0.05,
+        )
+    assert max(abs(particle.position.y) for particle in body.particles) > 20e-6
+    initial = ScientificBody3D(load_body_spec())
+    assert max(
+        abs(particle.position.z - reference.position.z)
+        for particle, reference in zip(body.particles, initial.particles, strict=True)
+    ) > 20e-6
+
+    with pytest.raises(ValueError, match="two opposed pairs"):
+        body.set_spatial_activations({"A4": (1.0,)}, {})
+    with pytest.raises(ValueError, match="spatial muscle activation"):
+        body.set_spatial_activations({"A4": (1.1, 0.0)}, {})
+    with pytest.raises(KeyError, match="unknown spatial activation"):
+        body.set_spatial_activations({"move_3d": (1.0, 0.0)}, {})
+
+
+def test_dorsoventral_activation_validation_and_ground_contact():
+    body = ScientificBody3D(load_body_spec())
+    with pytest.raises(ValueError, match="dorsal/ventral pair"):
+        body.set_dorsoventral_activations({"A4": (1.0,)})
+    with pytest.raises(ValueError, match="dorsoventral muscle activation"):
+        body.set_dorsoventral_activations({"A4": (1.1, 0.0)})
+    with pytest.raises(KeyError, match="unknown segment"):
+        body.set_dorsoventral_activations({"pitch_up": (1.0, 0.0)})
+
+    body.set_dorsoventral_activations({
+        segment: (0.0, 1.0) for segment in ("A2", "A3", "A4")
+    })
+    for _ in range(20):
+        body.step(0.001, active_pitch_curvature_gain=0.05, ground_z=0.0)
+    assert all(
+        particle.position.z >= body._node_clearance(index)
+        for index, particle in enumerate(body.particles)
+    )
+
+
 def test_virtual_bilateral_rails_report_side_specific_shortening():
     body = ScientificBody3D(load_body_spec())
     body.set_bilateral_activations({"A4": (1.0, 0.0), "A5": (1.0, 0.0)})
@@ -158,6 +248,35 @@ def test_virtual_bilateral_rails_report_side_specific_shortening():
     ) < body.bilateral_segment_length_m(a4_index, "right")
     with pytest.raises(ValueError, match="side"):
         body.bilateral_segment_length_m(a4_index, "dorsal")
+
+
+def test_initial_yaw_rotates_body_pose_without_changing_geometry():
+    base = ScientificBody3D(load_body_spec())
+    rotated = ScientificBody3D(load_body_spec(), initial_yaw_rad=pi / 2)
+
+    for base_particle, rotated_particle in zip(
+        base.particles, rotated.particles, strict=True
+    ):
+        assert rotated_particle.position.x == pytest.approx(-base_particle.position.y)
+        assert rotated_particle.position.y == pytest.approx(base_particle.position.x)
+        assert rotated_particle.position.z == pytest.approx(base_particle.position.z)
+    with pytest.raises(ValueError, match="initial yaw"):
+        ScientificBody3D(load_body_spec(), initial_yaw_rad=float("nan"))
+
+
+def test_bilateral_surface_positions_are_mirrored_read_only_sensor_points():
+    body = ScientificBody3D(load_body_spec())
+    left = body.bilateral_surface_position_m(0, "left")
+    right = body.bilateral_surface_position_m(0, "right")
+    center = body.particles[0].position
+
+    assert left.x == pytest.approx(right.x)
+    assert left.y - center.y == pytest.approx(-(right.y - center.y))
+    assert left.z == pytest.approx(right.z)
+    with pytest.raises(IndexError, match="node index"):
+        body.bilateral_surface_position_m(-1, "left")
+    with pytest.raises(ValueError, match="left or right"):
+        body.bilateral_surface_position_m(0, "dorsal")
 
 
 def test_bilateral_activation_rejects_commands_and_invalid_pairs():

@@ -12,6 +12,9 @@ from .neuromuscular import SPATIAL_GROUPS
 
 
 SIDES = ("left", "right")
+DORSOVENTRAL_AXES = ("dorsal", "ventral")
+DORSAL_SPATIAL_GROUPS = frozenset({"DL", "DO"})
+VENTRAL_SPATIAL_GROUPS = frozenset({"VL", "VA", "VO"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,6 +123,19 @@ class BilateralMuscleIdentityRecruitmentFrame:
     activations: Mapping[str, float]
     segment_by_fiber: Mapping[str, str]
     side_by_fiber: Mapping[str, str]
+    provenance: str = "MODEL_FITTED"
+    individual_geometry_executed: bool = False
+
+    @property
+    def active_fiber_count(self) -> int:
+        return sum(value > 0.0 for value in self.activations.values())
+
+
+@dataclass(frozen=True, slots=True)
+class DorsoventralMuscleIdentityRecruitmentFrame:
+    activations: Mapping[str, float]
+    segment_by_fiber: Mapping[str, str]
+    axis_by_fiber: Mapping[str, str | None]
     provenance: str = "MODEL_FITTED"
     individual_geometry_executed: bool = False
 
@@ -244,6 +260,91 @@ class AggregateMuscleIdentityProjection:
             segment_by_fiber=self.segment_by_fiber,
             side_by_fiber=side_by_fiber,
         )
+
+    def project_dorsoventral(
+        self,
+        segment_activations: Mapping[str, tuple[float, float]],
+        *,
+        lesioned_channels: tuple[tuple[str, str], ...] = (),
+    ) -> DorsoventralMuscleIdentityRecruitmentFrame:
+        valid_channels = {
+            (segment, axis)
+            for segment in self.atlas.supported_segments
+            for axis in DORSOVENTRAL_AXES
+        }
+        unknown_lesions = set(lesioned_channels) - valid_channels
+        if unknown_lesions:
+            raise ValueError(
+                "dorsoventral muscle lesion outside A1-A6 atlas: "
+                f"{sorted(unknown_lesions)}"
+            )
+        for segment_id, pair in segment_activations.items():
+            if len(pair) != 2 or any(
+                not 0.0 <= float(value) <= 1.0 for value in pair
+            ):
+                raise ValueError(
+                    f"dorsoventral activation for {segment_id} must be a "
+                    "dorsal/ventral pair in [0, 1]"
+                )
+        lesioned = set(lesioned_channels)
+        activations = {}
+        axis_by_fiber: dict[str, str | None] = {}
+        for identity, fiber in zip(self.identities, self.fibers, strict=True):
+            if fiber.muscle.spatial_group in DORSAL_SPATIAL_GROUPS:
+                axis = "dorsal"
+                axis_index = 0
+            elif fiber.muscle.spatial_group in VENTRAL_SPATIAL_GROUPS:
+                axis = "ventral"
+                axis_index = 1
+            else:
+                axis = None
+                axis_index = 0
+            pair = segment_activations.get(fiber.segment_id, (0.0, 0.0))
+            activations[identity] = (
+                0.0
+                if axis is None or (fiber.segment_id, axis) in lesioned
+                else float(pair[axis_index])
+            )
+            axis_by_fiber[identity] = axis
+        return DorsoventralMuscleIdentityRecruitmentFrame(
+            activations=activations,
+            segment_by_fiber=self.segment_by_fiber,
+            axis_by_fiber=axis_by_fiber,
+        )
+
+    def dorsoventral_axial_proxy(
+        self,
+        frame: DorsoventralMuscleIdentityRecruitmentFrame,
+        segment_activations: Mapping[str, tuple[float, float]],
+    ) -> dict[str, tuple[float, float]]:
+        result = {
+            key: (float(value[0]), float(value[1]))
+            for key, value in segment_activations.items()
+        }
+        sums = {
+            (segment_id, axis): 0.0
+            for segment_id in self.atlas.supported_segments
+            for axis in DORSOVENTRAL_AXES
+        }
+        counts = {channel: 0 for channel in sums}
+        for identity, activation in frame.activations.items():
+            axis = frame.axis_by_fiber[identity]
+            if axis is None:
+                continue
+            channel = (frame.segment_by_fiber[identity], axis)
+            sums[channel] += activation
+            counts[channel] += 1
+        for segment_id in self.atlas.supported_segments:
+            values = []
+            for axis in DORSOVENTRAL_AXES:
+                channel = (segment_id, axis)
+                if counts[channel] == 0:
+                    raise ValueError(
+                        f"missing dorsoventral identities for {segment_id}:{axis}"
+                    )
+                values.append(sums[channel] / counts[channel])
+            result[segment_id] = (values[0], values[1])
+        return result
 
     def bilateral_axial_proxy(
         self,

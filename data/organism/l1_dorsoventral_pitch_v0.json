@@ -1,0 +1,106 @@
+{
+  "model_id": "dmel_l1_dorsoventral_pitch_v0",
+  "status": "research_approximation",
+  "stage": "L1",
+  "base_model_id": "dmel_l1_closed_loop_v0",
+  "channels": [
+    "dorsal",
+    "ventral"
+  ],
+  "causal_contract": [
+    "environment",
+    "dorsoventral_sensory_transduction",
+    "dorsoventral_neural_dynamics",
+    "opposed_motor_pools",
+    "spatial_group_muscle_activation",
+    "local_binormal_body_physics",
+    "environment"
+  ],
+  "topology": {
+    "provenance": "ANATOMY_DERIVED",
+    "description": "Two opposed reduced channels preserve dorsal and ventral sensory, premotor, inhibitory, motor-pool, muscle-group, and proprioceptive paths through A7-T1. A rectified receptor difference recruits a fitted T1-A2 anterior pulse on the stronger channel. This is not an identified complete L1 pitch connectome.",
+    "limitations": [
+      "Tastekin et al. support distinct anterior dorsal/ventral motor targets but explicitly describe the proposed contribution to head sweeps as speculative.",
+      "Huckesfeld et al. identify PaN motor neurons and dorsal protractor muscles for feeding-related head tilt, not this body-wall pitch circuit.",
+      "No complete L1 dorsal/ventral premotor connectome, individual attachment coordinates, or measured pitch gains are executed.",
+      "T2/T1 relay delays, activation constants, shortening capacity, and aggregate effectors copy the fitted T3 prior; they are not measured thoracic L1 values or identity-resolved fibers."
+    ]
+  },
+  "parameters": {
+    "active_pitch_curvature_gain": 0.2,
+    "active_bending_stiffness_ratio": 0.25,
+    "asymmetric_sensory_current_a": 3e-09,
+    "asymmetric_synaptic_current_a": 3e-09,
+    "asymmetric_anterior_segments": [
+      "T1",
+      "T2",
+      "T3",
+      "A1",
+      "A2"
+    ],
+    "asymmetric_anterior_delay_s_by_segment": {
+      "T1": 0.0,
+      "T2": 0.03,
+      "T3": 0.06,
+      "A1": 0.09,
+      "A2": 0.12
+    },
+    "stimulus_intensity_min": 0.0,
+    "stimulus_intensity_max": 1.0,
+    "maximum_shortening_fraction_by_segment_overrides": {
+      "T2": 0.35057285,
+      "T1": 0.35057285
+    },
+    "muscle_activation_rise_tau_s_by_segment_overrides": {
+      "T2": 0.6,
+      "T1": 0.6
+    },
+    "muscle_activation_fall_tau_s_by_segment_overrides": {
+      "T2": 0.72,
+      "T1": 0.72
+    },
+    "intersegmental_relay_delay_s_overrides": {
+      "T3": 0.1106,
+      "T2": 0.1106
+    }
+  },
+  "parameter_provenance": {
+    "provenance": "MODEL_FITTED",
+    "objective": "Preserve a shared forward wave while opposed dorsal/ventral receptor differences create stable anterior local-binormal curvature without yaw leakage.",
+    "fit_status": "largest_tested_mirrored_pitch_fixture_before_gain_0.30_nonmonotonicity",
+    "uncertainty": "All currents, delays, curvature gain, bending ratio, equal within-group recruitment, and virtual rail geometry are research parameters rather than measured L1 values. The 0.20 curvature gain is the largest tested mirrored fixture before the 0.30 ventral response became non-monotonic."
+  },
+  "muscle_identity_projection": {
+    "spatial_group_mapping_provenance": "MEASURED_PUBLISHED",
+    "gain_provenance": "MODEL_FITTED",
+    "dorsal_groups": [
+      "DL",
+      "DO"
+    ],
+    "ventral_groups": [
+      "VL",
+      "VA",
+      "VO"
+    ],
+    "unassigned_groups": [
+      "T"
+    ],
+    "supported_fibers": 358,
+    "mechanically_executable_individual_geometry": false
+  },
+  "evidence": [
+    {
+      "doi": "10.7554/eLife.51781",
+      "used_for": "published dorsal and ventral body-wall muscle spatial groups and motor targets"
+    },
+    {
+      "doi": "10.7554/eLife.38740",
+      "used_for": "anterior premotor paths to dorsal RP2 versus ventral RP3/RP4 targets and the explicitly speculative head-sweep mechanism"
+    },
+    {
+      "doi": "10.1371/journal.pone.0135011",
+      "used_for": "PaN motor-neuron and dorsal-protractor execution of larval head tilting; topology context only"
+    }
+  ],
+  "release_validated": false
+}

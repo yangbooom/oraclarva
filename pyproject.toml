@@ -23,6 +23,8 @@ oraclarva-muscle-atlas-audit = "oraclarva.muscles:main"
 oraclarva-source-audit = "oraclarva.sources:main"
 oraclarva-organism = "oraclarva.organism:main"
 oraclarva-bilateral = "oraclarva.bilateral:main"
+oraclarva-pitch = "oraclarva.dorsoventral:main"
+oraclarva-spatial = "oraclarva.spatial:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
