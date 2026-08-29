@@ -65,6 +65,7 @@ oraclarva-audit neurons.csv synapses.csv
 CSV schemas are documented by `oraclarva-audit --help` and in `docs/SCIENTIFIC_SCOPE.md`.
 The motor crosswalk, its exact evidence boundary, and remaining blockers are in
 `docs/L1_MOTOR_CROSSWALK.md`.
+The public-source manifest can be checked with `oraclarva-source-audit data/sources/source_manifest_v0.yaml`; the current file audit and exclusion decisions are in `docs/PUBLIC_SOURCE_AUDIT_2026-08-29.md`.
 The kinematic screening protocol is in `docs/L1_KINEMATIC_VALIDATION.md`; the
 muscle identity and geometry boundary is in `docs/L1_BODY_WALL_MUSCLE_ATLAS.md`.
 
