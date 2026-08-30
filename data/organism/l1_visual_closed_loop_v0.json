@@ -1,0 +1,137 @@
+{
+  "model_id": "dmel_l1_visual_closed_loop_v0",
+  "status": "research_approximation",
+  "stage": "L1",
+  "causal_contract": [
+    "analytic_light_field",
+    "bilateral_bolwig_organ_samples",
+    "fitted_rh5_rh6_phototransduction",
+    "published_l1_lon_synaptic_contacts",
+    "fitted_synaptic_effects",
+    "published_visual_projection_neuron_readout",
+    "fitted_visual_to_spatial_premotor_bridge",
+    "spatial_neural_dynamics",
+    "motor_pools",
+    "muscle_activation",
+    "3d_body_physics",
+    "analytic_light_field"
+  ],
+  "connectome": {
+    "model_id": "dmel_l1_visual_connectome_v0",
+    "source_id": "larderet_2017_l1_visual_circuit",
+    "article_doi": "10.7554/eLife.28387",
+    "source_data_doi": "10.7554/eLife.28387.009",
+    "expected_side_scoped_matrix_entries": 60,
+    "expected_nonzero_connection_pairs": 422,
+    "expected_within_lon_synaptic_contacts": 3297,
+    "provenance": "MEASURED_PUBLISHED"
+  },
+  "phototransduction": {
+    "field_unit": "W_m-2",
+    "ambient_half_saturation": 4.0,
+    "spatial_contrast_scale": 4.0,
+    "temporal_contrast_scale": 4.0,
+    "adaptation_tau_s": 0.5,
+    "classes": {
+      "Rh5-PR": {
+        "ambient_gain": 1.0,
+        "spatial_contrast_gain": 0.5,
+        "temporal_contrast_gain": 0.25,
+        "maximum_external_current_a": 6e-10
+      },
+      "Rh6-PR": {
+        "ambient_gain": 0.5,
+        "spatial_contrast_gain": 0.1,
+        "temporal_contrast_gain": 0.75,
+        "maximum_external_current_a": 6e-10
+      }
+    },
+    "provenance": "MODEL_FITTED",
+    "limitations": [
+      "No published L1 photoreceptor current, half-saturation, adaptation time constant, or Rh5/Rh6 gain is supplied by the connectome source.",
+      "The Rh5 ambient-weighted and Rh6 temporal-weighted responses are an explicit hypothesis, not measured L1 physiology.",
+      "Only the two bilateral Bolwig-organ samples are used; no direct dorsal-versus-ventral visual receptor pair is invented."
+    ]
+  },
+  "lon_dynamics": {
+    "unit_current_per_synaptic_contact_a": 1e-11,
+    "effect_by_presynaptic_class": {
+      "Rh5-PR": "excitatory",
+      "Rh6-PR": "excitatory",
+      "cha-lOLP": "excitatory",
+      "glu-lOLP": "inhibitory",
+      "extra-glu-lOLP": "inhibitory",
+      "VPLN": "inhibitory",
+      "nc-LaN": "excitatory",
+      "5th-LaN": "excitatory",
+      "PVL09": "excitatory",
+      "pOLP": "excitatory"
+    },
+    "unexecuted_presynaptic_classes": [
+      "SP2-1",
+      "sVUM2",
+      "Pdf-LaN"
+    ],
+    "effect_provenance": "MODEL_FITTED",
+    "limitations": [
+      "Published neurotransmitter identity does not by itself establish the postsynaptic physiological sign in this circuit.",
+      "Serotonergic, octopaminergic/tyraminergic, and Pdf-LaN output contacts remain structural-only because the reduced LIF core has no justified modulatory dynamics.",
+      "A single fitted current per observed contact does not imply measured synaptic conductance or release probability."
+    ]
+  },
+  "descending_bridge": {
+    "readout_classes": [
+      "VPLN",
+      "nc-LaN",
+      "5th-LaN",
+      "PVL09",
+      "pOLP"
+    ],
+    "activity_tau_s": 0.08,
+    "spike_increment": 0.1,
+    "side_activity_gain": {
+      "left": 1.7,
+      "right": 1.0
+    },
+    "common_output_gain": 0.4,
+    "lateral_difference_gain": 0.6,
+    "lateral_mapping": "crossed_light_avoidance_prior",
+    "lateral_mapping_evidence": {
+      "doi": "10.1073/pnas.1215295110",
+      "stage": "L2",
+      "use": "response-direction prior only; no numeric value or L1 connection is copied"
+    },
+    "direct_dorsoventral_difference_gain": 0.0,
+    "provenance": "MODEL_FITTED",
+    "limitations": [
+      "The Larderet matrix ends at visual projection neurons and does not identify their path to VNC premotor neurons.",
+      "The bridge is a declared fitted causal proxy and is not described as a monosynaptic VPN-to-A27h connection.",
+      "The crossed lateral mapping uses L2 light-avoidance direction as a response prior only; it is not an identified L1 descending edge.",
+      "The left/right activity gains compensate specimen-specific matrix asymmetry for the diagnostic fixture and are not measured hemispheric gains.",
+      "Dorsal and ventral bridge currents receive the same common visual drive; vertical steering cannot be attributed to a fabricated dorsal-versus-ventral Bolwig-organ comparison."
+    ]
+  },
+  "validation_light_field": {
+    "type": "linear",
+    "unit": "W_m-2",
+    "origin_m": [0.0, 0.0, 0.0],
+    "value_at_origin": 4.0,
+    "gradient_per_m": [0.0, 6000.0, 0.0],
+    "temporal_rate_per_s": 0.0,
+    "lower_bound": 0.0,
+    "upper_bound": 20.0,
+    "provenance": "MODEL_FITTED"
+  },
+  "parameter_provenance": {
+    "provenance": "MODEL_FITTED",
+    "objective": "Exercise the published bilateral L1 LON topology in a stable, nonsaturated causal loop and produce opposite-signed, near-balanced steering under mirrored lateral light fields while retaining the published specimen asymmetry.",
+    "uncertainty": "All phototransduction values, LIF contact current, assumed synaptic effects, readout filtering, and the visual-to-premotor bridge are calibration parameters rather than measured L1 constants."
+  },
+  "limitations": [
+    "This is a connectome-driven LON-to-body research approximation, not validated natural L1 phototaxis.",
+    "The source matrix contains no identified beyond-LON descending targets or visual-to-VNC premotor path.",
+    "The validation light field and virtual bilateral sample locations are model fixtures, not reconstructed natural illumination or measured Bolwig-organ coordinates.",
+    "The executed topology contains no action command, target selector, finite-state machine, behavior tree, or policy network."
+  ],
+  "release_validated": false
+}

@@ -11,6 +11,8 @@ def test_repository_manifest():
 def test_environment_source_stages_are_explicit():
     records={item["source_id"]:item for item in load_source_manifest("data/sources/source_manifest_v0.yaml")}
     assert records["larderet_2017_l1_visual_circuit"]["stage"]=="L1"
+    assert records["larderet_2017_l1_visual_circuit"]["sha256"]=="f9c200cdea0a9a80dc1e7d48aea0a25540d7d63341f705ff7c90faed9effd08f"
+    assert "redistribution" in records["larderet_2017_l1_visual_circuit"]["allowed_uses"]
     assert records["berck_2016_l1_olfactory_circuit"]["stage"]=="L1"
     assert records["luo_2010_l1_thermotaxis"]["stage"]=="L1"
     assert records["kane_2013_l2_phototaxis"]["stage"]=="L2"

@@ -12,6 +12,14 @@ contains a complete whole-body motor output. It covers the published bilateral
 A1 motor-neuron set, with MN25 taken from A2, not all thoracic and abdominal
 segments.
 
+The current visual extension is similarly bounded. Larderet et al. Figure 2
+source data supplies first-instar bilateral LON identities and 3,297 structural
+contacts through visual projection neurons. It does not supply physiological
+effect signs, photoreceptor response constants, beyond-LON target identities,
+or a route to VNC premotor neurons. Those executed quantities remain explicitly
+`MODEL_FITTED`; the bundled source graph retains unknown effects rather than
+rewriting neurotransmitter labels as measured excitation or inhibition.
+
 ## Provenance labels
 
 Every imported node, edge, parameter, and mapping must carry one of these labels:
