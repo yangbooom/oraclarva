@@ -1,12 +1,21 @@
 import json, pytest
-from oraclarva.sources import audit_source_manifest, validate_parameter_use
+from oraclarva.sources import audit_source_manifest, load_source_manifest, validate_parameter_use
 
 def source(**kw):
     x={"source_id":"example","stage":"L1","anatomical_scope":"body wall","provenance":"MEASURED_PUBLISHED","license":"CC BY 4.0","doi_or_url":"https://example.org","local_artifact":"","sha256":"","allowed_uses":["reference"],"limitations":["fixture"]}; x.update(kw); return x
 def manifest(tmp_path,records):
     p=tmp_path/"sources.yaml"; p.write_text(json.dumps(records)); return p
 def test_repository_manifest():
-    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==6
+    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==11
+
+def test_environment_source_stages_are_explicit():
+    records={item["source_id"]:item for item in load_source_manifest("data/sources/source_manifest_v0.yaml")}
+    assert records["larderet_2017_l1_visual_circuit"]["stage"]=="L1"
+    assert records["berck_2016_l1_olfactory_circuit"]["stage"]=="L1"
+    assert records["luo_2010_l1_thermotaxis"]["stage"]=="L1"
+    assert records["kane_2013_l2_phototaxis"]["stage"]=="L2"
+    assert records["gershow_2012_l2_odor_navigation"]["stage"]=="L2"
+
 def test_unknown_stage_is_reference_only(tmp_path):
     r=audit_source_manifest(manifest(tmp_path,[source(stage="unknown",allowed_uses=["reference","calibration"])])); assert any("reference-only" in e for e in r.errors)
 def test_coordinates_need_scale(tmp_path):

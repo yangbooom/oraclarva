@@ -20,6 +20,7 @@ jobs:
       - run: pytest
       - run: python tools/export_closed_loop_trajectory.py --check
       - run: python tools/export_bilateral_trajectory.py --check
+      - run: python tools/export_environment_input_trajectory.py --check
       - run: python tools/export_native_closed_loop_fixture.py --check
       - run: python tools/export_native_bilateral_fixture.py --check
       - run: python tools/compile_l1_motor_map.py --check

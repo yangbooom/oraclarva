@@ -25,6 +25,7 @@ oraclarva-organism = "oraclarva.organism:main"
 oraclarva-bilateral = "oraclarva.bilateral:main"
 oraclarva-pitch = "oraclarva.dorsoventral:main"
 oraclarva-spatial = "oraclarva.spatial:main"
+oraclarva-environment-input = "oraclarva.environment_inputs:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
