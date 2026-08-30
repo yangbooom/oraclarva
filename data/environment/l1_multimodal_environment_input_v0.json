@@ -1,0 +1,132 @@
+{
+  "model_id": "dmel_l1_multimodal_environment_input_v0",
+  "status": "research_approximation",
+  "stage": "L1",
+  "provenance": "MODEL_FITTED",
+  "modalities": [
+    "light",
+    "temperature",
+    "odor"
+  ],
+  "causal_contract": [
+    "analytic_environment_fields",
+    "four_head_surface_samples_per_modality",
+    "adaptive_receptor_transduction",
+    "weighted_receptor_currents",
+    "spatial_neural_dynamics",
+    "motor_pools",
+    "muscle_activation",
+    "3d_body_physics",
+    "analytic_environment_fields"
+  ],
+  "baseline_intensity": 0.5,
+  "transduction": {
+    "light": {
+      "unit": "W_m-2",
+      "polarity": "increased_excites",
+      "response_scale": 4.0,
+      "spatial_contrast_gain": 0.4,
+      "temporal_contrast_gain": 0.6,
+      "adaptation_tau_s": 0.5,
+      "weight": 1.0,
+      "provenance": "MODEL_FITTED"
+    },
+    "temperature": {
+      "unit": "degC",
+      "polarity": "decreased_excites",
+      "response_scale": 0.02,
+      "spatial_contrast_gain": 0.0,
+      "temporal_contrast_gain": 1.0,
+      "adaptation_tau_s": 0.5,
+      "weight": 1.0,
+      "provenance": "MODEL_FITTED"
+    },
+    "odor": {
+      "unit": "normalized_concentration",
+      "polarity": "decreased_excites",
+      "response_scale": 0.2,
+      "spatial_contrast_gain": 0.0,
+      "temporal_contrast_gain": 1.0,
+      "adaptation_tau_s": 0.75,
+      "weight": 1.0,
+      "provenance": "MODEL_FITTED"
+    }
+  },
+  "validation_fields": {
+    "light": {
+      "type": "linear",
+      "unit": "W_m-2",
+      "origin_m": [0.0, 0.0, 0.0],
+      "value_at_origin": 4.0,
+      "gradient_per_m": [0.0, 6000.0, 6000.0],
+      "temporal_rate_per_s": 0.0,
+      "lower_bound": 0.0,
+      "upper_bound": 20.0,
+      "provenance": "MODEL_FITTED"
+    },
+    "temperature": {
+      "type": "linear",
+      "unit": "degC",
+      "origin_m": [0.0, 0.0, 0.0],
+      "value_at_origin": 18.0,
+      "gradient_per_m": [50.0, 0.0, 0.0],
+      "temporal_rate_per_s": 0.0,
+      "lower_bound": 0.0,
+      "upper_bound": 45.0,
+      "provenance": "MODEL_FITTED"
+    },
+    "odor": {
+      "type": "linear",
+      "unit": "normalized_concentration",
+      "origin_m": [0.0, 0.0, 0.0],
+      "value_at_origin": 0.5,
+      "gradient_per_m": [500.0, 0.0, 0.0],
+      "temporal_rate_per_s": 0.0,
+      "lower_bound": 0.0,
+      "upper_bound": 1.0,
+      "provenance": "MODEL_FITTED"
+    }
+  },
+  "evidence": [
+    {
+      "doi": "10.7554/eLife.28387",
+      "stage": "L1",
+      "provenance": "MEASURED_PUBLISHED",
+      "supports": "L1 Rh5/Rh6 visual input topology and early processing of ambient and temporal light signals"
+    },
+    {
+      "doi": "10.7554/eLife.14859",
+      "stage": "L1",
+      "provenance": "MEASURED_PUBLISHED",
+      "supports": "L1 olfactory receptor-to-antennal-lobe wiring and gain-control topology"
+    },
+    {
+      "doi": "10.1523/JNEUROSCI.4090-09.2010",
+      "stage": "L1",
+      "provenance": "MEASURED_PUBLISHED",
+      "supports": "L1 thermotaxis in a measured 0.5 degC per cm linear gradient and temporal thermal sampling"
+    },
+    {
+      "doi": "10.1073/pnas.1215295110",
+      "stage": "L2",
+      "provenance": "MEASURED_PUBLISHED",
+      "supports": "L2 phototaxis temporal comparisons and direction-sensitive Bolwig-organ context only"
+    },
+    {
+      "doi": "10.1038/nmeth.1853",
+      "stage": "L2",
+      "provenance": "MEASURED_PUBLISHED",
+      "supports": "L2 odor navigation based on temporal concentration changes rather than direct bilateral gradient measurement"
+    }
+  ],
+  "limitations": [
+    "The validation light, temperature, and odor fields are analytic fixtures rather than reconstructed natural L1 habitats.",
+    "The four head surface samples are virtual spatial probes and are not claimed as measured Bolwig-organ, dorsal-organ, or olfactory receptor coordinates.",
+    "All transduction scales, spatial and temporal gains, adaptation constants, modality weights, and the common baseline are MODEL_FITTED.",
+    "L2 behavioral findings provide response-structure priors only; their absolute stimulus-response values are not copied as L1 constants.",
+    "Temperature and odor use temporal contrast only; the model does not invent direct bilateral gradient sensing for those modalities.",
+    "This model does not yet reproduce modality-specific receptor populations, the complete sensory-to-descending connectome, stochastic run-turn transitions, or validated natural phototaxis, thermotaxis, or chemotaxis.",
+    "Environment code supplies local scalar samples and receptor currents only; it does not choose a movement, target, or orientation."
+  ],
+  "release_validated": false
+}

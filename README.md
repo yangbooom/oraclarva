@@ -92,6 +92,18 @@ explicitly `MODEL_FITTED`; the ramp and sphere are synthetic diagnostics rather
 than an L1 habitat. See `docs/SPATIAL_STEERING_AND_ENVIRONMENT_V0.md`; run
 `oraclarva-spatial --left 1 --right 0 --dorsal 1 --ventral 0 --free`.
 
+A provenance-aware environment-input front end now samples analytic light,
+temperature, and odor fields at the four moving head-surface points. Each
+sample retains its physical unit and passes through modality-scoped contrast
+before entering the existing 168-LIF
+spatial network. Every checked frame records raw field values, adaptation
+state, modality drive, final receptor currents, muscle activation, and physical
+nodes. L1 visual/olfactory connectomes and L1 thermotaxis support the input
+structure; L2 phototaxis and odor work remain structure priors only. All
+numeric transduction gains are `MODEL_FITTED`, and this is not validated natural
+taxis. See `docs/ENVIRONMENT_INPUTS_V0.md`; run
+`oraclarva-environment-input --modality light --free`.
+
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
 ## Quick start
@@ -111,6 +123,7 @@ oraclarva-muscle-atlas-audit
 oraclarva-bilateral --left 1 --right 0
 oraclarva-pitch --dorsal 1 --ventral 0 --free
 oraclarva-spatial --left 1 --right 0 --dorsal 1 --ventral 0 --free
+oraclarva-environment-input --modality light --free
 oraclarva-audit neurons.csv synapses.csv
 ```
 
@@ -159,6 +172,16 @@ physics frames; it does not synthesize a gait or change position.
 ```bash
 python tools/export_spatial_environment_trajectory.py --check
 python tools/render_spatial_environment_gif.py
+```
+
+The multimodal environment artifact adds three field-driven trajectories and
+stores the raw/adapted/drive/current chain alongside each physical frame.
+
+![Light, temperature, and odor field input](docs/assets/oraclarva_environment_inputs.gif)
+
+```bash
+python tools/export_environment_input_trajectory.py --check
+python tools/render_environment_input_gif.py
 ```
 
 ## Native parity
