@@ -16,6 +16,10 @@ from oraclarva.spatial import (
     SpatialSensoryState,
     SpatialStimulus,
 )
+from tools.export_environment_input_trajectory import (
+    NUMERIC_TOLERANCE,
+    first_mismatch,
+)
 
 
 @pytest.fixture
@@ -35,6 +39,23 @@ def protocol_for(field, *, record_frames=False):
         record_frames=record_frames,
     )
 
+
+def test_artifact_comparison_is_schema_exact_and_float_tolerant():
+    expected = {"count": 1, "values": [0.5, {"label": "light"}]}
+    within = {
+        "count": 1,
+        "values": [0.5 + NUMERIC_TOLERANCE / 2, {"label": "light"}],
+    }
+    outside = {
+        "count": 1,
+        "values": [0.5 + NUMERIC_TOLERANCE * 2, {"label": "light"}],
+    }
+    wrong_schema = {"count": 1, "other": []}
+
+    assert first_mismatch(expected, within) is None
+    assert "values[0]" in first_mismatch(expected, outside)
+    assert "keys mismatch" in first_mismatch(expected, wrong_schema)
+    assert "integer/type mismatch" in first_mismatch(1, 1.0)
 
 def test_environment_input_config_preserves_claim_boundary():
     config = load_environment_input_config()

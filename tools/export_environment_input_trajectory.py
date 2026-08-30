@@ -22,6 +22,52 @@ DEFAULT_OUTPUT = (
 )
 SAMPLE_INTERVAL_S = 0.03
 DT_S = 0.001
+NUMERIC_TOLERANCE = 1e-8
+
+
+def first_mismatch(expected: Any, actual: Any, path: str = "$") -> str | None:
+    """Return the first schema/value mismatch in two JSON-compatible trees."""
+    if isinstance(expected, bool) or isinstance(actual, bool):
+        return None if expected is actual else f"{path}: boolean mismatch"
+    if isinstance(expected, int) or isinstance(actual, int):
+        return (
+            None
+            if type(expected) is type(actual) and expected == actual
+            else f"{path}: integer/type mismatch"
+        )
+    if isinstance(expected, float) or isinstance(actual, float):
+        if not isinstance(expected, float) or not isinstance(actual, float):
+            return f"{path}: numeric type mismatch"
+        if abs(expected - actual) > NUMERIC_TOLERANCE:
+            return f"{path}: {expected} != {actual}"
+        return None
+    if isinstance(expected, dict) or isinstance(actual, dict):
+        if not isinstance(expected, dict) or not isinstance(actual, dict):
+            return f"{path}: object type mismatch"
+        if expected.keys() != actual.keys():
+            return f"{path}: object keys mismatch"
+        for key in expected:
+            mismatch = first_mismatch(
+                expected[key], actual[key], f"{path}.{key}"
+            )
+            if mismatch:
+                return mismatch
+        return None
+    if isinstance(expected, list) or isinstance(actual, list):
+        if not isinstance(expected, list) or not isinstance(actual, list):
+            return f"{path}: array type mismatch"
+        if len(expected) != len(actual):
+            return f"{path}: array length mismatch"
+        for index, (expected_item, actual_item) in enumerate(
+            zip(expected, actual, strict=True)
+        ):
+            mismatch = first_mismatch(
+                expected_item, actual_item, f"{path}[{index}]"
+            )
+            if mismatch:
+                return mismatch
+        return None
+    return None if expected == actual else f"{path}: value mismatch"
 
 
 def summary(result, protocol) -> dict[str, float | int]:
@@ -125,10 +171,22 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     rendered = render_trajectory()
     if args.check:
-        if not args.output.exists() or args.output.read_text() != rendered:
+        if not args.output.exists():
             print(f"generated environment input trajectory is stale: {args.output}")
             return 1
-        print("generated environment input trajectory is current")
+        expected = json.loads(args.output.read_text())
+        actual = json.loads(rendered)
+        mismatch = first_mismatch(expected, actual)
+        if mismatch:
+            print(
+                f"generated environment input trajectory is stale: "
+                f"{args.output}: {mismatch}"
+            )
+            return 1
+        print(
+            "generated environment input trajectory is current "
+            f"(numeric tolerance {NUMERIC_TOLERANCE:g})"
+        )
         return 0
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(rendered)

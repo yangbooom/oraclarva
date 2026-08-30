@@ -110,6 +110,9 @@ remain future work.
 
 The checked artifact contains 151 frames at 30 ms for each 4.5-second field
 fixture. Receptor currents remain analog rather than saturating at 0 or 1.
+The regeneration gate requires exact JSON schema, keys, strings, booleans, and
+integers; floating-point values use a 1e-8 absolute tolerance to accommodate
+the final decimal differences between supported Python runtimes.
 
 | field | current range | dx (um) | dy (um) | dz (um) | yaw | pitch |
 |---|---:|---:|---:|---:|---:|---:|
