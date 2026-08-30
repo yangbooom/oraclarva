@@ -104,6 +104,19 @@ numeric transduction gains are `MODEL_FITTED`, and this is not validated natural
 taxis. See `docs/ENVIRONMENT_INPUTS_V0.md`; run
 `oraclarva-environment-input --modality light --free`.
 
+The light path now has an identified-neuron extension. The repository bundles
+Larderet et al. Figure 2 source data 1 under CC BY 4.0 and deterministically
+compiles its bilateral L1 LON matrices: 60 side-scoped entries, 422 nonzero
+connection pairs, and 3,297 structural contacts. The embodied execution samples
+only two bilateral Bolwig-organ proxies, drives explicit Rh5/Rh6 and visual
+interneuron LIF compartments, then uses a clearly marked `MODEL_FITTED`
+VPN-to-premotor bridge because the source does not identify that missing path.
+Mirrored lateral fields reverse yaw; a 12-compartment visual-readout lesion
+preserves upstream activity but eliminates all downstream motion. Physiological
+signs and phototransduction remain fitted, and no direct dorsal-versus-ventral
+visual sensor is claimed. See `docs/L1_VISUAL_CONNECTOME_LOOP_V0.md`; run
+`oraclarva-visual --duration 1.5`.
+
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
 ## Quick start
@@ -124,6 +137,7 @@ oraclarva-bilateral --left 1 --right 0
 oraclarva-pitch --dorsal 1 --ventral 0 --free
 oraclarva-spatial --left 1 --right 0 --dorsal 1 --ventral 0 --free
 oraclarva-environment-input --modality light --free
+oraclarva-visual --duration 1.5
 oraclarva-audit neurons.csv synapses.csv
 ```
 
@@ -182,6 +196,18 @@ stores the raw/adapted/drive/current chain alongside each physical frame.
 ```bash
 python tools/export_environment_input_trajectory.py --check
 python tools/render_environment_input_gif.py
+```
+
+The L1 visual-connectome artifact adds the published early-visual identities
+and contact counts, explicit Rh5/Rh6 firing, a declared fitted descending
+bridge, and a causal VPN-readout lesion.
+
+![L1 visual connectome body loop](docs/assets/oraclarva_l1_visual_connectome.gif)
+
+```bash
+python tools/compile_l1_visual_connectome.py --check
+python tools/export_visual_trajectory.py --check
+python tools/render_visual_gif.py
 ```
 
 ## Native parity

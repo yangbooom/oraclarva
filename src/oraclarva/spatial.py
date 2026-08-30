@@ -185,6 +185,8 @@ class SpatialClosedLoopLarva:
         initial_pitch_deg: float = 0.0,
         ground_z_m: float | None = 0.0,
         contact_surface: ContactSurface | None = None,
+        input_labels: tuple[str, str, str, str] | None = None,
+        asymmetry_labels: tuple[str, str, str, str] | None = None,
     ) -> None:
         if ground_z_m is not None and contact_surface is not None:
             raise ValueError("provide either ground_z_m or a contact surface")
@@ -203,6 +205,19 @@ class SpatialClosedLoopLarva:
         self.initial_pitch_deg = float(initial_pitch_deg)
         self.ground_z_m = ground_z_m
         self.contact_surface = contact_surface
+        self.input_labels = self._validate_labels(
+            input_labels,
+            tuple(f"environment_receptor:{channel}" for channel in CHANNELS),
+            "input",
+        )
+        self.asymmetry_labels = self._validate_labels(
+            asymmetry_labels,
+            tuple(
+                f"rectified_sensory_difference:{channel}"
+                for channel in CHANNELS
+            ),
+            "asymmetry",
+        )
 
         shortening = dict(
             self.params["maximum_shortening_fraction_by_segment"]
@@ -397,6 +412,21 @@ class SpatialClosedLoopLarva:
             raise ValueError(f"invalid spatial {name} channel")
         return channel
 
+    @staticmethod
+    def _validate_labels(
+        labels: tuple[str, str, str, str] | None,
+        default: tuple[str, str, str, str],
+        name: str,
+    ) -> tuple[str, str, str, str]:
+        result = default if labels is None else tuple(labels)
+        if (
+            len(result) != len(CHANNELS)
+            or len(set(result)) != len(result)
+            or any(not isinstance(label, str) or not label for label in result)
+        ):
+            raise ValueError(f"spatial {name} labels must be four unique strings")
+        return result  # type: ignore[return-value]
+
     def _equilibrate_initial_body(self) -> None:
         dt = float(self.params["dt_s"])
         gravity = (
@@ -442,11 +472,8 @@ class SpatialClosedLoopLarva:
         )
 
     def _labels(self) -> tuple[str, ...]:
-        labels = [f"environment_receptor:{channel}" for channel in CHANNELS]
-        labels.extend(
-            f"rectified_sensory_difference:{channel}"
-            for channel in CHANNELS
-        )
+        labels = list(self.input_labels)
+        labels.extend(self.asymmetry_labels)
         for role in (
             "proprioceptor",
             "premotor_A27h_like",

@@ -148,8 +148,10 @@ network does not yet contain modality-specific receptor populations, complete
 sensory-to-descending paths, stochastic run-turn transitions, or a measured
 head-sweep acceptance circuit.
 
-The next scientific step is to replace the shared four-channel injection with
-identified L1 sensory neurons and connectome-backed downstream paths, one
-modality at a time. Until that exists, these trajectories validate causal
-integration, units, adaptation, provenance, and symmetry—not biological taxis
-performance.
+The identified-neuron step is now implemented for light in
+`L1_VISUAL_CONNECTOME_LOOP_V0.md`: bilateral Rh5/Rh6 and published L1 LON
+contacts replace the four anonymous light probes. The published visual source
+still ends before an identified VNC-premotor route, so that successor model
+keeps a declared fitted bridge. Temperature and odor remain at the shared input
+stage described here. These trajectories validate causal integration, units,
+adaptation, provenance, and symmetry—not biological taxis performance.
