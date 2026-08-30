@@ -3,6 +3,7 @@ import json
 
 import pytest
 
+from oraclarva.artifacts import NUMERIC_TOLERANCE, first_mismatch
 from oraclarva.body3d import Vec3
 from oraclarva.environment_inputs import (
     LinearScalarField,
@@ -16,11 +17,6 @@ from oraclarva.spatial import (
     SpatialSensoryState,
     SpatialStimulus,
 )
-from tools.export_environment_input_trajectory import (
-    NUMERIC_TOLERANCE,
-    first_mismatch,
-)
-
 
 @pytest.fixture
 def receptor_state():
