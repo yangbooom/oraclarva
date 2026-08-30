@@ -56,6 +56,7 @@ def test_artifact_comparison_is_schema_exact_and_float_tolerant():
     assert "values[0]" in first_mismatch(expected, outside)
     assert "keys mismatch" in first_mismatch(expected, wrong_schema)
     assert "integer/type mismatch" in first_mismatch(1, 1.0)
+    assert "non-finite" in first_mismatch(float("nan"), float("nan"))
 
 def test_environment_input_config_preserves_claim_boundary():
     config = load_environment_input_config()

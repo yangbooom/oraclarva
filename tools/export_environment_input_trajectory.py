@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from math import isfinite
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,8 @@ def first_mismatch(expected: Any, actual: Any, path: str = "$") -> str | None:
     if isinstance(expected, float) or isinstance(actual, float):
         if not isinstance(expected, float) or not isinstance(actual, float):
             return f"{path}: numeric type mismatch"
+        if not isfinite(expected) or not isfinite(actual):
+            return f"{path}: non-finite numeric value"
         if abs(expected - actual) > NUMERIC_TOLERANCE:
             return f"{path}: {expected} != {actual}"
         return None
