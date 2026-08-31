@@ -150,8 +150,8 @@ head-sweep acceptance circuit.
 
 The identified-neuron step is now implemented for light in
 `L1_VISUAL_CONNECTOME_LOOP_V0.md`: bilateral Rh5/Rh6 and published L1 LON
-contacts replace the four anonymous light probes. The published visual source
-still ends before an identified VNC-premotor route, so that successor model
-keeps a declared fitted bridge. Temperature and odor remain at the shared input
-stage described here. These trajectories validate causal integration, units,
-adaptation, provenance, and symmetry—not biological taxis performance.
+contacts continue through an identified PVL09/pOLP-to-LHN-to-CPf-to-A03o(A1)
+structural route. Its declared fitted bridge now begins only after the A1 A03o
+pair. Temperature and odor remain at the shared input stage described here.
+These trajectories validate causal integration, units, adaptation, provenance,
+and symmetry—not biological taxis performance.

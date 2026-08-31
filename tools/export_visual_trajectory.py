@@ -13,6 +13,7 @@ from oraclarva.visual import (
     PHOTORECEPTOR_CLASSES,
     load_visual_config,
     load_visual_connectome,
+    load_visual_descending_connectome,
     validation_light_field,
     visual_node_ids_for_class,
 )
@@ -25,7 +26,7 @@ DEFAULT_OUTPUT = (
 SAMPLE_INTERVAL_S = 0.03
 DT_S = 0.001
 DURATION_S = 1.5
-READOUT_CLASSES = ("VPLN", "nc-LaN", "5th-LaN", "PVL09", "pOLP")
+PROJECTION_CLASSES = ("PVL09", "pOLP")
 
 
 def _earliest(values: list[float | None]) -> float | None:
@@ -48,21 +49,37 @@ def _first_spike_trace(result, connectome) -> dict[str, float | None]:
         (visual_node_ids_for_class(connectome, item) for item in local_classes),
         (),
     )
-    readouts = sum(
-        (visual_node_ids_for_class(connectome, item) for item in READOUT_CLASSES),
-        (),
-    )
     return {
         "photoreceptor": _earliest([visual[item] for item in photoreceptors]),
         "local_interneuron": _earliest([visual[item] for item in local]),
-        "visual_projection_readout": _earliest(
-            [visual[item] for item in readouts]
+        "visual_projection": _earliest(
+            [
+                visual[item]
+                for item in (
+                    "left:PVL09",
+                    "right:PVL09",
+                    "left:pOLP",
+                    "right:pOLP",
+                )
+            ]
         ),
-        "fitted_descending_bridge": _earliest(
+        "lateral_horn_neuron": _earliest(
+            [
+                visual["left:down_PVL09_PN-OLP"],
+                visual["right:down_PVL09_PN-OLP"],
+            ]
+        ),
+        "cpf_descending_neuron": _earliest(
+            [visual["left:CPf_DN"], visual["right:CPf_DN"]]
+        ),
+        "a03o_a1_premotor": _earliest(
+            [visual["left:A03o_A1"], visual["right:A03o_A1"]]
+        ),
+        "fitted_a03o_segmental_bridge": _earliest(
             [
                 value
                 for label, value in body.items()
-                if label.startswith("visual_descending_bridge")
+                if label.startswith("fitted_a03o_to_segmental_core")
             ]
         ),
         "a7_premotor": _earliest(
@@ -90,10 +107,11 @@ def _visual_frame_index(trajectory_index: int) -> int:
 
 def _window_spike_counts(protocol, frame_index: int) -> dict[str, int]:
     first = max(0, frame_index - round(SAMPLE_INTERVAL_S / DT_S) + 1)
+    groups = ("Rh5-PR", "Rh6-PR", "local", "projection", "lhn", "dn", "a03o")
     counts = {
         f"{side}:{group}": 0
         for side in ("left", "right")
-        for group in ("Rh5-PR", "Rh6-PR", "local", "readout")
+        for group in groups
     }
     for frame in protocol.frames[first : frame_index + 1]:
         for node_id in frame.spiked_neurons:
@@ -104,8 +122,14 @@ def _window_spike_counts(protocol, frame_index: int) -> dict[str, int]:
                 group = neuron_class
             elif neuron_class in {"cha-lOLP", "glu-lOLP", "extra-glu-lOLP"}:
                 group = "local"
-            elif neuron_class in READOUT_CLASSES:
-                group = "readout"
+            elif neuron_class in PROJECTION_CLASSES:
+                group = "projection"
+            elif neuron_class == "down_PVL09_PN-OLP":
+                group = "lhn"
+            elif neuron_class == "CPf_DN":
+                group = "dn"
+            elif neuron_class == "A03o_A1":
+                group = "a03o"
             else:
                 continue
             counts[f"{side}:{group}"] += 1
@@ -156,8 +180,15 @@ def _summary(result) -> dict[str, Any]:
     stimuli = [frame.bridge_stimulus.values() for frame in result.visual_frames]
     return {
         "visual_neuron_compartments": result.visual_neuron_compartments,
+        "identified_descending_neurons": result.identified_descending_neurons,
         "published_connection_pairs": result.published_connection_pairs,
+        "published_descending_connection_pairs": (
+            result.published_descending_connection_pairs
+        ),
         "published_synaptic_contacts": result.published_synaptic_contacts,
+        "published_descending_synaptic_contacts": (
+            result.published_descending_synaptic_contacts
+        ),
         "executed_connection_pairs": result.executed_connection_pairs,
         "executed_synaptic_contacts": result.executed_synaptic_contacts,
         "downstream_spatial_neurons": body.neuron_count,
@@ -181,14 +212,14 @@ def _summary(result) -> dict[str, Any]:
 def render_trajectory() -> str:
     config = load_visual_config()
     connectome = load_visual_connectome()
-    all_readouts = sum(
-        (visual_node_ids_for_class(connectome, item) for item in READOUT_CLASSES),
-        (),
+    descending_connectome = load_visual_descending_connectome()
+    a03o_pair = visual_node_ids_for_class(
+        descending_connectome, "A03o_A1"
     )
     scenario_specs = (
         ("brighter_right_intact", 1.0, ()),
         ("brighter_left_intact", -1.0, ()),
-        ("brighter_right_readout_lesion", 1.0, all_readouts),
+        ("brighter_right_a03o_lesion", 1.0, a03o_pair),
     )
     scenarios = []
     for scenario_id, lateral_sign, lesions in scenario_specs:
@@ -196,6 +227,7 @@ def render_trajectory() -> str:
             field=validation_light_field(config, lateral_sign=lateral_sign),
             config=config,
             connectome=connectome,
+            descending_connectome=descending_connectome,
             lesion_node_ids=lesions,
             ground_z_m=None,
             record_visual_frames=True,
@@ -235,11 +267,18 @@ def render_trajectory() -> str:
         "sample_interval_s": SAMPLE_INTERVAL_S,
         "duration_s": DURATION_S,
         "node_count": 13,
-        "source": connectome["source"],
-        "published_connectome_summary": connectome["summary"],
+        "sources": {
+            "lon": connectome["source"],
+            "descending": descending_connectome["source"],
+        },
+        "published_connectome_summary": {
+            "lon": connectome["summary"],
+            "descending": descending_connectome["summary"],
+        },
         "phototransduction": config["phototransduction"],
         "lon_dynamics": config["lon_dynamics"],
-        "descending_bridge": config["descending_bridge"],
+        "descending_path_dynamics": config["descending_path_dynamics"],
+        "a03o_segmental_bridge": config["a03o_segmental_bridge"],
         "validation_light_field": config["validation_light_field"],
         "scenarios": scenarios,
         "limitations": config["limitations"]
@@ -248,8 +287,8 @@ def render_trajectory() -> str:
             "and never authors body motion.",
             "The intact left/right scenarios test causal sign reversal; their "
             "near balance is fitted and is not held-out behavioral validation.",
-            "The readout lesion is a neural intervention, not a fallback action "
-            "or scripted stop command.",
+            "The A03o pair lesion is a neural intervention, not a fallback "
+            "action or scripted stop command.",
         ],
     }
     return json.dumps(artifact, indent=2, ensure_ascii=False) + "\n"

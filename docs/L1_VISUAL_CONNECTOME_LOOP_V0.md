@@ -1,9 +1,9 @@
 # L1 visual connectome body loop v0
 
-This research extension replaces the anonymous four-probe light injection with
-explicit first-instar photoreceptor and larval-optic-neuropil (LON) neurons. It
-does not add a phototaxis command, target selector, finite-state machine,
-behavior tree, external policy, or renderer-authored movement.
+This research extension executes an identified first-instar path from the
+Bolwig organ through an A1 premotor pair. It does not add a phototaxis command,
+target selector, finite-state machine, behavior tree, external policy, or
+renderer-authored movement.
 
 The executed causal chain is:
 
@@ -11,24 +11,23 @@ The executed causal chain is:
 local analytic irradiance at two moving Bolwig-organ proxy positions
   -> fitted Rh5/Rh6 phototransduction
   -> published bilateral L1 LON identities and contact counts
-  -> published non-circadian visual projection-neuron identities
-  -> declared MODEL_FITTED descending bridge
-  -> existing sparse spatial premotor and motor dynamics
+  -> published PVL09/pOLP contacts onto a bilateral LHN pair
+  -> published LHN contacts onto a bilateral CPf descending pair
+  -> published CPf contacts onto an A03o premotor pair in A1
+  -> declared MODEL_FITTED A03o(A1)-to-segmental-core bridge
+  -> sparse spatial premotor and motor dynamics
   -> muscle activation and 3D XPBD body physics
   -> next bilateral irradiance samples
 ```
 
-## Published source and reproducible import
+## Published sources and reproducible imports
 
-Larderet et al. reconstructed the bilateral LON from an ssTEM volume of a
-6-hour-old first-instar CNS. The paper reports 50 nm sections and 4 nm image
-pixels, separates Rh5- and Rh6-expressing photoreceptors, and maps their local
-and projection-neuron partners
-([article DOI 10.7554/eLife.28387](https://doi.org/10.7554/eLife.28387)).
+### Bilateral LON
 
-The repository bundles the article's CC BY 4.0 Figure 2 source data 1,
-"Complete synaptic connection matrices from both LONs"
-([source-data DOI 10.7554/eLife.28387.009](https://doi.org/10.7554/eLife.28387.009)):
+Larderet et al. reconstructed the bilateral LON in a 6-hour-old first-instar
+CNS ([article DOI](https://doi.org/10.7554/eLife.28387)). The repository bundles
+the article's CC BY 4.0 Figure 2 source data 1
+([source-data DOI](https://doi.org/10.7554/eLife.28387.009)):
 
 ```text
 data/sources/larderet_2017_l1_visual_circuit/
@@ -37,60 +36,97 @@ SHA-256:
   f9c200cdea0a9a80dc1e7d48aea0a25540d7d63341f705ff7c90faed9effd08f
 ```
 
-`tools/compile_l1_visual_connectome.py` parses XLSX ZIP/XML with the Python
-standard library and deterministically regenerates
-`data/connectome/l1_visual_connectome_v0.json`. Its CI gate verifies the source
-checksum and these source counts:
+`tools/compile_l1_visual_connectome.py` deterministically regenerates
+`data/connectome/l1_visual_connectome_v0.json` and checks these observed counts:
 
-| published matrix scope | left LON | right LON | total |
+| published LON matrix scope | left | right | total |
 |---|---:|---:|---:|
-| side-scoped matrix entries | 28 | 32 | 60 |
+| side-scoped entries | 28 | 32 | 60 |
 | photoreceptor entries | 13 | 16 | 29 |
 | nonzero connection pairs | 197 | 225 | 422 |
-| within-LON synaptic contacts | 1,499 | 1,798 | 3,297 |
+| structural contacts | 1,499 | 1,798 | 3,297 |
 
-The left matrix has four Rh5 and nine Rh6 PR entries; the right has six Rh5
-and ten Rh6 entries. These are the observed specimen values, not a forced
-bilateral copy.
+The specimen asymmetry is preserved. The 60 entries are not asserted to be 60
+unique cells because the two unpaired sVUM2 identities occur in both
+side-scoped matrices. The two Tiny VLNs described in the paper are absent from
+the matrix and are not invented.
 
-Two counting cautions are preserved in the generated data. `sVUM2md` and
-`sVUM2mx` are unpaired neurons represented in both side-scoped matrices, so the
-60 matrix entries are not 60 unique biological cells. Conversely, the two Tiny
-VLNs described in the article are absent from this connection matrix and are
-not invented by the compiler.
+### Visual path to A03o in A1
+
+The downstream import uses the public L1EM graph hosted by Virtual Fly Brain and
+the Winding et al. connectome study
+([Science DOI](https://doi.org/10.1126/science.add9330)). The audited snapshot
+contains the VFB term-info responses, an L1EM CATMAID connectivity response, and
+the CATMAID annotations that identify the A03o pair as A1 premotor/pre-MN
+interneurons:
+
+```text
+data/sources/vfb_l1em_visual_descending_path/
+  vfb-l1em-api-snapshot-2026-08-31.tar
+SHA-256:
+  0f558cf16f30b58b760ac7053abb7cd5ccb64243de36492c937760c5642e465b
+```
+
+The exact connectivity query was:
+
+```text
+https://v3-cached.virtualflybrain.org/catmaid/l1em/connectivity?ids=9940382,8124177,9567051,9539868,11037238,7719118,5690425,19010160
+```
+
+`tools/compile_l1_visual_descending_path.py` verifies every VFB ID, CATMAID
+skeleton ID, FlyBase type, required A03o annotations, confidence bin, and contact
+count before regenerating
+`data/connectome/l1_visual_descending_path_v0.json`.
+
+| structural edge | left skeletons / contacts | right skeletons / contacts |
+|---|---:|---:|
+| pOLP -> down_PVL09_PN-OLP LHN | 9940382 -> 11037238 / 33 | 8124177 -> 7719118 / 25 |
+| PVL09 -> same LHN | 9567051 -> 11037238 / 12 | 9539868 -> 7719118 / 8 |
+| LHN -> CPf descending ipsilateral | 11037238 -> 5690425 / 4 | 7719118 -> 19010160 / 3 |
+| CPf -> A03o A1 | 5690425 -> 4302562 / 2 | 19010160 -> 3180525 / 11 |
+
+That is 10 identified neurons in five bilateral pairs, eight selected
+axon-to-dendrite edges, and 98 confidence-5 structural contacts. PVL09 and pOLP
+already exist in the LON graph, so the runtime gains six new compartments and
+contains 66 visual/path compartments total.
+
+VFB exposes CC BY 4.0 terms for the Winding-derived records and CC BY-SA 4.0
+terms for the A03o records. The manifest records the mixed license boundary;
+redistributed derivatives must preserve applicable attribution and share-alike
+conditions.
 
 ## What is measured and what is fitted
 
-The 60 side-scoped compartments, identities, transmitters, 422 connection
-pairs, and 3,297 contact counts are `MEASURED_PUBLISHED`. The source data leaves
-each physiological effect unknown. This distinction matters: the article and
-its peer review explicitly caution that a cholinergic or glutamatergic label by
-itself does not establish the postsynaptic effect in this circuit.
+The following are `MEASURED_PUBLISHED`:
 
-The executable reference therefore stores two separate facts:
+- the 60 LON side-scoped entries, 422 LON pairs, and 3,297 LON contacts;
+- the 10 selected downstream identities and stable VFB/CATMAID IDs;
+- the eight selected axon-to-dendrite edges and 98 confidence-5 contacts;
+- the A1 side and premotor/pre-MN annotations of the selected A03o pair.
 
-```text
-published: pre, post, number of structural contacts, transmitter label
-fitted:    excitatory/inhibitory LIF effect and current per contact
-```
+The source graphs deliberately store every physiological effect as `null` with
+`unknown` provenance. The executable model separately declares these as
+`MODEL_FITTED`:
 
-The current LIF execution uses 368 of the 422 connection pairs and 3,035 of the
-3,297 contacts. Outputs from serotonergic SP2-1,
-octopaminergic/tyraminergic sVUM2, and Pdf-LaNs remain structural-only because a
-two-current LIF synapse cannot honestly represent their unresolved modulatory
-dynamics. No published contacts are removed from the compiled source graph.
+- Rh5/Rh6 transduction and adaptation parameters;
+- excitatory/inhibitory effect assumptions for all executed structural edges;
+- current per structural contact, including stage-specific path currents;
+- A03o activity filtering and side gains;
+- crossed lateral response mapping;
+- the A03o(A1)-to-all-segment spatial-core bridge.
 
-Every executed effect sign and the 10 pA current per observed contact are
-`MODEL_FITTED`. Multiplying contact count by that current is a numerical model;
-it does not claim a measured conductance, release probability, or linear
-physiological weight.
+The LIF execution uses 368 of 422 LON pairs and 3,035 of 3,297 LON contacts;
+serotonergic SP2-1, octopaminergic/tyraminergic sVUM2, and Pdf-LaN outputs remain
+structural-only. All eight selected downstream edges and all 98 contacts execute.
+Totals are therefore 376 executed pairs and 3,133 executed contacts. A contact
+count multiplied by a fitted current is not a measured conductance, release
+probability, delay, or physiological weight.
 
-## Bilateral Bolwig-organ transduction
+## Bilateral light transduction and steering boundary
 
-Only the body's left and right head-surface positions are sampled. The previous
-virtual dorsal and ventral light probes are not used by this model. For local
-irradiance `q`, fitted half-saturation `h`, bilateral mean `q_mean`, and adapted
-irradiance `a`, each PR-class drive is:
+Only the body's left and right head-surface positions are sampled. There is no
+invented dorsal-versus-ventral Bolwig receptor pair. For local irradiance `q`,
+fitted half-saturation `h`, bilateral mean `q_mean`, and adapted irradiance `a`:
 
 ```text
 ambient(q) = q / (q + h)
@@ -104,94 +140,80 @@ drive(class, side) = clamp(
 a(t + dt) = a(t) + (q(t) - a(t)) * (1 - exp(-dt / tau))
 ```
 
-Rh5 is currently ambient-weighted and Rh6 temporal-weighted. This is a
-connectome-motivated hypothesis, not measured L1 photoreceptor physiology. The
-half-saturation, gains, adaptation constant, maximum external current, and
-virtual receptor positions are all `MODEL_FITTED`.
+The imported anatomy now reaches an A03o pair in A1, but it does not establish
+that pair's physiological sign, steering effect, or continuation through every
+abdominal segment and motor pool. The fitted bridge therefore begins only after
+A03o and is labeled `fitted_a03o_to_segmental_core`. It does not claim an
+A03o-to-A27h synapse or an A1-to-A7 anatomical repetition.
 
-Because this model has no direct dorsal-versus-ventral visual receptor pair,
-the descending bridge supplies identical common drive to dorsal and ventral
-channels. It cannot claim direct visually sensed vertical steering. A later
-head-sweep/temporal-comparison circuit would be required for that.
-
-## The explicit missing link
-
-The published matrix follows visual information to LON projection neurons. It
-does not identify their beyond-LON targets as a path to VNC premotor neurons.
-The model reads the non-circadian projection classes `VPLN`, `nc-LaN`,
-`5th-LaN`, `PVL09`, and `pOLP`, low-pass filters their spikes independently by
-side, and passes the result through a `MODEL_FITTED` bridge into the existing
-spatial premotor core.
-
-This bridge is never labeled as a measured synapse or a direct VPN-to-A27h
-edge. Its left/right gains also compensate the published specimen's asymmetric
-cell and contact counts for the diagnostic fixture; they are not biological
-hemispheric gains.
-
-The crossed lateral mapping uses the light-avoidance response direction in
-Kane et al. ([DOI 10.1073/pnas.1215295110](https://doi.org/10.1073/pnas.1215295110))
-as an L2 response prior only. No numeric value or anatomical L1 descending
-connection is copied from that study. The mapping remains `MODEL_FITTED` until
-an L1 path beyond the LON is identified.
+The crossed lateral mapping still uses L2 light-avoidance direction from Kane
+et al. ([DOI](https://doi.org/10.1073/pnas.1215295110)) as a response-direction
+prior only. No L2 number is copied as an L1 constant. Dorsal and ventral bridge
+channels receive identical common drive, so this model does not claim direct
+visual pitch sensing.
 
 ## Deterministic causal and lesion checks
 
-The checked 1.5-second artifact contains intact positive and negative lateral
-gradients plus a 12-compartment non-circadian visual-readout lesion.
+The checked 1.5-second artifact contains two intact mirrored fields and an
+A03o-pair lesion:
 
-| scenario | visual spikes | downstream spikes | dy (um) | yaw (deg) |
+| scenario | visual/path spikes | downstream spikes | dy (um) | yaw (deg) |
 |---|---:|---:|---:|---:|
-| brighter right, intact | 1,127 | 1,125 | -14.824 | +5.965 |
-| brighter left, intact | 1,039 | 1,272 | +14.859 | -5.991 |
-| brighter right, VPN readout lesion | 1,296 | 0 | 0.000 | 0.000 |
+| brighter right, intact | 1,410 | 7,048 | -15.239 | +6.231 |
+| brighter left, intact | 1,119 | 2,296 | +14.957 | -6.020 |
+| brighter right, A03o pair lesion | 1,669 | 0 | 0.000 | 0.000 |
 
-The two intact fixtures reverse displacement and yaw signs while preserving
-the source matrix's real bilateral asymmetry. Near balance is an in-sample
-fitting target, not held-out phototaxis validation.
+The intact fixtures reverse displacement and yaw signs. Their differing neural
+counts preserve the observed specimen and fitted-model asymmetries; this is not
+held-out phototaxis validation.
 
-For the brighter-right intact fixture, first spikes follow this trace:
+For the brighter-right fixture, first spikes follow the required order:
 
 ```text
 Rh5/Rh6 photoreceptor       0.011 s
-visual projection readout   0.027 s
-fitted descending bridge    0.100 s
-A7 premotor                 0.103 s
-A7 motor pool               0.106 s
+PVL09/pOLP projection       0.029 s
+identified LHN              0.057 s
+identified CPf DN           0.061 s
+identified A03o(A1)         0.062 s
+fitted A03o segment bridge  0.071 s
+A7 premotor core            0.074 s
+A7 motor pool               0.077 s
 ```
 
-Rh5 can reach VPNs directly, while the Rh6/local-interneuron pathway operates
-in parallel; a local-interneuron spike is therefore not required to precede
-the first direct VPN spike. Lesioning all photoreceptors eliminates all visual
-and downstream spikes. Lesioning all readout compartments preserves upstream
-photoreceptor/LON activity but produces zero bridge, premotor, motor, muscle,
-and body displacement. No fallback action is invoked.
+Tests lesion the photoreceptors, PVL09/pOLP inputs, LHN pair, CPf pair, and A03o
+pair independently. At every cut, upstream activity remains where expected and
+all downstream stages stop. The A03o lesion leaves 1,669 upstream spikes but
+produces zero bridge, motor, muscle, and body displacement. No fallback action
+is invoked.
 
 ![L1 visual connectome body loop](assets/oraclarva_l1_visual_connectome.gif)
 
-The GIF reads the checked 13-node body frames and neural audit values. It does
-not move the organism independently.
+The GIF reads the checked 13-node physical trajectory and recorded neural audit
+values. It does not author movement independently.
 
 ## Reproduce
 
 ```bash
 oraclarva-visual --duration 1.5
 oraclarva-visual --duration 1.5 --mirror
-oraclarva-visual --duration 1.5 --lesion-class Rh5-PR
+oraclarva-visual --duration 1.5 --lesion-class A03o_A1
 python tools/compile_l1_visual_connectome.py --check
+python tools/compile_l1_visual_descending_path.py --check
 python tools/export_visual_trajectory.py --check
 python tools/render_visual_gif.py
 pytest tests/test_visual.py tests/test_sources.py
 ```
 
-## Claim boundary and next step
+## Claim boundary and next scientific step
 
-This result is an embodied execution of published L1 early-visual topology,
-not validated natural phototaxis and not a complete visual-to-muscle
-connectome. Published LON contact counts do not validate the fitted
-phototransduction, physiological signs, or descending bridge.
+This is an embodied execution of a selected published L1 structural route to an
+A1 premotor pair. It is not proof that this route alone mediates natural
+phototaxis, not a population-average graph, and not a complete
+sensor-to-muscle connectome. The 2-versus-11 CPf-to-A03o asymmetry is one
+specimen observation.
 
-The next scientific step is to identify and import the actual beyond-LON
-partners of the non-circadian VPNs and determine whether a defensible route to
-descending/VNC premotor neurons can replace any part of the fitted bridge. If
-that public path is incomplete, the missing edges must remain explicitly
-fitted rather than acquiring invented cell identities.
+The next scientific step is to replace part of the remaining fitted boundary:
+identify A03o's public downstream A1 motor-network partners and determine which
+connections can be repeated across segments only when segment-specific evidence
+supports it. Physiological signs and response-direction effects should remain
+fitted until direct evidence is available.

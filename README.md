@@ -104,18 +104,17 @@ numeric transduction gains are `MODEL_FITTED`, and this is not validated natural
 taxis. See `docs/ENVIRONMENT_INPUTS_V0.md`; run
 `oraclarva-environment-input --modality light --free`.
 
-The light path now has an identified-neuron extension. The repository bundles
-Larderet et al. Figure 2 source data 1 under CC BY 4.0 and deterministically
-compiles its bilateral L1 LON matrices: 60 side-scoped entries, 422 nonzero
-connection pairs, and 3,297 structural contacts. The embodied execution samples
-only two bilateral Bolwig-organ proxies, drives explicit Rh5/Rh6 and visual
-interneuron LIF compartments, then uses a clearly marked `MODEL_FITTED`
-VPN-to-premotor bridge because the source does not identify that missing path.
-Mirrored lateral fields reverse yaw; a 12-compartment visual-readout lesion
-preserves upstream activity but eliminates all downstream motion. Physiological
-signs and phototransduction remain fitted, and no direct dorsal-versus-ventral
-visual sensor is claimed. See `docs/L1_VISUAL_CONNECTOME_LOOP_V0.md`; run
-`oraclarva-visual --duration 1.5`.
+The light path now reaches an identified A1 premotor pair. In addition to the
+Larderet bilateral L1 LON matrices (60 side-scoped entries, 422 pairs, and 3,297
+contacts), an audited VFB/L1EM snapshot supplies a bilateral
+`PVL09/pOLP -> LHN -> CPf descending -> A03o(A1)` route: 10 identities, eight
+selected axon-to-dendrite edges, and 98 contacts. All structural counts remain
+`MEASURED_PUBLISHED`; physiological signs, per-contact currents, and only the
+remaining `A03o(A1) -> segmental core` continuation are `MODEL_FITTED`. Mirrored
+lateral fields reverse yaw, while lesioning just the two A03o neurons preserves
+upstream activity and eliminates every downstream spike and movement. No direct
+dorsal-versus-ventral visual sensor is claimed. See
+`docs/L1_VISUAL_CONNECTOME_LOOP_V0.md`; run `oraclarva-visual --duration 1.5`.
 
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
@@ -198,14 +197,16 @@ python tools/export_environment_input_trajectory.py --check
 python tools/render_environment_input_gif.py
 ```
 
-The L1 visual-connectome artifact adds the published early-visual identities
-and contact counts, explicit Rh5/Rh6 firing, a declared fitted descending
-bridge, and a causal VPN-readout lesion.
+The L1 visual-connectome artifact executes published LON contacts and the
+identified `PVL09/pOLP -> LHN -> CPf -> A03o(A1)` path. The only downstream
+bridge begins after A03o, and the third panel lesions exactly that bilateral
+pair while retaining all upstream neural activity.
 
 ![L1 visual connectome body loop](docs/assets/oraclarva_l1_visual_connectome.gif)
 
 ```bash
 python tools/compile_l1_visual_connectome.py --check
+python tools/compile_l1_visual_descending_path.py --check
 python tools/export_visual_trajectory.py --check
 python tools/render_visual_gif.py
 ```

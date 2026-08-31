@@ -23,16 +23,16 @@ from .spatial import (
 LON_SIDES = ("left", "right")
 PHOTORECEPTOR_CLASSES = ("Rh5-PR", "Rh6-PR")
 BRIDGE_INPUT_LABELS = (
-    "visual_descending_bridge:left",
-    "visual_descending_bridge:right",
-    "visual_descending_bridge:dorsal_shared",
-    "visual_descending_bridge:ventral_shared",
+    "fitted_a03o_to_segmental_core:left",
+    "fitted_a03o_to_segmental_core:right",
+    "fitted_a03o_to_segmental_core:dorsal_shared",
+    "fitted_a03o_to_segmental_core:ventral_shared",
 )
 BRIDGE_DIFFERENCE_LABELS = (
-    "visual_lateral_difference:left",
-    "visual_lateral_difference:right",
-    "visual_dorsoventral_difference:dorsal_shared",
-    "visual_dorsoventral_difference:ventral_shared",
+    "fitted_a03o_lateral_difference:left",
+    "fitted_a03o_lateral_difference:right",
+    "fitted_a03o_dorsoventral_difference:dorsal_shared",
+    "fitted_a03o_dorsoventral_difference:ventral_shared",
 )
 
 
@@ -54,6 +54,15 @@ def default_visual_connectome_path() -> Path:
     )
 
 
+def default_visual_descending_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "data"
+        / "connectome"
+        / "l1_visual_descending_path_v0.json"
+    )
+
+
 def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
     source = Path(path) if path else default_visual_config_path()
     raw = json.loads(source.read_text(encoding="utf-8"))
@@ -66,9 +75,9 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         "bilateral_bolwig_organ_samples",
         "fitted_rh5_rh6_phototransduction",
         "published_l1_lon_synaptic_contacts",
-        "fitted_synaptic_effects",
-        "published_visual_projection_neuron_readout",
-        "fitted_visual_to_spatial_premotor_bridge",
+        "fitted_effects_for_published_contacts",
+        "published_polp_to_lhn_to_cpf_to_a03o_a1_contacts",
+        "fitted_a03o_a1_to_segmental_core_bridge",
         "spatial_neural_dynamics",
         "motor_pools",
         "muscle_activation",
@@ -76,6 +85,7 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         "analytic_light_field",
     ):
         raise ValueError("visual causal contract is invalid")
+
     connectome = raw.get("connectome", {})
     if connectome.get("provenance") != "MEASURED_PUBLISHED":
         raise ValueError("visual connectome topology must remain measured-published")
@@ -86,6 +96,20 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         != 3297
     ):
         raise ValueError("visual connectome count contract is invalid")
+
+    descending = raw.get("descending_connectome", {})
+    if descending.get("provenance") != "MEASURED_PUBLISHED":
+        raise ValueError("visual descending topology must remain measured-published")
+    if (
+        descending.get("model_id") != "dmel_l1_visual_descending_path_v0"
+        or int(descending.get("expected_identified_neurons", 0)) != 10
+        or int(descending.get("expected_new_runtime_compartments", 0)) != 6
+        or int(descending.get("expected_axon_to_dendrite_connection_pairs", 0))
+        != 8
+        or int(descending.get("expected_axon_to_dendrite_synaptic_contacts", 0))
+        != 98
+    ):
+        raise ValueError("visual descending count contract is invalid")
 
     transduction = raw.get("phototransduction", {})
     if transduction.get("field_unit") != "W_m-2":
@@ -134,17 +158,40 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
     if set(effects) & set(unexecuted):
         raise ValueError("visual classes cannot be both executable and structural-only")
 
-    bridge = raw.get("descending_bridge", {})
-    if bridge.get("provenance") != "MODEL_FITTED":
-        raise ValueError("visual descending bridge must remain model-fitted")
-    if tuple(bridge.get("readout_classes", ())) != (
-        "VPLN",
-        "nc-LaN",
-        "5th-LaN",
-        "PVL09",
-        "pOLP",
+    path_dynamics = raw.get("descending_path_dynamics", {})
+    path_currents = path_dynamics.get(
+        "current_per_synaptic_contact_a_by_presynaptic_class", {}
+    )
+    if any(
+        not isfinite(float(value)) or float(value) <= 0.0
+        for value in path_currents.values()
     ):
-        raise ValueError("visual descending readout classes are invalid")
+        raise ValueError("visual descending contact currents must be positive")
+    if path_dynamics.get("effect_provenance") != "MODEL_FITTED":
+        raise ValueError("visual descending effects must remain model-fitted")
+    path_effects = path_dynamics.get("effect_by_presynaptic_class", {})
+    expected_path_classes = (
+        "pOLP", "PVL09", "down_PVL09_PN-OLP", "CPf_DN"
+    )
+    if (
+        tuple(path_effects) != expected_path_classes
+        or tuple(path_currents) != expected_path_classes
+    ):
+        raise ValueError("visual descending dynamics classes are invalid")
+    if any(
+        value not in {"excitatory", "inhibitory"}
+        for value in path_effects.values()
+    ):
+        raise ValueError("visual descending effect is invalid")
+
+    bridge = raw.get("a03o_segmental_bridge", {})
+    if bridge.get("provenance") != "MODEL_FITTED":
+        raise ValueError("A03o segmental bridge must remain model-fitted")
+    if (
+        bridge.get("readout_class") != "A03o_A1"
+        or bridge.get("readout_segment") != "A1"
+    ):
+        raise ValueError("A03o segmental readout identity is invalid")
     for key in (
         "activity_tau_s",
         "spike_increment",
@@ -153,13 +200,13 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
     ):
         value = float(bridge.get(key, 0.0))
         if not isfinite(value) or value <= 0.0:
-            raise ValueError(f"visual descending bridge {key} must be positive")
+            raise ValueError(f"A03o segmental bridge {key} must be positive")
     side_gains = bridge.get("side_activity_gain", {})
     if tuple(side_gains) != LON_SIDES or any(
         not isfinite(float(value)) or float(value) <= 0.0
         for value in side_gains.values()
     ):
-        raise ValueError("visual bridge side activity gains are invalid")
+        raise ValueError("A03o bridge side activity gains are invalid")
     if float(bridge.get("direct_dorsoventral_difference_gain", -1.0)) != 0.0:
         raise ValueError("visual bridge cannot invent direct dorsoventral sensing")
     mapping_evidence = bridge.get("lateral_mapping_evidence", {})
@@ -227,6 +274,65 @@ def load_visual_connectome(path: str | Path | None = None) -> dict[str, Any]:
     return raw
 
 
+def load_visual_descending_connectome(
+    path: str | Path | None = None,
+) -> dict[str, Any]:
+    source = Path(path) if path else default_visual_descending_path()
+    raw = json.loads(source.read_text(encoding="utf-8"))
+    if raw.get("model_id") != "dmel_l1_visual_descending_path_v0":
+        raise ValueError("unexpected visual descending connectome model")
+    if raw.get("stage") != "L1":
+        raise ValueError("visual descending connectome must remain L1")
+    source_record = raw.get("source", {})
+    if (
+        source_record.get("article_doi") != "10.1126/science.add9330"
+        or source_record.get("license") != "CC BY 4.0 and CC BY-SA 4.0"
+        or source_record.get("provenance") != "MEASURED_PUBLISHED"
+    ):
+        raise ValueError("visual descending source contract is invalid")
+    summary = raw.get("summary", {})
+    if (
+        int(summary.get("identified_neurons", 0)) != 10
+        or int(summary.get("new_runtime_compartments", 0)) != 6
+        or int(summary.get("axon_to_dendrite_connection_pairs", 0)) != 8
+        or int(summary.get("axon_to_dendrite_synaptic_contacts", 0)) != 98
+    ):
+        raise ValueError("visual descending summary is invalid")
+    neurons = raw.get("neurons", [])
+    node_ids = [item.get("node_id") for item in neurons]
+    if len(neurons) != 10 or len(node_ids) != len(set(node_ids)):
+        raise ValueError("visual descending identities are invalid")
+    if {item.get("side") for item in neurons} != set(LON_SIDES):
+        raise ValueError("visual descending path must remain bilateral")
+    if any(
+        item.get("synaptic_effect") is not None
+        or item.get("synaptic_effect_provenance") != "unknown"
+        or item.get("provenance") != "MEASURED_PUBLISHED"
+        for item in neurons
+    ):
+        raise ValueError("visual descending source cannot claim effects")
+    connections = raw.get("connections", [])
+    known = set(node_ids)
+    if len(connections) != 8 or any(
+        item.get("pre") not in known
+        or item.get("post") not in known
+        or not isinstance(item.get("synaptic_contacts"), int)
+        or item["synaptic_contacts"] <= 0
+        or item.get("connection_compartment") != "axon_to_dendrite"
+        or item.get("confidence") != 5
+        or item.get("physiological_effect") is not None
+        or item.get("physiological_effect_provenance") != "unknown"
+        or item.get("provenance") != "MEASURED_PUBLISHED"
+        for item in connections
+    ):
+        raise ValueError("visual descending connection is invalid")
+    if sum(item["synaptic_contacts"] for item in connections) != 98:
+        raise ValueError("visual descending contact total is invalid")
+    if raw.get("release_validated") is not False:
+        raise ValueError("visual descending path cannot be release-validated")
+    return raw
+
+
 def visual_node_ids_for_class(
     connectome: dict[str, Any],
     neuron_class: str,
@@ -239,7 +345,10 @@ def visual_node_ids_for_class(
         item["node_id"]
         for item in connectome["neurons"]
         if item["neuron_class"] == neuron_class
-        and (lon_side is None or item["lon_side"] == lon_side)
+        and (
+            lon_side is None
+            or item.get("lon_side", item.get("side")) == lon_side
+        )
     )
     if not result:
         raise ValueError(f"visual neuron class {neuron_class!r} is absent")
@@ -347,7 +456,7 @@ class BolwigLightTransduction:
 class VisualCircuitFrame:
     transduction: BolwigTransductionFrame
     spiked_neurons: tuple[str, ...]
-    readout_spikes: dict[str, tuple[str, ...]]
+    a03o_spikes: dict[str, tuple[str, ...]]
     bridge_activity: dict[str, float]
     bridge_stimulus: SpatialStimulus
 
@@ -355,8 +464,8 @@ class VisualCircuitFrame:
         return {
             "transduction": self.transduction.to_dict(),
             "spiked_neurons": list(self.spiked_neurons),
-            "readout_spikes": {
-                side: list(values) for side, values in self.readout_spikes.items()
+            "a03o_spikes": {
+                side: list(values) for side, values in self.a03o_spikes.items()
             },
             "bridge_activity": self.bridge_activity,
             "bridge_stimulus": list(self.bridge_stimulus.values()),
@@ -364,7 +473,7 @@ class VisualCircuitFrame:
 
 
 class L1VisualCircuitProtocol:
-    """Step the published LON matrix and emit a declared fitted bridge current."""
+    """Step published LON-to-A03o contacts before a declared fitted bridge."""
 
     def __init__(
         self,
@@ -372,15 +481,43 @@ class L1VisualCircuitProtocol:
         *,
         config: dict[str, Any] | None = None,
         connectome: dict[str, Any] | None = None,
+        descending_connectome: dict[str, Any] | None = None,
         lesion_node_ids: Iterable[str] = (),
         record_frames: bool = False,
     ) -> None:
         self.config = config or load_visual_config()
         self.connectome = connectome or load_visual_connectome()
+        self.descending_connectome = (
+            descending_connectome or load_visual_descending_connectome()
+        )
         self.transduction = BolwigLightTransduction(field, self.config)
         self.record_frames = record_frames
         self.frames: list[VisualCircuitFrame] = []
-        self.neurons = tuple(self.connectome["neurons"])
+
+        merged_neurons = [dict(item) for item in self.connectome["neurons"]]
+        merged_index = {
+            item["node_id"]: index for index, item in enumerate(merged_neurons)
+        }
+        for path_neuron in self.descending_connectome["neurons"]:
+            node_id = path_neuron["node_id"]
+            if node_id in merged_index:
+                existing = merged_neurons[merged_index[node_id]]
+                if (
+                    existing["neuron_class"] != path_neuron["neuron_class"]
+                    or existing["lon_side"] != path_neuron["side"]
+                ):
+                    raise ValueError(f"visual identity conflict for {node_id}")
+                existing.update(path_neuron)
+                continue
+            neuron = dict(path_neuron)
+            neuron["lon_side"] = neuron["side"]
+            neuron["identity"] = neuron["vfb_name"]
+            neuron["transmitter"] = "unknown"
+            neuron["transmitter_provenance"] = "unknown"
+            merged_index[node_id] = len(merged_neurons)
+            merged_neurons.append(neuron)
+
+        self.neurons = tuple(merged_neurons)
         self.labels = tuple(item["node_id"] for item in self.neurons)
         self.index_by_id = {
             node_id: index for index, node_id in enumerate(self.labels)
@@ -388,13 +525,15 @@ class L1VisualCircuitProtocol:
         self.metadata_by_id = {
             item["node_id"]: item for item in self.neurons
         }
+        if len(self.neurons) != 66 or len(self.labels) != len(set(self.labels)):
+            raise ValueError("visual runtime must contain 66 unique compartments")
 
         dynamics = self.config["lon_dynamics"]
         effects = dynamics["effect_by_presynaptic_class"]
         structural_only = set(dynamics["unexecuted_presynaptic_classes"])
         unit_current = float(dynamics["unit_current_per_synaptic_contact_a"])
         synapses: list[Synapse] = []
-        executed_contacts = 0
+        executed_lon_contacts = 0
         for item in self.connectome["connections"]:
             pre_class = self.metadata_by_id[item["pre"]]["neuron_class"]
             if pre_class in structural_only:
@@ -410,10 +549,41 @@ class L1VisualCircuitProtocol:
                     kind=effects[pre_class],
                 )
             )
-            executed_contacts += count
+            executed_lon_contacts += count
+        self.executed_lon_connection_pairs = len(synapses)
+        self.executed_lon_synaptic_contacts = executed_lon_contacts
+
+        path_dynamics = self.config["descending_path_dynamics"]
+        path_effects = path_dynamics["effect_by_presynaptic_class"]
+        path_currents = path_dynamics[
+            "current_per_synaptic_contact_a_by_presynaptic_class"
+        ]
+        for item in self.descending_connectome["connections"]:
+            pre_class = self.metadata_by_id[item["pre"]]["neuron_class"]
+            if pre_class not in path_effects:
+                raise ValueError(f"descending visual effect absent for {pre_class}")
+            synapses.append(
+                Synapse(
+                    self.index_by_id[item["pre"]],
+                    self.index_by_id[item["post"]],
+                    float(path_currents[pre_class])
+                    * int(item["synaptic_contacts"]),
+                    kind=path_effects[pre_class],
+                )
+            )
+        self.executed_descending_connection_pairs = len(
+            self.descending_connectome["connections"]
+        )
+        self.executed_descending_synaptic_contacts = sum(
+            item["synaptic_contacts"]
+            for item in self.descending_connectome["connections"]
+        )
         self.network = SparseLIFNetwork(len(self.neurons), synapses)
         self.executed_connection_pairs = len(synapses)
-        self.executed_synaptic_contacts = executed_contacts
+        self.executed_synaptic_contacts = (
+            self.executed_lon_synaptic_contacts
+            + self.executed_descending_synaptic_contacts
+        )
 
         lesions = tuple(lesion_node_ids)
         if len(lesions) != len(set(lesions)):
@@ -424,18 +594,19 @@ class L1VisualCircuitProtocol:
         self.lesion_node_ids = lesions
         self.network.lesion(self.index_by_id[item] for item in lesions)
 
-        readout_classes = set(self.config["descending_bridge"]["readout_classes"])
-        self.readout_indices = {
+        bridge = self.config["a03o_segmental_bridge"]
+        self.a03o_indices = {
             side: tuple(
                 index
                 for index, item in enumerate(self.neurons)
                 if item["lon_side"] == side
-                and item["neuron_class"] in readout_classes
+                and item["neuron_class"] == bridge["readout_class"]
+                and item.get("segment") == bridge["readout_segment"]
             )
             for side in LON_SIDES
         }
-        if any(not values for values in self.readout_indices.values()):
-            raise ValueError("visual readout requires neurons on both LON sides")
+        if any(len(values) != 1 for values in self.a03o_indices.values()):
+            raise ValueError("visual bridge requires one A1 A03o neuron per side")
         self.bridge_activity = {side: 0.0 for side in LON_SIDES}
         self.spike_counts = {label: 0 for label in self.labels}
         self.first_spike_s: dict[str, float | None] = {
@@ -472,23 +643,22 @@ class L1VisualCircuitProtocol:
             if self.first_spike_s[label] is None:
                 self.first_spike_s[label] = time_s
 
-        bridge = self.config["descending_bridge"]
+        bridge = self.config["a03o_segmental_bridge"]
         decay = exp(-self.network.config.dt_s / float(bridge["activity_tau_s"]))
-        readout_spikes: dict[str, tuple[str, ...]] = {}
+        a03o_spikes: dict[str, tuple[str, ...]] = {}
         spiked = set(spikes)
         for side in LON_SIDES:
             self.bridge_activity[side] *= decay
             side_spikes = tuple(
                 self.labels[index]
-                for index in self.readout_indices[side]
+                for index in self.a03o_indices[side]
                 if index in spiked
             )
-            readout_spikes[side] = side_spikes
+            a03o_spikes[side] = side_spikes
             self.bridge_activity[side] += (
                 len(side_spikes)
                 * float(bridge["spike_increment"])
                 * float(bridge["side_activity_gain"][side])
-                / len(self.readout_indices[side])
             )
 
         left_activity = self.bridge_activity["left"]
@@ -518,7 +688,7 @@ class L1VisualCircuitProtocol:
                 VisualCircuitFrame(
                     transduction=transduction,
                     spiked_neurons=spiked_labels,
-                    readout_spikes=readout_spikes,
+                    a03o_spikes=a03o_spikes,
                     bridge_activity=dict(self.bridge_activity),
                     bridge_stimulus=stimulus,
                 )
@@ -532,8 +702,11 @@ class VisualClosedLoopResult:
     status: str
     spatial_result: SpatialClosedLoopResult
     visual_neuron_compartments: int
+    identified_descending_neurons: int
     published_connection_pairs: int
     published_synaptic_contacts: int
+    published_descending_connection_pairs: int
+    published_descending_synaptic_contacts: int
     executed_connection_pairs: int
     executed_synaptic_contacts: int
     visual_spike_counts: dict[str, int]
@@ -548,12 +721,19 @@ class VisualClosedLoopResult:
             "status": self.status,
             "duration_s": body.duration_s,
             "visual_neuron_compartments": self.visual_neuron_compartments,
+            "identified_descending_neurons": self.identified_descending_neurons,
             "downstream_spatial_neurons": body.neuron_count,
             "total_neuron_compartments": (
                 self.visual_neuron_compartments + body.neuron_count
             ),
             "published_connection_pairs": self.published_connection_pairs,
             "published_synaptic_contacts": self.published_synaptic_contacts,
+            "published_descending_connection_pairs": (
+                self.published_descending_connection_pairs
+            ),
+            "published_descending_synaptic_contacts": (
+                self.published_descending_synaptic_contacts
+            ),
             "executed_connection_pairs": self.executed_connection_pairs,
             "executed_synaptic_contacts": self.executed_synaptic_contacts,
             "model_fitted_downstream_synapses": body.synapse_count,
@@ -567,9 +747,10 @@ class VisualClosedLoopResult:
             "lesion_node_ids": list(self.lesion_node_ids),
             "release_validated": False,
             "claim_boundary": (
-                "published L1 LON contacts plus fitted effects, "
-                "phototransduction, and VPN-to-premotor bridge; not validated "
-                "natural phototaxis or a complete sensor-to-muscle connectome"
+                "published L1 LON and pOLP-to-LHN-to-CPf-to-A03o(A1) "
+                "structural contacts plus fitted effects, phototransduction, "
+                "and A03o-to-segmental bridge; not validated natural "
+                "phototaxis or a complete sensor-to-muscle connectome"
             ),
         }
 
@@ -606,16 +787,21 @@ class L1VisualClosedLoopLarva:
         field: ScalarField | None = None,
         config: dict[str, Any] | None = None,
         connectome: dict[str, Any] | None = None,
+        descending_connectome: dict[str, Any] | None = None,
         lesion_node_ids: Iterable[str] = (),
         ground_z_m: float | None = None,
         record_visual_frames: bool = False,
     ) -> None:
         self.config = config or load_visual_config()
         self.connectome = connectome or load_visual_connectome()
+        self.descending_connectome = (
+            descending_connectome or load_visual_descending_connectome()
+        )
         self.protocol = L1VisualCircuitProtocol(
             field or validation_light_field(self.config),
             config=self.config,
             connectome=self.connectome,
+            descending_connectome=self.descending_connectome,
             lesion_node_ids=lesion_node_ids,
             record_frames=record_visual_frames,
         )
@@ -641,11 +827,34 @@ class L1VisualClosedLoopLarva:
             status=self.config["status"],
             spatial_result=spatial_result,
             visual_neuron_compartments=len(self.protocol.neurons),
-            published_connection_pairs=int(
-                self.connectome["summary"]["nonzero_connection_pairs"]
+            identified_descending_neurons=int(
+                self.descending_connectome["summary"]["identified_neurons"]
             ),
-            published_synaptic_contacts=int(
-                self.connectome["summary"]["within_lon_synaptic_contacts"]
+            published_connection_pairs=(
+                int(self.connectome["summary"]["nonzero_connection_pairs"])
+                + int(
+                    self.descending_connectome["summary"][
+                        "axon_to_dendrite_connection_pairs"
+                    ]
+                )
+            ),
+            published_synaptic_contacts=(
+                int(self.connectome["summary"]["within_lon_synaptic_contacts"])
+                + int(
+                    self.descending_connectome["summary"][
+                        "axon_to_dendrite_synaptic_contacts"
+                    ]
+                )
+            ),
+            published_descending_connection_pairs=int(
+                self.descending_connectome["summary"][
+                    "axon_to_dendrite_connection_pairs"
+                ]
+            ),
+            published_descending_synaptic_contacts=int(
+                self.descending_connectome["summary"][
+                    "axon_to_dendrite_synaptic_contacts"
+                ]
             ),
             executed_connection_pairs=self.protocol.executed_connection_pairs,
             executed_synaptic_contacts=self.protocol.executed_synaptic_contacts,
@@ -667,17 +876,33 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     config = load_visual_config()
     connectome = load_visual_connectome()
+    descending_connectome = load_visual_descending_connectome()
     lesions: tuple[str, ...] = ()
     if args.lesion_class:
-        lesions = visual_node_ids_for_class(
-            connectome, args.lesion_class, lon_side=args.lesion_side
+        lesions = tuple(
+            dict.fromkeys(
+                item["node_id"]
+                for graph in (connectome, descending_connectome)
+                for item in graph["neurons"]
+                if item["neuron_class"] == args.lesion_class
+                and (
+                    args.lesion_side is None
+                    or item.get("lon_side", item.get("side"))
+                    == args.lesion_side
+                )
+            )
         )
+        if not lesions:
+            raise ValueError(
+                f"visual neuron class {args.lesion_class!r} is absent"
+            )
     result = L1VisualClosedLoopLarva(
         field=validation_light_field(
             config, lateral_sign=-1.0 if args.mirror else 1.0
         ),
         config=config,
         connectome=connectome,
+        descending_connectome=descending_connectome,
         lesion_node_ids=lesions,
     ).run(duration_s=args.duration)
     print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
