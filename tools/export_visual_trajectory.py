@@ -98,6 +98,9 @@ def _first_spike_trace(result, connectome) -> dict[str, float | None]:
                 if label.startswith("derived_motor_target:")
             ]
         ),
+        "named_muscle_identity_event": _earliest(
+            list(result.muscle_identity_first_event_s.values())
+        ),
         "fitted_a03o_segmental_bridge": _earliest(
             [
                 value
@@ -180,6 +183,21 @@ def _sampled_visual(protocol, trajectory_index: int) -> dict[str, Any]:
     frame_index = _visual_frame_index(trajectory_index)
     frame = protocol.frames[frame_index]
     transduction = frame.transduction
+    first = max(0, frame_index - round(SAMPLE_INTERVAL_S / DT_S) + 1)
+    event_frames = protocol.frames[first : frame_index + 1]
+    event_counts = {
+        "left": 0,
+        "right": 0,
+        "MEASURED_PUBLISHED": 0,
+        "ANATOMY_DERIVED": 0,
+    }
+    active_fibers: set[str] = set()
+    for event_frame in event_frames:
+        events = event_frame.muscle_identity_events
+        for fiber_id in events.fiber_events:
+            event_counts[fiber_id.split(":", 2)[1]] += 1
+            event_counts[events.mapping_provenance_by_fiber[fiber_id]] += 1
+            active_fibers.add(fiber_id)
     return {
         "sample_time_s": round(transduction.time_s, 9),
         "sample_positions_um": {
@@ -205,6 +223,8 @@ def _sampled_visual(protocol, trajectory_index: int) -> dict[str, Any]:
             for neuron_class, values in transduction.receptor_drive.items()
         },
         "spike_counts_in_window": _window_spike_counts(protocol, frame_index),
+        "muscle_identity_events_in_window": event_counts,
+        "active_mapped_fibers_in_window": len(active_fibers),
         "bridge_activity": {
             side: round(value, 9)
             for side, value in frame.bridge_activity.items()
@@ -229,6 +249,25 @@ def _summary(result) -> dict[str, Any]:
         "anatomy_derived_projection_edges": (
             result.anatomy_derived_projection_edges
         ),
+        "muscle_atlas_fibers": result.muscle_atlas_fibers,
+        "mapped_muscle_fibers": result.mapped_muscle_fibers,
+        "unmapped_muscle_fibers": (
+            result.muscle_atlas_fibers - result.mapped_muscle_fibers
+        ),
+        "observed_a1_identity_mappings": (
+            result.observed_a1_identity_mappings
+        ),
+        "derived_a2_a6_identity_mappings": (
+            result.derived_a2_a6_identity_mappings
+        ),
+        "muscle_identity_events": sum(
+            result.muscle_identity_event_counts.values()
+        ),
+        "recruited_mapped_fibers": sum(
+            count > 0 for count in result.muscle_identity_event_counts.values()
+        ),
+        "activation_dynamics_executed": False,
+        "individual_muscle_geometry_executed": False,
         "published_connection_pairs": result.published_connection_pairs,
         "published_descending_connection_pairs": (
             result.published_descending_connection_pairs
@@ -269,16 +308,18 @@ def render_trajectory() -> str:
     descending_connectome = load_visual_descending_connectome()
     motor_connectome = load_a03o_motor_connectome()
     segmental_projection = load_a03o_segmental_projection()
-    a03o_pair = visual_node_ids_for_class(
-        descending_connectome, "A03o_A1"
-    )
     scenario_specs = (
-        ("brighter_right_intact", 1.0, ()),
-        ("brighter_left_intact", -1.0, ()),
-        ("brighter_right_a03o_lesion", 1.0, a03o_pair),
+        ("brighter_right_intact", 1.0, (), ()),
+        ("brighter_left_intact", -1.0, (), ()),
+        (
+            "brighter_right_m23_fiber_lesion",
+            1.0,
+            (),
+            ("A1:right:M23:LT3",),
+        ),
     )
     scenarios = []
-    for scenario_id, lateral_sign, lesions in scenario_specs:
+    for scenario_id, lateral_sign, lesions, muscle_lesions in scenario_specs:
         organism = L1VisualClosedLoopLarva(
             field=validation_light_field(config, lateral_sign=lateral_sign),
             config=config,
@@ -287,6 +328,7 @@ def render_trajectory() -> str:
             motor_connectome=motor_connectome,
             segmental_projection=segmental_projection,
             lesion_node_ids=lesions,
+            lesion_muscle_fiber_ids=muscle_lesions,
             ground_z_m=None,
             record_visual_frames=True,
         )
@@ -308,6 +350,7 @@ def render_trajectory() -> str:
                 "id": scenario_id,
                 "lateral_gradient_sign": lateral_sign,
                 "lesion_node_ids": list(lesions),
+                "lesion_muscle_fiber_ids": list(muscle_lesions),
                 "summary": _summary(result),
                 "first_spike_trace_s": _first_spike_trace(
                     result, connectome
@@ -344,6 +387,9 @@ def render_trajectory() -> str:
         "a03o_segmental_projection_dynamics": config[
             "a03o_segmental_projection_dynamics"
         ],
+        "neural_muscle_identity_projection": config[
+            "neural_muscle_identity_projection"
+        ],
         "a03o_segmental_bridge": config["a03o_segmental_bridge"],
         "validation_light_field": config["validation_light_field"],
         "scenarios": scenarios,
@@ -357,8 +403,11 @@ def render_trajectory() -> str:
             "motor-target proxies are diagnostic branches; full-body motion "
             "remains on the parallel fitted A03o bridge.",
             "A7 remains blocked and has no derived visual motor proxy.",
-            "The A03o pair lesion is a neural intervention, not a fallback "
-            "action or scripted stop command.",
+            "The third scenario lesions one named fiber event channel; "
+            "it does not suppress the upstream motor neuron or alter the "
+            "parallel fitted body bridge.",
+            "Named-fiber events are causal identity bookkeeping, not "
+            "activation, force, contraction, or individual mechanics.",
         ],
     }
     return json.dumps(artifact, indent=2, ensure_ascii=False) + "\n"
