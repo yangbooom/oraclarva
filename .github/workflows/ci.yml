@@ -22,6 +22,7 @@ jobs:
       - run: python tools/export_bilateral_trajectory.py --check
       - run: python tools/export_environment_input_trajectory.py --check
       - run: python tools/compile_l1_visual_connectome.py --check
+      - run: python tools/compile_l1_visual_descending_path.py --check
       - run: python tools/export_visual_trajectory.py --check
       - run: python tools/export_native_closed_loop_fixture.py --check
       - run: python tools/export_native_bilateral_fixture.py --check

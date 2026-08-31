@@ -6,13 +6,17 @@ def source(**kw):
 def manifest(tmp_path,records):
     p=tmp_path/"sources.yaml"; p.write_text(json.dumps(records)); return p
 def test_repository_manifest():
-    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==11
+    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==12
 
 def test_environment_source_stages_are_explicit():
     records={item["source_id"]:item for item in load_source_manifest("data/sources/source_manifest_v0.yaml")}
     assert records["larderet_2017_l1_visual_circuit"]["stage"]=="L1"
     assert records["larderet_2017_l1_visual_circuit"]["sha256"]=="f9c200cdea0a9a80dc1e7d48aea0a25540d7d63341f705ff7c90faed9effd08f"
     assert "redistribution" in records["larderet_2017_l1_visual_circuit"]["allowed_uses"]
+    descending = records["vfb_l1em_visual_descending_path"]
+    assert descending["stage"] == "L1"
+    assert descending["sha256"] == "0f558cf16f30b58b760ac7053abb7cd5ccb64243de36492c937760c5642e465b"
+    assert "redistribution" in descending["allowed_uses"]
     assert records["berck_2016_l1_olfactory_circuit"]["stage"]=="L1"
     assert records["luo_2010_l1_thermotaxis"]["stage"]=="L1"
     assert records["kane_2013_l2_phototaxis"]["stage"]=="L2"

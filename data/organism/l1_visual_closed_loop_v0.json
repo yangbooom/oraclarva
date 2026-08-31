@@ -7,9 +7,9 @@
     "bilateral_bolwig_organ_samples",
     "fitted_rh5_rh6_phototransduction",
     "published_l1_lon_synaptic_contacts",
-    "fitted_synaptic_effects",
-    "published_visual_projection_neuron_readout",
-    "fitted_visual_to_spatial_premotor_bridge",
+    "fitted_effects_for_published_contacts",
+    "published_polp_to_lhn_to_cpf_to_a03o_a1_contacts",
+    "fitted_a03o_a1_to_segmental_core_bridge",
     "spatial_neural_dynamics",
     "motor_pools",
     "muscle_activation",
@@ -24,6 +24,16 @@
     "expected_side_scoped_matrix_entries": 60,
     "expected_nonzero_connection_pairs": 422,
     "expected_within_lon_synaptic_contacts": 3297,
+    "provenance": "MEASURED_PUBLISHED"
+  },
+  "descending_connectome": {
+    "model_id": "dmel_l1_visual_descending_path_v0",
+    "source_id": "vfb_l1em_visual_descending_path",
+    "article_doi": "10.1126/science.add9330",
+    "expected_identified_neurons": 10,
+    "expected_new_runtime_compartments": 6,
+    "expected_axon_to_dendrite_connection_pairs": 8,
+    "expected_axon_to_dendrite_synaptic_contacts": 98,
     "provenance": "MEASURED_PUBLISHED"
   },
   "phototransduction": {
@@ -79,18 +89,33 @@
       "A single fitted current per observed contact does not imply measured synaptic conductance or release probability."
     ]
   },
-  "descending_bridge": {
-    "readout_classes": [
-      "VPLN",
-      "nc-LaN",
-      "5th-LaN",
-      "PVL09",
-      "pOLP"
+  "descending_path_dynamics": {
+    "effect_by_presynaptic_class": {
+      "pOLP": "excitatory",
+      "PVL09": "excitatory",
+      "down_PVL09_PN-OLP": "excitatory",
+      "CPf_DN": "excitatory"
+    },
+    "effect_provenance": "MODEL_FITTED",
+    "limitations": [
+      "The eight VFB/CATMAID edges and their contact counts are measured structural observations, but all executable effect signs and currents are fitted.",
+      "Stage-specific currents per contact are calibration values chosen only to exercise the sparse reference path; they do not claim measured conductance, release probability, or delay.",
+      "The selected bilateral path is a causal test path in one specimen, not proof that it alone mediates natural phototaxis."
     ],
+    "current_per_synaptic_contact_a_by_presynaptic_class": {
+      "pOLP": 1e-10,
+      "PVL09": 1e-10,
+      "down_PVL09_PN-OLP": 5e-10,
+      "CPf_DN": 7.5e-10
+    }
+  },
+  "a03o_segmental_bridge": {
+    "readout_class": "A03o_A1",
+    "readout_segment": "A1",
     "activity_tau_s": 0.08,
     "spike_increment": 0.1,
     "side_activity_gain": {
-      "left": 1.7,
+      "left": 1.0,
       "right": 1.0
     },
     "common_output_gain": 0.4,
@@ -104,19 +129,27 @@
     "direct_dorsoventral_difference_gain": 0.0,
     "provenance": "MODEL_FITTED",
     "limitations": [
-      "The Larderet matrix ends at visual projection neurons and does not identify their path to VNC premotor neurons.",
-      "The bridge is a declared fitted causal proxy and is not described as a monosynaptic VPN-to-A27h connection.",
-      "The crossed lateral mapping uses L2 light-avoidance direction as a response prior only; it is not an identified L1 descending edge.",
-      "The left/right activity gains compensate specimen-specific matrix asymmetry for the diagnostic fixture and are not measured hemispheric gains.",
+      "The fitted bridge now starts only after the identified A03o premotor pair in A1; it is not described as a measured A03o-to-A27h synapse.",
+      "The bridge spreads the A1 observation into the generic A1-A7 spatial locomotor core because a complete public all-segment continuation has not been identified.",
+      "The crossed lateral mapping uses L2 light-avoidance direction as a response prior only; it is not a measured A03o motor effect.",
+      "Side activity gains are diagnostic calibration values and not measured hemispheric gains.",
       "Dorsal and ventral bridge currents receive the same common visual drive; vertical steering cannot be attributed to a fabricated dorsal-versus-ventral Bolwig-organ comparison."
     ]
   },
   "validation_light_field": {
     "type": "linear",
     "unit": "W_m-2",
-    "origin_m": [0.0, 0.0, 0.0],
+    "origin_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
     "value_at_origin": 4.0,
-    "gradient_per_m": [0.0, 6000.0, 0.0],
+    "gradient_per_m": [
+      0.0,
+      6000.0,
+      0.0
+    ],
     "temporal_rate_per_s": 0.0,
     "lower_bound": 0.0,
     "upper_bound": 20.0,
@@ -124,12 +157,13 @@
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
-    "objective": "Exercise the published bilateral L1 LON topology in a stable, nonsaturated causal loop and produce opposite-signed, near-balanced steering under mirrored lateral light fields while retaining the published specimen asymmetry.",
-    "uncertainty": "All phototransduction values, LIF contact current, assumed synaptic effects, readout filtering, and the visual-to-premotor bridge are calibration parameters rather than measured L1 constants."
+    "objective": "Exercise the published bilateral L1 LON and pOLP-to-A03o structural path in a stable, nonsaturated causal loop and produce opposite-signed steering under mirrored lateral light fields while retaining the published specimen asymmetry.",
+    "uncertainty": "All phototransduction values, LIF contact currents, assumed synaptic effects, A03o activity filtering, and the A1-to-segmental bridge are calibration parameters rather than measured L1 constants."
   },
   "limitations": [
-    "This is a connectome-driven LON-to-body research approximation, not validated natural L1 phototaxis.",
-    "The source matrix contains no identified beyond-LON descending targets or visual-to-VNC premotor path.",
+    "This is a connectome-driven LON-to-A03o-to-body research approximation, not validated natural L1 phototaxis.",
+    "The imported path identifies one bilateral structural route to an A1 premotor pair, not the full visual response circuit or complete route to motor neurons.",
+    "The 2-versus-11 CPf-to-A03o contact asymmetry is one specimen observation and is not a population hemispheric constant.",
     "The validation light field and virtual bilateral sample locations are model fixtures, not reconstructed natural illumination or measured Bolwig-organ coordinates.",
     "The executed topology contains no action command, target selector, finite-state machine, behavior tree, or policy network."
   ],

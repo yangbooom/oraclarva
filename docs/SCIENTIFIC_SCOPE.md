@@ -14,11 +14,13 @@ segments.
 
 The current visual extension is similarly bounded. Larderet et al. Figure 2
 source data supplies first-instar bilateral LON identities and 3,297 structural
-contacts through visual projection neurons. It does not supply physiological
-effect signs, photoreceptor response constants, beyond-LON target identities,
-or a route to VNC premotor neurons. Those executed quantities remain explicitly
-`MODEL_FITTED`; the bundled source graph retains unknown effects rather than
-rewriting neurotransmitter labels as measured excitation or inhibition.
+contacts. An audited VFB/L1EM snapshot adds a selected bilateral
+PVL09/pOLP-to-LHN-to-CPf-to-A03o route with eight edges and 98 contacts, reaching
+an annotated A1 premotor pair. Neither source supplies physiological effect
+signs, photoreceptor response constants, an all-segment continuation, or a
+complete route to motor neurons. Those executed quantities remain explicitly
+`MODEL_FITTED`; source graphs retain unknown effects rather than rewriting
+structural contacts as measured excitation or inhibition.
 
 ## Provenance labels
 

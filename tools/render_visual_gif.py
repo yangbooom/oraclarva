@@ -181,12 +181,16 @@ def draw_causal_trace(draw, scenario, frame, panel_left, small):
     trace = scenario["first_spike_trace_s"]
     stages = (
         ("PR", trace["photoreceptor"]),
-        ("VPN", trace["visual_projection_readout"]),
-        ("BR", trace["fitted_descending_bridge"]),
+        ("VPN", trace["visual_projection"]),
+        ("LHN", trace["lateral_horn_neuron"]),
+        ("DN", trace["cpf_descending_neuron"]),
+        ("A03o", trace["a03o_a1_premotor"]),
+        ("FIT", trace["fitted_a03o_segmental_bridge"]),
         ("PM", trace["a7_premotor"]),
         ("MN", trace["a7_motor"]),
     )
-    x = panel_left + 44
+    x = panel_left + 24
+    spacing = 40
     for index, (label, onset) in enumerate(stages):
         active = onset is not None and time_s >= onset
         color = (105, 220, 143) if active else (68, 62, 75)
@@ -202,47 +206,52 @@ def draw_causal_trace(draw, scenario, frame, panel_left, small):
         draw_text(draw, (x, 443), label, color, small, anchor="ma")
         if index < len(stages) - 1:
             draw.line(
-                [point(x + 7, 435), point(x + 38, 435)],
+                [point(x + 6, 435), point(x + spacing - 6, 435)],
                 fill=(69, 63, 78),
                 width=1 * SUPERSAMPLE,
             )
-        x += 57
+        x += spacing
 
 
 def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
     visual = frame["visual_input"]
     irradiance = visual["irradiance_w_m2"]
     rh5 = visual["receptor_drive"]["Rh5-PR"]
-    rh6 = visual["receptor_drive"]["Rh6-PR"]
     spike_counts = visual["spike_counts_in_window"]
     bridge = visual["bridge_stimulus"]
     draw_pair(
         draw,
         panel_left,
-        478,
+        476,
         "LIGHT",
         irradiance["left"],
         irradiance["right"],
         small,
         0.125,
     )
-    draw_pair(draw, panel_left, 501, "Rh5", rh5["left"], rh5["right"], small)
-    draw_pair(draw, panel_left, 524, "Rh6", rh6["left"], rh6["right"], small)
+    draw_pair(draw, panel_left, 496, "Rh5", rh5["left"], rh5["right"], small)
     draw_pair(
-        draw,
-        panel_left,
-        547,
-        "VPN",
-        spike_counts["left:readout"],
-        spike_counts["right:readout"],
-        small,
-        0.05,
+        draw, panel_left, 516, "VPN",
+        spike_counts["left:projection"], spike_counts["right:projection"],
+        small, 0.05,
     )
-    draw_pair(draw, panel_left, 570, "BRIDGE", bridge[0], bridge[1], small)
+    draw_pair(
+        draw, panel_left, 536, "LHN",
+        spike_counts["left:lhn"], spike_counts["right:lhn"], small, 0.05,
+    )
+    draw_pair(
+        draw, panel_left, 556, "CPf DN",
+        spike_counts["left:dn"], spike_counts["right:dn"], small, 0.05,
+    )
+    draw_pair(
+        draw, panel_left, 576, "A03o",
+        spike_counts["left:a03o"], spike_counts["right:a03o"], small, 0.025,
+    )
+    draw_pair(draw, panel_left, 596, "FIT", bridge[0], bridge[1], small)
     summary = scenario["summary"]
     draw_text(
         draw,
-        (panel_left + 16, 601),
+        (panel_left + 16, 621),
         f"dy {summary['displacement_y_um']:+.2f} um   "
         f"yaw {summary['yaw_change_deg']:+.2f} deg",
         (204, 190, 208),
@@ -252,7 +261,7 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
         draw_text(
             draw,
             (panel_left + PANEL_WIDTH - 18, 459),
-            "VPN READOUT LESION x12",
+            "A03o A1 PAIR LESION x2",
             (240, 91, 91),
             mono,
             anchor="ra",
@@ -280,15 +289,15 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
     draw_text(
         draw,
         (25, 53),
-        "LIGHT > BOLWIG Rh5/Rh6 > PUBLISHED LON CONTACTS > FITTED BRIDGE "
-        "> PREMOTOR > MOTOR > MUSCLE > 3D BODY",
+        "LIGHT > Rh5/Rh6 > LON > pOLP/PVL09 > LHN > CPf DN > A03o(A1) "
+        "> FITTED SEGMENTAL BRIDGE > MOTOR > MUSCLE > 3D BODY",
         (165, 148, 172),
         mono,
     )
     panel_titles = (
         "BRIGHTER RIGHT / INTACT",
         "BRIGHTER LEFT / INTACT",
-        "BRIGHTER RIGHT / VPN LESION",
+        "BRIGHTER RIGHT / A03o LESION",
     )
     scenarios = artifact["scenarios"]
     for panel_left, title, scenario in zip(
@@ -311,8 +320,8 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
     draw_text(
         draw,
         (24, 649),
-        "MEASURED: 60 matrix entries / 422 pairs / 3297 contacts   "
-        "MODEL_FITTED: response gains, effect signs, VPN->premotor bridge   "
+        "MEASURED: LON 422/3297 + PATH 8/98 pairs/contacts   "
+        "MODEL_FITTED: response, effect signs/currents, A03o(A1)->segmental   "
         "NO DIRECT DORSAL-VS-VENTRAL VISUAL SENSOR",
         (137, 126, 145),
         mono,
