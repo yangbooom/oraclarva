@@ -1291,6 +1291,17 @@
           2.105115
         ],
         "bootstrap_resamples": 2000
+      },
+      "a1_a6_wave_speed_segments_s": {
+        "p10": 1.467566,
+        "median": 1.682623,
+        "p90": 2.121631,
+        "animal_count": 12,
+        "median_bootstrap_95_ci": [
+          1.490069,
+          1.905189
+        ],
+        "bootstrap_resamples": 2000
       }
     }
   },
@@ -1974,6 +1985,17 @@
           2.598039
         ],
         "bootstrap_resamples": 2000
+      },
+      "a1_a6_wave_speed_segments_s": {
+        "p10": 1.577967,
+        "median": 1.760268,
+        "p90": 2.345083,
+        "animal_count": 6,
+        "median_bootstrap_95_ci": [
+          1.577967,
+          2.345083
+        ],
+        "bootstrap_resamples": 2000
       }
     }
   },
@@ -2062,7 +2084,8 @@
         "stride_um": 179.61821391132656,
         "cycle_period_s": 4.4,
         "cycle_frequency_hz": 0.22880035263387258,
-        "wave_speed_segments_s": 1.914347047671988
+        "wave_speed_segments_s": 1.914347047671988,
+        "a1_a6_wave_speed_segments_s": 1.652853296976451
       }
     },
     {
@@ -2149,7 +2172,8 @@
         "stride_um": 180.67386707335527,
         "cycle_period_s": 3.6849397590361455,
         "cycle_frequency_hz": 0.27326941744114663,
-        "wave_speed_segments_s": 2.4658475684039254
+        "wave_speed_segments_s": 2.4658475684039254,
+        "a1_a6_wave_speed_segments_s": 2.1326841623308472
       }
     },
     {
@@ -2236,7 +2260,8 @@
         "stride_um": 162.66164099420675,
         "cycle_period_s": 4.821186440677967,
         "cycle_frequency_hz": 0.20834061739089504,
-        "wave_speed_segments_s": 2.0600993217569665
+        "wave_speed_segments_s": 2.0600993217569665,
+        "a1_a6_wave_speed_segments_s": 1.6909235904979512
       }
     },
     {
@@ -2323,7 +2348,8 @@
         "stride_um": 151.49771712035184,
         "cycle_period_s": 4.934347826086957,
         "cycle_frequency_hz": 0.20640207095830165,
-        "wave_speed_segments_s": 2.043267736682728
+        "wave_speed_segments_s": 2.043267736682728,
+        "a1_a6_wave_speed_segments_s": 1.7648734064385792
       }
     },
     {
@@ -2410,7 +2436,8 @@
         "stride_um": 178.28861870798707,
         "cycle_period_s": 5.538709677419355,
         "cycle_frequency_hz": 0.1820337496155258,
-        "wave_speed_segments_s": 1.746412057303859
+        "wave_speed_segments_s": 1.746412057303859,
+        "a1_a6_wave_speed_segments_s": 1.5480817328864094
       }
     },
     {
@@ -2497,7 +2524,8 @@
         "stride_um": 156.6873845369429,
         "cycle_period_s": 3.7795454545454548,
         "cycle_frequency_hz": 0.2703968991588021,
-        "wave_speed_segments_s": 3.099319121086235
+        "wave_speed_segments_s": 3.099319121086235,
+        "a1_a6_wave_speed_segments_s": 2.75837372114505
       }
     },
     {
@@ -2584,7 +2612,8 @@
         "stride_um": 172.68379219532736,
         "cycle_period_s": 5.153658536585366,
         "cycle_frequency_hz": 0.19484169966559894,
-        "wave_speed_segments_s": 1.9307844252206254
+        "wave_speed_segments_s": 1.9307844252206254,
+        "a1_a6_wave_speed_segments_s": 1.712392556763797
       }
     },
     {
@@ -2671,7 +2700,8 @@
         "stride_um": 167.21213669549311,
         "cycle_period_s": 3.3435714285714293,
         "cycle_frequency_hz": 0.30505031176837266,
-        "wave_speed_segments_s": 2.9565187106905317
+        "wave_speed_segments_s": 2.9565187106905317,
+        "a1_a6_wave_speed_segments_s": 2.5491401859470835
       }
     },
     {
@@ -2758,7 +2788,8 @@
         "stride_um": 131.29245579825488,
         "cycle_period_s": 4.427956989247312,
         "cycle_frequency_hz": 0.22778530344572506,
-        "wave_speed_segments_s": 2.0434020851574624
+        "wave_speed_segments_s": 2.0434020851574624,
+        "a1_a6_wave_speed_segments_s": 1.9317927471745098
       }
     },
     {
@@ -2845,7 +2876,8 @@
         "stride_um": 149.92383101761988,
         "cycle_period_s": 5.696276595744682,
         "cycle_frequency_hz": 0.1790258332323972,
-        "wave_speed_segments_s": 1.6678556430331628
+        "wave_speed_segments_s": 1.6678556430331628,
+        "a1_a6_wave_speed_segments_s": 1.4675240256444495
       }
     },
     {
@@ -2932,7 +2964,8 @@
         "stride_um": 139.25541462346968,
         "cycle_period_s": 4.354054054054054,
         "cycle_frequency_hz": 0.23096484467242345,
-        "wave_speed_segments_s": 2.1467413098947223
+        "wave_speed_segments_s": 2.1467413098947223,
+        "a1_a6_wave_speed_segments_s": 2.022152346549472
       }
     },
     {
@@ -3019,7 +3052,8 @@
         "stride_um": 144.86519766555546,
         "cycle_period_s": 5.6525316455696215,
         "cycle_frequency_hz": 0.17888424686773646,
-        "wave_speed_segments_s": 1.82572541467926
+        "wave_speed_segments_s": 1.82572541467926,
+        "a1_a6_wave_speed_segments_s": 1.4977991662187724
       }
     },
     {
@@ -3106,7 +3140,8 @@
         "stride_um": 140.84771239716707,
         "cycle_period_s": 4.835576923076924,
         "cycle_frequency_hz": 0.21533755870595134,
-        "wave_speed_segments_s": 2.063489143704703
+        "wave_speed_segments_s": 2.063489143704703,
+        "a1_a6_wave_speed_segments_s": 1.788226389874836
       }
     },
     {
@@ -3193,7 +3228,8 @@
         "stride_um": 154.8404820160009,
         "cycle_period_s": 5.706521739130433,
         "cycle_frequency_hz": 0.17713772219404242,
-        "wave_speed_segments_s": 1.6814856166992371
+        "wave_speed_segments_s": 1.6814856166992371,
+        "a1_a6_wave_speed_segments_s": 1.5121896636692311
       }
     },
     {
@@ -3280,7 +3316,8 @@
         "stride_um": 128.23850265017313,
         "cycle_period_s": 5.115048543689321,
         "cycle_frequency_hz": 0.1991463222253172,
-        "wave_speed_segments_s": 2.035374334347462
+        "wave_speed_segments_s": 2.035374334347462,
+        "a1_a6_wave_speed_segments_s": 1.6581342540004285
       }
     },
     {
@@ -3367,7 +3404,8 @@
         "stride_um": 140.26940778713478,
         "cycle_period_s": 6.184065934065934,
         "cycle_frequency_hz": 0.16287149675369278,
-        "wave_speed_segments_s": 1.6238851239572671
+        "wave_speed_segments_s": 1.6238851239572671,
+        "a1_a6_wave_speed_segments_s": 1.467948196550582
       }
     },
     {
@@ -3454,7 +3492,8 @@
         "stride_um": 141.19757636506398,
         "cycle_period_s": 6.171052631578948,
         "cycle_frequency_hz": 0.16520377435737627,
-        "wave_speed_segments_s": 1.5318796361369984
+        "wave_speed_segments_s": 1.5318796361369984,
+        "a1_a6_wave_speed_segments_s": 1.3677629997164937
       }
     },
     {
@@ -3541,13 +3580,15 @@
         "stride_um": 154.12413160772448,
         "cycle_period_s": 4.854901960784314,
         "cycle_frequency_hz": 0.21123154913118622,
-        "wave_speed_segments_s": 2.096758059044484
+        "wave_speed_segments_s": 2.096758059044484,
+        "a1_a6_wave_speed_segments_s": 1.8296132360565995
       }
     }
   ],
   "derived_metric_definitions": {
     "duty_cycle_percent": "Author analysis field cnDurNorm = contraction duration / cycle period * 100.",
     "wave_speed_segments_s": "Seven segment intervals (T3 to A7) divided by the sum of the seven adjacent onset phase delays times each cycle period, then averaged within animal. Unit is segment intervals per second, not micrometers per second.",
+    "a1_a6_wave_speed_segments_s": "Five segment intervals (A6 to A1) divided by the sum of the five A2-A6 adjacent onset phase delays times each cycle period, then averaged within animal. This is the supported attachment-window metric, not a full T3-A7 wave claim.",
     "stride_um": "Author analysis field cycleStride.",
     "contraction_amplitude_percent": "Author analysis field cnAmpNorm; used as segment length change.",
     "provenance": "PUBLIC_IMAGE_DERIVED"

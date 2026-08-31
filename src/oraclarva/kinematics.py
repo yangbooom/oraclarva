@@ -24,6 +24,7 @@ HELD_OUT_CYCLE_METRICS = (
     "cycle_period_s",
     "cycle_frequency_hz",
     "wave_speed_segments_s",
+    "a1_a6_wave_speed_segments_s",
 )
 
 

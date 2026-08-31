@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_repeat_crawl_v0",
+  "status": "research_approximation",
+  "stage": "L1",
+  "supported_wave_segments_posterior_to_anterior": [
+    "A6",
+    "A5",
+    "A4",
+    "A3",
+    "A2",
+    "A1"
+  ],
+  "blocked_regions": [
+    "PSC",
+    "T1",
+    "T2",
+    "T3",
+    "A7",
+    "A8"
+  ],
+  "causal_contract": [
+    "environment",
+    "sensory_transduction",
+    "neural_dynamics",
+    "motor_neurons",
+    "muscle_activation",
+    "body_physics",
+    "environment"
+  ],
+  "topology": {
+    "provenance": "ANATOMY_DERIVED",
+    "description": "A posterior touch starts A6. Physical shortening excites the next anterior reduced premotor channel, while physical A1 recovery returns sensory excitation to A6 after a fitted neural delay.",
+    "periodic_stimulus": false,
+    "action_command": false,
+    "limitations": [
+      "The shortening-to-next-premotor and A1-recovery-to-A6 edges are reduced circuit hypotheses, not identified monosynaptic L1 connections.",
+      "A1 uses published motor identities where mapped; A2-A6 motor target channels remain ANATOMY_DERIVED.",
+      "T3 and A7 are observed in the behavior source but remain mechanically blocked because the named-fiber attachment atlas supports only A1-A6."
+    ]
+  },
+  "parameters": {
+    "dt_s": 0.001,
+    "duration_s": 16.0,
+    "posterior_touch_current_a": 4e-09,
+    "posterior_touch_duration_s": 0.002,
+    "premotor_synaptic_current_a": 1.8e-09,
+    "motor_synaptic_current_a": 1.8e-09,
+    "pmsi_inhibitory_current_a": 4e-09,
+    "pmsi_delay_s": 0.05,
+    "intersegmental_relay_delay_s": 0.59,
+    "a1_recovery_to_a6_delay_s": 2.0,
+    "sensory_maximum_current_a": 4e-09,
+    "sensory_adaptation_tau_s": 4.0,
+    "sensory_adaptation_fraction": 2.0,
+    "recovery_rate_threshold_s_1": 1e-05,
+    "recovery_rate_gain_s": 100000.0,
+    "trace_arrival_window_s": 0.08,
+    "muscle_activation_rise_tau_s": 0.002,
+    "muscle_activation_decay_tau_s": 0.3,
+    "muscle_event_target": 1.0,
+    "local_tension_gate_gain": 1000.0,
+    "recovery_adaptation_fraction": 3.0
+  },
+  "body_state_transduction": {
+    "model_id": "dmel_l1_repeat_crawl_body_state_v0",
+    "provenance": "MODEL_FITTED",
+    "dt_s": 0.001,
+    "stretch_strain_threshold": 0.005,
+    "stretch_rate_threshold_s_1": 0.1,
+    "stretch_strain_gain": 20.0,
+    "stretch_rate_gain_s": 0.05,
+    "shortening_strain_threshold": 1e-08,
+    "shortening_rate_threshold_s_1": 0.0,
+    "shortening_strain_gain": 100000000.0,
+    "shortening_rate_gain_s": 1000.0,
+    "maximum_external_current_a": 4e-09,
+    "contact_sensing_range_m": 2e-06,
+    "contact_touch_drive": 0.25
+  },
+  "named_fiber_body_coupling": {
+    "dt_s": 0.001,
+    "active_tension_gain_model_units": 165.0,
+    "passive_stiffness_model_units": 180.0,
+    "damping_model_units": 24.0,
+    "acceleration_scale_m_s2_per_model_force": 0.023,
+    "body_velocity_retention": 0.5,
+    "ground_negative_x_retention": 0.9,
+    "ground_positive_x_retention": 0.1,
+    "parameter_provenance": "MODEL_FITTED",
+    "force_unit": "model_unit_not_newton"
+  },
+  "calibration": {
+    "partition": "12 Greaney 2026 calibration animals only",
+    "objective_metrics": [
+      "A1-A6 wave speed in segment intervals per second",
+      "A1-A6 duty cycle",
+      "A1-A6 segment length change",
+      "stride"
+    ],
+    "parameter_provenance": "MODEL_FITTED",
+    "release_validated": false,
+    "fit_status": "frozen_before_single_held_out_evaluation",
+    "frozen_on": "2026-08-31",
+    "selection_used_held_out_values": false,
+    "held_out_values_were_present_in_repository": true,
+    "selection_rule": "Choose only against the 12-animal calibration p10-p90 bands; held-out values must not change parameters after this freeze.",
+    "calibration_target_snapshot": {
+      "cycle_period_s": {
+        "p10": 3.751851,
+        "median": 5.044003,
+        "p90": 6.1246
+      },
+      "stride_um": {
+        "p10": 140.327238,
+        "median": 153.1691,
+        "p90": 179.485254
+      },
+      "a1_a6_wave_speed_segments_s": {
+        "p10": 1.467566,
+        "median": 1.682623,
+        "p90": 2.121631
+      },
+      "segment_contraction_amplitude_percent": {
+        "A1": {
+          "p10": 41.193602,
+          "p90": 52.021047
+        },
+        "A2": {
+          "p10": 46.306662,
+          "p90": 54.761841
+        },
+        "A3": {
+          "p10": 49.225866,
+          "p90": 56.226349
+        },
+        "A4": {
+          "p10": 49.279175,
+          "p90": 54.166228
+        },
+        "A5": {
+          "p10": 48.090213,
+          "p90": 52.050819
+        },
+        "A6": {
+          "p10": 47.595298,
+          "p90": 54.554931
+        }
+      },
+      "segment_duty_cycle_percent": {
+        "A1": {
+          "p10": 29.931515,
+          "p90": 38.463793
+        },
+        "A2": {
+          "p10": 34.54961,
+          "p90": 43.060404
+        },
+        "A3": {
+          "p10": 35.910444,
+          "p90": 44.228109
+        },
+        "A4": {
+          "p10": 41.367616,
+          "p90": 48.966813
+        },
+        "A5": {
+          "p10": 43.821195,
+          "p90": 53.704309
+        },
+        "A6": {
+          "p10": 38.306409,
+          "p90": 50.123582
+        }
+      }
+    },
+    "parameter_ranges_considered": {
+      "intersegmental_relay_delay_s": [
+        0.38,
+        0.8
+      ],
+      "a1_recovery_to_a6_delay_s": [
+        1.0,
+        3.0
+      ],
+      "active_tension_gain_model_units": [
+        75.0,
+        165.0
+      ],
+      "acceleration_scale_m_s2_per_model_force": [
+        0.01,
+        0.023
+      ],
+      "body_velocity_retention": [
+        0.5,
+        0.5
+      ],
+      "ground_negative_x_retention": [
+        0.9,
+        0.9
+      ],
+      "ground_positive_x_retention": [
+        0.1,
+        0.1
+      ]
+    },
+    "candidate_audit": [
+      {
+        "relative_force_scale": "25x baseline",
+        "active_tension_gain": 75.0,
+        "acceleration_scale": 0.01,
+        "result": "repeat path present; stride below calibration band"
+      },
+      {
+        "relative_force_scale": "50x baseline",
+        "active_tension_gain": 100.0,
+        "acceleration_scale": 0.015,
+        "first_cycle_stride_um": 51.553,
+        "result": "below calibration band"
+      },
+      {
+        "relative_force_scale": "100x baseline",
+        "active_tension_gain": 150.0,
+        "acceleration_scale": 0.02,
+        "first_cycle_stride_um": 111.35,
+        "result": "below calibration band"
+      },
+      {
+        "relative_force_scale": "126x baseline",
+        "active_tension_gain": 165.0,
+        "acceleration_scale": 0.023,
+        "first_cycle_stride_um": 143.397265,
+        "result": "selected using calibration only"
+      }
+    ],
+    "detector": {
+      "cycle_boundary": "successive A6 premotor spikes caused by initial touch then A1 body-recovery feedback",
+      "physical_response_window_s": 0.8,
+      "onset": "first 25% shortening crossing after the traceable segment premotor event",
+      "contraction_end": "minimum segment length in the response window",
+      "failure_policy": "missing or non-posterior-to-anterior physical responses make wave-speed validation fail closed"
+    }
+  },
+  "release_validated": false,
+  "local_mechanical_gate": {
+    "input": "previous-step local named-fiber active tension normalized by fitted active-tension gain",
+    "equation": "contraction receptor drive = body shortening drive * min(1, local active-tension drive * fitted gate gain)",
+    "provenance": "MODEL_FITTED",
+    "purpose": "Reject passive strain propagated from another segment without bypassing muscle force or body physics."
+  }
+}

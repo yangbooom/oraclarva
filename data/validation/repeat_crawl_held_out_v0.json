@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_repeat_crawl_v0",
+  "release_validated": false,
+  "target_dataset": "greaney_2026_l1_kinematics_v0",
+  "target_schema_version": 2,
+  "frozen_config_sha256": "5cbaec6a716cf2b8dd2d8e053b00469f5e9f09389fa74645c17a148143b936e3",
+  "trajectory": "data/trajectories/l1_repeat_crawl_v0.json",
+  "complete_cycle_count": 3,
+  "physical_wave_cycle_count": 3,
+  "model_metrics": {
+    "period_s": 5.010999999999999,
+    "stride_um": 145.866256110617,
+    "neural_a1_a6_wave_speed_segments_s": 1.672240802675585,
+    "a1_a6_wave_speed_segments_s": 1.6728044737198409,
+    "segments": {
+      "A6": {
+        "length_change_percent": 0.024883277966765583,
+        "duty_cycle_percent": 0.4734137689197177
+      },
+      "A5": {
+        "length_change_percent": 0.07130177694137292,
+        "duty_cycle_percent": 12.104026934081716
+      },
+      "A4": {
+        "length_change_percent": 0.09234793923855594,
+        "duty_cycle_percent": 0.17320968998623038
+      },
+      "A3": {
+        "length_change_percent": 0.11820922373645552,
+        "duty_cycle_percent": 0.17264393529740277
+      },
+      "A2": {
+        "length_change_percent": 0.11260984925631315,
+        "duty_cycle_percent": 0.13298223007274557
+      },
+      "A1": {
+        "length_change_percent": 0.010348522616670382,
+        "duty_cycle_percent": 7.509442551034103
+      }
+    }
+  },
+  "partition": "held_out_validation",
+  "animal_count": 6,
+  "status": "held_out_failed",
+  "evaluation_protocol": {
+    "evaluation_count": 1,
+    "evaluated_on": "2026-08-31",
+    "parameters_changed_after_evaluation": false,
+    "selection_used_held_out_values": false,
+    "note": "Held-out values were already present in the repository, but the frozen candidate selection used calibration values only."
+  },
+  "comparisons": [
+    {
+      "metric": "cycle_period_s",
+      "model_value": 5.010999999999999,
+      "target_p10": 4.103751,
+      "target_median": 4.838044,
+      "target_p90": 5.38379,
+      "passed": true
+    },
+    {
+      "metric": "stride_um",
+      "model_value": 145.866256110617,
+      "target_p10": 129.765479,
+      "target_median": 149.494665,
+      "target_p90": 159.674513,
+      "passed": true
+    },
+    {
+      "metric": "a1_a6_wave_speed_segments_s",
+      "model_value": 1.6728044737198409,
+      "target_p10": 1.577967,
+      "target_median": 1.760268,
+      "target_p90": 2.345083,
+      "passed": true
+    },
+    {
+      "metric": "A1.contraction_amplitude_percent",
+      "model_value": 0.010348522616670382,
+      "target_p10": 38.983933,
+      "target_median": 46.286338,
+      "target_p90": 52.688294,
+      "passed": false
+    },
+    {
+      "metric": "A1.duty_cycle_percent",
+      "model_value": 7.509442551034103,
+      "target_p10": 32.546023,
+      "target_median": 37.099573,
+      "target_p90": 44.774428,
+      "passed": false
+    },
+    {
+      "metric": "A2.contraction_amplitude_percent",
+      "model_value": 0.11260984925631315,
+      "target_p10": 44.761929,
+      "target_median": 48.863233,
+      "target_p90": 52.117961,
+      "passed": false
+    },
+    {
+      "metric": "A2.duty_cycle_percent",
+      "model_value": 0.13298223007274557,
+      "target_p10": 35.320823,
+      "target_median": 41.054033,
+      "target_p90": 48.959418,
+      "passed": false
+    },
+    {
+      "metric": "A3.contraction_amplitude_percent",
+      "model_value": 0.11820922373645552,
+      "target_p10": 45.75669,
+      "target_median": 49.032858,
+      "target_p90": 53.757393,
+      "passed": false
+    },
+    {
+      "metric": "A3.duty_cycle_percent",
+      "model_value": 0.17264393529740277,
+      "target_p10": 38.200747,
+      "target_median": 42.72637,
+      "target_p90": 49.579573,
+      "passed": false
+    },
+    {
+      "metric": "A4.contraction_amplitude_percent",
+      "model_value": 0.09234793923855594,
+      "target_p10": 48.054715,
+      "target_median": 50.114183,
+      "target_p90": 54.028676,
+      "passed": false
+    },
+    {
+      "metric": "A4.duty_cycle_percent",
+      "model_value": 0.17320968998623038,
+      "target_p10": 43.24567,
+      "target_median": 46.04734,
+      "target_p90": 52.128491,
+      "passed": false
+    },
+    {
+      "metric": "A5.contraction_amplitude_percent",
+      "model_value": 0.07130177694137292,
+      "target_p10": 46.70728,
+      "target_median": 51.109866,
+      "target_p90": 53.191775,
+      "passed": false
+    },
+    {
+      "metric": "A5.duty_cycle_percent",
+      "model_value": 12.104026934081716,
+      "target_p10": 45.824507,
+      "target_median": 47.237778,
+      "target_p90": 52.537783,
+      "passed": false
+    },
+    {
+      "metric": "A6.contraction_amplitude_percent",
+      "model_value": 0.024883277966765583,
+      "target_p10": 48.585417,
+      "target_median": 50.412102,
+      "target_p90": 53.859117,
+      "passed": false
+    },
+    {
+      "metric": "A6.duty_cycle_percent",
+      "model_value": 0.4734137689197177,
+      "target_p10": 41.628197,
+      "target_median": 43.845541,
+      "target_p90": 47.306006,
+      "passed": false
+    }
+  ],
+  "passed": false,
+  "fail_closed": true,
+  "interpretation": "This frozen research approximation is not behaviorally validated; failed rows remain explicit and block a release claim."
+}

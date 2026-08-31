@@ -133,12 +133,14 @@ sensory, MN, and fiber lesions break only their later causal stages. A2-A6
 homologs, contraction sensing, and contact remain non-executable diagnostics.
 See `docs/BODY_STATE_SENSORY_FEEDBACK_V0.md`.
 
-The 18-animal Greaney kinematic target is now split before fitting into 12
-calibration and 6 held-out animals, with no cycle leakage. Segment length
-change, duty cycle, stride, and T3-A7 wave speed retain p10/median/p90 and
-animal-bootstrap uncertainty. The current fixture does not generate validated
-repeat crawl cycles, so unavailable held-out metrics remain failures rather
-than being reported as a biological match.
+The 18-animal Greaney kinematic target is split before fitting into 12
+calibration and 6 held-out animals, with no cycle leakage. Stage 6 now produces
+three complete A6-A1 physical cycles from one posterior touch: body shortening
+relays the wave anteriorly and A1 body recovery restarts A6. The frozen model
+passes cycle period, stride, and supported-window physical wave speed on the
+single held-out evaluation, but all six segment-amplitude and all six duty
+comparisons fail. It therefore remains a research approximation with
+release_validated false. See docs/REPEAT_CRAWL_HELD_OUT_V0.md.
 
 The isolated A1 mechanics fixture gives all 29 A1-left fibers normalized
 origins, insertions, rest lengths, lines of action, passive elasticity, damping,
@@ -247,6 +249,22 @@ python tools/compile_l1_a03o_segmental_projection.py --check
 python tools/compile_l1_neural_muscle_identity.py --check
 python tools/export_visual_trajectory.py --check
 python tools/render_visual_gif.py
+```
+
+## Repeat crawl and held-out diagnostic
+
+One posterior touch produces three checked A6-A1 cycles through body-state
+feedback; there is no periodic stimulus or gait command. The render mesh below
+is generated only from the frozen 13-node trajectory. Timing and stride pass
+the single six-animal held-out evaluation, while every segment amplitude and
+duty row fails and blocks validation.
+
+![Frozen repeat-crawl trajectory](docs/assets/oraclarva_repeat_crawl.gif)
+
+```bash
+python tools/export_repeat_crawl_trajectory.py --check
+python tools/evaluate_repeat_crawl.py --check
+python tools/render_repeat_crawl_gif.py
 ```
 
 ## Isolated A1 muscle mechanics diagnostic

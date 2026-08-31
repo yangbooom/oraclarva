@@ -31,9 +31,11 @@ the other 8 contacts remain recorded but unexecuted. A1-A6 strain and contact
 are computed from the physical body, but transduction thresholds, currents,
 effects, and gains are `MODEL_FITTED`. A2-A6 homolog channels are
 `ANATOMY_DERIVED`; contraction and contact channels have no executable neural
-edge. The reserved 6-animal kinematic partition is a future validation target,
-not evidence that the current non-cyclic fixture matches stride, duty cycle, or
-wave speed.
+edge. The reserved 6-animal kinematic partition has now been evaluated once against
+the frozen Stage 6 repeat fixture. Cycle period, stride, and the supported A6-A1
+physical wave speed pass, while all six segment-amplitude and all six duty rows
+fail. Those failures block behavioral validation; the three passing global
+metrics are not evidence of a complete L1 crawl match.
 
 ## Provenance labels
 
