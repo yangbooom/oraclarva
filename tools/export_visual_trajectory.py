@@ -36,9 +36,9 @@ def _earliest(values: list[float | None]) -> float | None:
     return None if not available else round(min(available), 9)
 
 
+
 def _first_spike_trace(result, connectome) -> dict[str, float | None]:
     visual = result.visual_first_spike_s
-    body = result.spatial_result.first_spike_s
     photoreceptors = sum(
         (
             visual_node_ids_for_class(connectome, neuron_class)
@@ -77,7 +77,7 @@ def _first_spike_trace(result, connectome) -> dict[str, float | None]:
         "a03o_a1_premotor": _earliest(
             [visual["left:A03o_A1"], visual["right:A03o_A1"]]
         ),
-        "a1_motor_identity_branch": _earliest(
+        "a1_motor_identity": _earliest(
             [
                 value
                 for label, value in visual.items()
@@ -104,29 +104,15 @@ def _first_spike_trace(result, connectome) -> dict[str, float | None]:
         "named_muscle_activation": _earliest(
             list(result.muscle_first_activation_s.values())
         ),
-        "fitted_a03o_segmental_bridge": _earliest(
+        "named_attachment_force": _earliest(
             [
-                value
-                for label, value in body.items()
-                if label.startswith("fitted_a03o_to_segmental_core")
+                frame.time_s if frame.active_fiber_count else None
+                for frame in result.body_force_frames
             ]
         ),
-        "a7_premotor": _earliest(
-            [
-                value
-                for label, value in body.items()
-                if label.startswith("premotor_A27h_like:A7")
-            ]
-        ),
-        "a7_motor": _earliest(
-            [
-                value
-                for label, value in body.items()
-                if label.startswith("motor_pool:A7")
-            ]
-        ),
+        "parallel_fitted_body_bridge": None,
+        "a7_named_attachment_force": None,
     }
-
 
 def _visual_frame_index(trajectory_index: int) -> int:
     if trajectory_index == 0:
@@ -182,9 +168,15 @@ def _window_spike_counts(protocol, frame_index: int) -> dict[str, int]:
     return counts
 
 
-def _sampled_visual(protocol, trajectory_index: int) -> dict[str, Any]:
+
+def _sampled_visual(
+    protocol,
+    force_frames,
+    trajectory_index: int,
+) -> dict[str, Any]:
     frame_index = _visual_frame_index(trajectory_index)
     frame = protocol.frames[frame_index]
+    force_frame = force_frames[frame_index]
     transduction = frame.transduction
     first = max(0, frame_index - round(SAMPLE_INTERVAL_S / DT_S) + 1)
     event_frames = protocol.frames[first : frame_index + 1]
@@ -204,6 +196,18 @@ def _sampled_visual(protocol, trajectory_index: int) -> dict[str, Any]:
     activation_by_side = {"left": [], "right": []}
     for fiber_id, value in frame.muscle_activation.activations.items():
         activation_by_side[fiber_id.split(":", 2)[1]].append(value)
+    tensions = [
+        item.total_tension_model_units
+        for item in force_frame.fibers.values()
+    ]
+    tension_by_side = {
+        side: sum(
+            item.total_tension_model_units
+            for fiber_id, item in force_frame.fibers.items()
+            if fiber_id.split(":", 2)[1] == side
+        )
+        for side in ("left", "right")
+    }
     return {
         "sample_time_s": round(transduction.time_s, 9),
         "sample_positions_um": {
@@ -242,41 +246,50 @@ def _sampled_visual(protocol, trajectory_index: int) -> dict[str, Any]:
         "applied_activation_events": len(
             frame.muscle_activation.applied_event_fibers
         ),
-        "bridge_activity": {
-            side: round(value, 9)
-            for side, value in frame.bridge_activity.items()
+        "attachment_force": {
+            "unit": force_frame.force_unit,
+            "active_fibers": force_frame.active_fiber_count,
+            "traced_active_fibers": force_frame.traced_active_fiber_count,
+            "total_tension_model_units": round(sum(tensions), 9),
+            "tension_model_units_by_side": {
+                side: round(value, 9)
+                for side, value in tension_by_side.items()
+            },
+            "peak_fiber_tension_model_units": round(max(tensions, default=0.0), 9),
+            "peak_node_force_model_units": round(
+                max(
+                    (
+                        value.norm()
+                        for value in force_frame.node_forces_model_units.values()
+                    ),
+                    default=0.0,
+                ),
+                9,
+            ),
+            "parallel_fitted_bridge_executed": (
+                force_frame.parallel_fitted_bridge_executed
+            ),
         },
-        "bridge_stimulus": [
-            round(value, 9) for value in frame.bridge_stimulus.values()
-        ],
     }
 
 
 def _summary(result) -> dict[str, Any]:
     body = result.spatial_result
-    stimuli = [frame.bridge_stimulus.values() for frame in result.visual_frames]
+    force_frames = result.body_force_frames
     return {
         "visual_neuron_compartments": result.visual_neuron_compartments,
         "identified_descending_neurons": result.identified_descending_neurons,
         "identified_a1_motor_neurons": result.identified_a1_motor_neurons,
         "derived_a03o_homologs": result.derived_a03o_homologs,
-        "derived_motor_target_channels": (
-            result.derived_motor_target_channels
-        ),
-        "anatomy_derived_projection_edges": (
-            result.anatomy_derived_projection_edges
-        ),
+        "derived_motor_target_channels": result.derived_motor_target_channels,
+        "anatomy_derived_projection_edges": result.anatomy_derived_projection_edges,
         "muscle_atlas_fibers": result.muscle_atlas_fibers,
         "mapped_muscle_fibers": result.mapped_muscle_fibers,
         "unmapped_muscle_fibers": (
             result.muscle_atlas_fibers - result.mapped_muscle_fibers
         ),
-        "observed_a1_identity_mappings": (
-            result.observed_a1_identity_mappings
-        ),
-        "derived_a2_a6_identity_mappings": (
-            result.derived_a2_a6_identity_mappings
-        ),
+        "observed_a1_identity_mappings": result.observed_a1_identity_mappings,
+        "derived_a2_a6_identity_mappings": result.derived_a2_a6_identity_mappings,
         "muscle_identity_events": sum(
             result.muscle_identity_event_counts.values()
         ),
@@ -295,8 +308,21 @@ def _summary(result) -> dict[str, Any]:
             max(result.muscle_peak_activations.values(), default=0.0), 9
         ),
         "minimum_spike_to_activation_delay_steps": 1,
-        "individual_muscle_geometry_executed": False,
-        "mechanical_force_executed": False,
+        "individual_muscle_geometry_executed": True,
+        "geometry_provenance": "ANATOMY_DERIVED",
+        "mechanical_force_executed": True,
+        "mechanics_provenance": "MODEL_FITTED",
+        "body_force_unit": "model_unit_not_newton",
+        "body_force_frames": len(force_frames),
+        "peak_active_body_force_fibers": max(
+            (frame.active_fiber_count for frame in force_frames),
+            default=0,
+        ),
+        "all_active_body_forces_traced": all(
+            frame.active_fiber_count == frame.traced_active_fiber_count
+            for frame in force_frames
+        ),
+        "parallel_fitted_bridge_executed": False,
         "published_connection_pairs": result.published_connection_pairs,
         "published_descending_connection_pairs": (
             result.published_descending_connection_pairs
@@ -305,31 +331,20 @@ def _summary(result) -> dict[str, Any]:
         "published_descending_synaptic_contacts": (
             result.published_descending_synaptic_contacts
         ),
-        "published_motor_connection_pairs": (
-            result.published_motor_connection_pairs
-        ),
-        "published_motor_synaptic_contacts": (
-            result.published_motor_synaptic_contacts
-        ),
+        "published_motor_connection_pairs": result.published_motor_connection_pairs,
+        "published_motor_synaptic_contacts": result.published_motor_synaptic_contacts,
         "executed_connection_pairs": result.executed_connection_pairs,
         "executed_synaptic_contacts": result.executed_synaptic_contacts,
-        "downstream_spatial_neurons": body.neuron_count,
-        "downstream_spatial_synapses": body.synapse_count,
+        "generic_downstream_spatial_neurons": body.neuron_count,
+        "generic_downstream_spatial_synapses": body.synapse_count,
         "visual_spikes": sum(result.visual_spike_counts.values()),
-        "downstream_spikes": sum(body.spike_counts.values()),
-        "bridge_stimulus_min": round(
-            min(min(values) for values in stimuli), 9
-        ),
-        "bridge_stimulus_max": round(
-            max(max(values) for values in stimuli), 9
-        ),
+        "generic_downstream_spikes": sum(body.spike_counts.values()),
         "displacement_x_um": round(body.displacement_x_um, 9),
         "displacement_y_um": round(body.displacement_y_um, 9),
         "displacement_z_um": round(body.displacement_z_um, 9),
         "yaw_change_deg": round(body.yaw_change_deg, 9),
         "head_pitch_change_deg": round(body.head_pitch_change_deg, 9),
     }
-
 
 def render_trajectory() -> str:
     config = load_visual_config()
@@ -341,10 +356,10 @@ def render_trajectory() -> str:
         ("brighter_right_intact", 1.0, (), ()),
         ("brighter_left_intact", -1.0, (), ()),
         (
-            "brighter_right_m23_fiber_lesion",
+            "brighter_right_m10_fiber_lesion",
             1.0,
             (),
-            ("A1:right:M23:LT3",),
+            ("A1:right:M10:DO2",),
         ),
     )
     scenarios = []
@@ -371,7 +386,9 @@ def render_trajectory() -> str:
         ):
             frame = dict(trajectory_frame)
             frame["visual_input"] = _sampled_visual(
-                organism.protocol, index
+                organism.protocol,
+                result.body_force_frames,
+                index,
             )
             frames.append(frame)
         scenarios.append(
@@ -423,26 +440,18 @@ def render_trajectory() -> str:
             "neural_muscle_activation_dynamics"
         ],
         "a03o_segmental_bridge": config["a03o_segmental_bridge"],
+        "named_fiber_body_coupling": config["named_fiber_body_coupling"],
         "validation_light_field": config["validation_light_field"],
         "scenarios": scenarios,
         "limitations": config["limitations"]
         + [
-            "The diagnostic renderer reads these checked physical-node frames "
-            "and never authors body motion.",
-            "The intact left/right scenarios test causal sign reversal; their "
-            "near balance is fitted and is not held-out behavioral validation.",
-            "The observed A1 motor identities and ANATOMY_DERIVED A2-A6 "
-            "motor-target proxies are diagnostic branches; full-body motion "
-            "remains on the parallel fitted A03o bridge.",
-            "A7 remains blocked and has no derived visual motor proxy.",
-            "The third scenario lesions one named fiber event channel; "
-            "it does not suppress the upstream motor neuron or alter the "
-            "parallel fitted body bridge.",
-            "Named-fiber events feed a one-step-delayed MODEL_FITTED "
-            "activation state; every applied input records its earlier spike "
-            "time and source identity.",
-            "Activation remains diagnostic and applies no force, contraction, "
-            "attachment geometry, or individual mechanics.",
+            "The diagnostic renderer reads checked physical-node frames and never authors body motion.",
+            "The intact left/right scenarios exercise causal response reversal; this is not held-out behavioral validation.",
+            "All body motion in this artifact follows named motor output, one-step-delayed activation, attachment tension, and shared-node physics.",
+            "A1-left attachment coordinates, bilateral mirror, and A2-A6 homology are ANATOMY_DERIVED; A7 remains blocked.",
+            "The third scenario lesions one named fiber while preserving its upstream motor neuron; its changed trajectory is a physical causal test.",
+            "Every active attachment force records an earlier source spike and uses model force units rather than newtons.",
+            "The historical fitted A03o-to-generic-body bridge and generic downstream neural/motor pools are not executed.",
         ],
     }
     return json.dumps(artifact, indent=2, ensure_ascii=False) + "\n"

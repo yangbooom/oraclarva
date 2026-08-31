@@ -11,6 +11,7 @@ from typing import Any, Iterable
 
 from .body3d import Vec3
 from .environment_inputs import LinearScalarField, ScalarField
+from .fiber_body import NamedFiberBodyForceFrame, NamedFiberVisualBodyRunner
 from .lif import SparseLIFNetwork, Synapse
 from .muscles import (
     NeuralMuscleActivationFrame,
@@ -20,29 +21,13 @@ from .muscles import (
     load_neural_muscle_identity_projection,
 )
 from .spatial import (
-    SpatialClosedLoopLarva,
     SpatialClosedLoopResult,
     SpatialSensoryState,
-    SpatialStimulus,
 )
 
 
 LON_SIDES = ("left", "right")
 PHOTORECEPTOR_CLASSES = ("Rh5-PR", "Rh6-PR")
-BRIDGE_INPUT_LABELS = (
-    "fitted_a03o_to_segmental_core:left",
-    "fitted_a03o_to_segmental_core:right",
-    "fitted_a03o_to_segmental_core:dorsal_shared",
-    "fitted_a03o_to_segmental_core:ventral_shared",
-)
-BRIDGE_DIFFERENCE_LABELS = (
-    "fitted_a03o_lateral_difference:left",
-    "fitted_a03o_lateral_difference:right",
-    "fitted_a03o_dorsoventral_difference:dorsal_shared",
-    "fitted_a03o_dorsoventral_difference:ventral_shared",
-)
-
-
 def default_visual_config_path() -> Path:
     return (
         Path(__file__).resolve().parents[2]
@@ -108,10 +93,10 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         "fitted_effects_for_anatomy_derived_projection",
         "motor_output_spikes_to_named_muscle_identity_events",
         "model_fitted_individual_fiber_activation_dynamics",
-        "fitted_a03o_a1_to_segmental_core_bridge",
-        "spatial_neural_dynamics",
-        "motor_pools",
-        "muscle_activation",
+        "anatomy_derived_a1_left_attachment_coordinates",
+        "anatomy_derived_bilateral_mirror_and_a2_a6_homology",
+        "model_fitted_named_fiber_attachment_mechanics",
+        "shared_body_node_force_projection",
         "3d_body_physics",
         "analytic_light_field",
     ):
@@ -190,7 +175,7 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         or int(identity_projection.get("expected_derived_a2_a6_mappings", 0))
         != 130
         or identity_projection.get("activation_dynamics_executed") is not False
-        or identity_projection.get("individual_geometry_executed") is not False
+        or identity_projection.get("individual_geometry_executed") is not True
     ):
         raise ValueError("neural-muscle identity projection contract is invalid")
 
@@ -201,8 +186,8 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         or activation.get("provenance") != "MODEL_FITTED"
         or int(activation.get("minimum_spike_to_activation_delay_steps", 0))
         != 1
-        or activation.get("individual_geometry_executed") is not False
-        or activation.get("mechanical_force_executed") is not False
+        or activation.get("individual_geometry_executed") is not True
+        or activation.get("mechanical_force_executed") is not True
     ):
         raise ValueError("neural-muscle activation claim boundary is invalid")
     for key in ("rise_tau_s", "decay_tau_s", "event_target"):
@@ -326,37 +311,51 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
             raise ValueError(f"A03o segmental projection {key} must be positive")
 
     bridge = raw.get("a03o_segmental_bridge", {})
-    if bridge.get("provenance") != "MODEL_FITTED":
-        raise ValueError("A03o segmental bridge must remain model-fitted")
     if (
-        bridge.get("readout_class") != "A03o_A1"
-        or bridge.get("readout_segment") != "A1"
+        bridge.get("enabled") is not False
+        or bridge.get("executed") is not False
+        or bridge.get("replaced_by") != "named_fiber_body_coupling"
+        or bridge.get("provenance") != "MODEL_FITTED"
     ):
-        raise ValueError("A03o segmental readout identity is invalid")
+        raise ValueError("historical A03o segmental bridge must stay disabled")
+
+    coupling = raw.get("named_fiber_body_coupling", {})
+    if (
+        coupling.get("model_id") != "dmel_l1_named_fiber_body_v0"
+        or int(coupling.get("expected_mapped_fibers", 0)) != 146
+        or int(coupling.get("expected_unmapped_fibers", 0)) != 212
+        or coupling.get("blocked_segments") != ["A7"]
+        or coupling.get("geometry_provenance") != "ANATOMY_DERIVED"
+        or coupling.get("mechanics_provenance") != "MODEL_FITTED"
+        or coupling.get("force_unit") != "model_unit_not_newton"
+        or coupling.get("parallel_fitted_bridge_executed") is not False
+    ):
+        raise ValueError("named-fiber body coupling claim boundary is invalid")
     for key in (
-        "activity_tau_s",
-        "spike_increment",
-        "common_output_gain",
-        "lateral_difference_gain",
+        "dt_s",
+        "active_tension_gain_model_units",
+        "passive_stiffness_model_units",
+        "damping_model_units",
+        "acceleration_scale_m_s2_per_model_force",
+        "body_velocity_retention",
+        "ground_negative_x_retention",
+        "ground_positive_x_retention",
     ):
-        value = float(bridge.get(key, 0.0))
+        value = float(coupling.get(key, 0.0))
         if not isfinite(value) or value <= 0.0:
-            raise ValueError(f"A03o segmental bridge {key} must be positive")
-    side_gains = bridge.get("side_activity_gain", {})
-    if tuple(side_gains) != LON_SIDES or any(
-        not isfinite(float(value)) or float(value) <= 0.0
-        for value in side_gains.values()
-    ):
-        raise ValueError("A03o bridge side activity gains are invalid")
-    if float(bridge.get("direct_dorsoventral_difference_gain", -1.0)) != 0.0:
-        raise ValueError("visual bridge cannot invent direct dorsoventral sensing")
-    mapping_evidence = bridge.get("lateral_mapping_evidence", {})
-    if (
-        bridge.get("lateral_mapping") != "crossed_light_avoidance_prior"
-        or mapping_evidence.get("doi") != "10.1073/pnas.1215295110"
-        or mapping_evidence.get("stage") != "L2"
-    ):
-        raise ValueError("visual bridge lateral mapping boundary is invalid")
+            raise ValueError(f"named-fiber body coupling {key} must be positive")
+    calibration_ranges = coupling.get("calibration_ranges", {})
+    if set(calibration_ranges) != {
+        "active_tension_gain_model_units",
+        "passive_stiffness_model_units",
+        "damping_model_units",
+        "acceleration_scale_m_s2_per_model_force",
+    }:
+        raise ValueError("named-fiber coupling calibration ranges are invalid")
+    for key, bounds in calibration_ranges.items():
+        value = float(coupling.get(key, 0.0))
+        if len(bounds) != 2 or not float(bounds[0]) <= value <= float(bounds[1]):
+            raise ValueError(f"named-fiber coupling {key} is outside its range")
     if raw.get("parameter_provenance", {}).get("provenance") != "MODEL_FITTED":
         raise ValueError("visual numerical parameters must remain model-fitted")
     if raw.get("release_validated") is not False:
@@ -794,8 +793,7 @@ class VisualCircuitFrame:
     derived_motor_spikes: dict[str, tuple[str, ...]]
     muscle_identity_events: NeuralMuscleIdentityEventFrame
     muscle_activation: NeuralMuscleActivationFrame
-    bridge_activity: dict[str, float]
-    bridge_stimulus: SpatialStimulus
+    parallel_fitted_bridge_executed: bool
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -850,8 +848,9 @@ class VisualCircuitFrame:
                 "individual_geometry_executed": False,
                 "mechanical_force_executed": False,
             },
-            "bridge_activity": self.bridge_activity,
-            "bridge_stimulus": list(self.bridge_stimulus.values()),
+            "parallel_fitted_bridge_executed": (
+                self.parallel_fitted_bridge_executed
+            ),
         }
 
 
@@ -1081,19 +1080,18 @@ class L1VisualCircuitProtocol:
         )
         self.lesion_muscle_fiber_ids = muscle_lesions
 
-        bridge = self.config["a03o_segmental_bridge"]
         self.a03o_indices = {
             side: tuple(
                 index
                 for index, item in enumerate(self.neurons)
                 if item["lon_side"] == side
-                and item["neuron_class"] == bridge["readout_class"]
-                and item.get("segment") == bridge["readout_segment"]
+                and item["neuron_class"] == "A03o_A1"
+                and item.get("segment") == "A1"
             )
             for side in LON_SIDES
         }
         if any(len(values) != 1 for values in self.a03o_indices.values()):
-            raise ValueError("visual bridge requires one A1 A03o neuron per side")
+            raise ValueError("visual circuit requires one A1 A03o neuron per side")
         self.a1_motor_indices = {
             side: tuple(
                 index
@@ -1142,7 +1140,6 @@ class L1VisualCircuitProtocol:
         ):
             raise ValueError("derived A03o segmental runtime indices are invalid")
 
-        self.bridge_activity = {side: 0.0 for side in LON_SIDES}
         self.spike_counts = {label: 0 for label in self.labels}
         self.first_spike_s: dict[str, float | None] = {
             label: None for label in self.labels
@@ -1174,7 +1171,7 @@ class L1VisualCircuitProtocol:
 
     def __call__(
         self, time_s: float, state: SpatialSensoryState
-    ) -> SpatialStimulus:
+    ) -> NeuralMuscleActivationFrame:
         expected_time = self.network.step_index * self.network.config.dt_s
         if not isfinite(time_s) or abs(time_s - expected_time) > 1e-9:
             raise ValueError(
@@ -1202,23 +1199,15 @@ class L1VisualCircuitProtocol:
             if self.first_spike_s[label] is None:
                 self.first_spike_s[label] = time_s
 
-        bridge = self.config["a03o_segmental_bridge"]
-        decay = exp(-self.network.config.dt_s / float(bridge["activity_tau_s"]))
-        a03o_spikes: dict[str, tuple[str, ...]] = {}
         spiked = set(spikes)
-        for side in LON_SIDES:
-            self.bridge_activity[side] *= decay
-            side_spikes = tuple(
+        a03o_spikes = {
+            side: tuple(
                 self.labels[index]
                 for index in self.a03o_indices[side]
                 if index in spiked
             )
-            a03o_spikes[side] = side_spikes
-            self.bridge_activity[side] += (
-                len(side_spikes)
-                * float(bridge["spike_increment"])
-                * float(bridge["side_activity_gain"][side])
-            )
+            for side in LON_SIDES
+        }
         a1_motor_spikes = {
             side: tuple(
                 self.labels[index]
@@ -1263,28 +1252,6 @@ class L1VisualCircuitProtocol:
                 self.muscle_peak_activations[fiber_id], value
             )
 
-        left_activity = self.bridge_activity["left"]
-        right_activity = self.bridge_activity["right"]
-        common = (
-            float(bridge["common_output_gain"])
-            * (left_activity + right_activity)
-            / 2.0
-        )
-        lateral = (
-            float(bridge["lateral_difference_gain"])
-            * (right_activity - left_activity)
-            / 2.0
-        )
-
-        def bounded(value: float) -> float:
-            return min(1.0, max(0.0, value))
-
-        stimulus = SpatialStimulus(
-            bounded(common + lateral),
-            bounded(common - lateral),
-            bounded(common),
-            bounded(common),
-        )
         if self.record_frames:
             self.frames.append(
                 VisualCircuitFrame(
@@ -1296,11 +1263,10 @@ class L1VisualCircuitProtocol:
                     derived_motor_spikes=derived_motor_spikes,
                     muscle_identity_events=muscle_identity_events,
                     muscle_activation=muscle_activation,
-                    bridge_activity=dict(self.bridge_activity),
-                    bridge_stimulus=stimulus,
+                    parallel_fitted_bridge_executed=False,
                 )
             )
-        return stimulus
+        return muscle_activation
 
 
 @dataclass(frozen=True, slots=True)
@@ -1338,6 +1304,7 @@ class VisualClosedLoopResult:
     lesion_node_ids: tuple[str, ...]
     lesion_muscle_fiber_ids: tuple[str, ...]
     visual_frames: tuple[VisualCircuitFrame, ...]
+    body_force_frames: tuple[NamedFiberBodyForceFrame, ...]
 
     def to_dict(self) -> dict[str, Any]:
         body = self.spatial_result
@@ -1385,8 +1352,19 @@ class VisualClosedLoopResult:
                 self.muscle_peak_activations.values(), default=0.0
             ),
             "minimum_spike_to_activation_delay_steps": 1,
-            "individual_muscle_geometry_executed": False,
-            "mechanical_force_executed": False,
+            "individual_muscle_geometry_executed": True,
+            "mechanical_force_executed": True,
+            "parallel_fitted_bridge_executed": False,
+            "body_force_frames": len(self.body_force_frames),
+            "peak_active_body_force_fibers": max(
+                (frame.active_fiber_count for frame in self.body_force_frames),
+                default=0,
+            ),
+            "all_active_body_forces_traced": all(
+                frame.active_fiber_count == frame.traced_active_fiber_count
+                for frame in self.body_force_frames
+            ),
+            "body_force_unit": "model_unit_not_newton",
             "downstream_spatial_neurons": body.neuron_count,
             "total_neuron_compartments": (
                 self.visual_neuron_compartments + body.neuron_count
@@ -1423,11 +1401,12 @@ class VisualClosedLoopResult:
                 "A03o-to-14-A1-motor-identity structural contacts; an "
                 "ANATOMY_DERIVED CPf-to-A03o-to-motor-target projection in "
                 "A2-A6 with A7 blocked; 146 causal named-fiber identity "
-                "mappings and one-step-delayed MODEL_FITTED activation "
-                "dynamics with no individual geometry or force; fitted "
-                "effects, phototransduction, and a parallel "
-                "A03o-to-body bridge; not validated natural phototaxis or "
-                "a complete sensor-to-muscle connectome"
+                "mappings, one-step-delayed MODEL_FITTED activation, "
+                "ANATOMY_DERIVED attachment hypotheses, and MODEL_FITTED "
+                "model-unit tension projected to shared body nodes; the "
+                "historical parallel A03o-to-body bridge is disabled; not "
+                "validated natural phototaxis or a complete sensor-to-muscle "
+                "connectome"
             ),
         }
 
@@ -1498,10 +1477,10 @@ class L1VisualClosedLoopLarva:
             lesion_muscle_fiber_ids=lesion_muscle_fiber_ids,
             record_frames=record_visual_frames,
         )
-        self.spatial = SpatialClosedLoopLarva(
+        self.spatial = NamedFiberVisualBodyRunner(
+            self.protocol,
+            self.config["named_fiber_body_coupling"],
             ground_z_m=ground_z_m,
-            input_labels=BRIDGE_INPUT_LABELS,
-            asymmetry_labels=BRIDGE_DIFFERENCE_LABELS,
         )
 
     def run(
@@ -1511,7 +1490,6 @@ class L1VisualClosedLoopLarva:
         record_trajectory_interval_s: float | None = None,
     ) -> VisualClosedLoopResult:
         spatial_result = self.spatial.run(
-            stimulus_protocol=self.protocol,
             duration_s=duration_s,
             record_trajectory_interval_s=record_trajectory_interval_s,
         )
@@ -1627,6 +1605,7 @@ class L1VisualClosedLoopLarva:
                 self.protocol.lesion_muscle_fiber_ids
             ),
             visual_frames=tuple(self.protocol.frames),
+            body_force_frames=tuple(self.spatial.force_frames),
         )
 
 

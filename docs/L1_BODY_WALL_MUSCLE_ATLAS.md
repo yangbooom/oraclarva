@@ -46,12 +46,13 @@ not digitized or measured attachments. The material and tension values are
 MODEL_FITTED model units. Exact zero-input stability and individual-fiber lesion
 locality are checked in.
 
-This does not make the 358-fiber atlas mechanically executable. Individual
-layers, direct/indirect tendon assignment, shared cuticle nodes, metric scale,
-CSA, Fmax, and A2-A6 attachment homology remain unresolved. Stage 4 must project
-these individual forces onto shared full-body physics without retaining the
-parallel aggregate bridge. Thoracic and terminal segments still require their
-own atlases rather than an A1 copy.
+Stage 4 now makes only the 146 neurally mapped fibers mechanically executable.
+It projects their mirrored/homology-derived attachment tensions onto shared
+full-body nodes and disables the parallel aggregate bridge. The remaining 212
+atlas fibers, A7, thoracic and terminal segments stay blocked. Direct/indirect
+tendon assignment, measured metric attachments, CSA, Fmax, and segment-specific
+A2-A6 measurements remain unresolved; the executed geometry is an explicitly
+ANATOMY_DERIVED hypothesis.
 
 ## Sources
 
