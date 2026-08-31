@@ -78,22 +78,45 @@ one-step-delayed named-fiber events, trace ordering, node-force vectors, and
 Contact and contraction channels remain non-executable and must not be silently
 wired by a mobile implementation.
 
-## Stage 6 native-impact audit
+## Stage 7 repeat-crawl numerical parity
 
-The repeat-crawl path is Python-only. It adds a 164-node sparse LIF circuit,
-delayed shortening relays, A1 recovery feedback, sensory adaptation, the
-146-fiber named attachment path, three complete cycles, and physical
-cycle-metric extraction. Existing native fixtures and schemas remain unchanged
-and are regression gates only; they do not imply support for this path.
+The repeat-crawl path now has a dependency-free C++17 implementation. It
+consumes `data/parity/repeat_crawl_native_v1.tsv`, which is generated from the
+same frozen Stage 6 configuration as the Python oracle. The native program
+executes rather than replays the 164-neuron/307-synapse network, sensory
+adaptation, delayed shortening and recovery relays, 144 mapped sources, 146
+named-fiber forces, 13-node XPBD body, feedback, trace ancestry, and physical
+cycle detector.
 
-Stage 7 must consume one shared frozen fixture and match Python on every sensory,
-premotor, and mapped-MN spike; activation events; model-unit node forces;
-trace ancestry; 13-node body frames; physical cycle boundaries; and zero-input,
-sensory, premotor, MN, and fiber lesions. The held-out biological failure is
-orthogonal to numerical parity and must remain visible in native output.
+The normal 16 s run matches all 164 spike counts and first-spike times exactly.
+All 535 sampled frames remain within ceilings of 5e-8 um for nodes, 5.1e-10 for
+activation, and 2e-7 model units for node force. Cycle period, stride, wave
+speed, displacement, trace counts, and cycle counts match their stricter
+summary gates. Zero input plus A6 sensory, A4 premotor, all-mapped-A6-MN, and
+all-A6-fiber lesions preserve the expected causal boundaries in both
+implementations.
 
 This is correctness parity for the current `research_approximation`, not
-biological validation or a performance result. The full brain/VNC, measured individual
-muscle attachments and force gains, visual named-fiber native parity, held-out
-behavior validation, and mobile
-device benchmarks remain absent.
+biological validation or a performance result. The held-out segment-amplitude
+and duty failures remain present and `release_validated` remains false. See
+`docs/REPEAT_CRAWL_NATIVE_PARITY_V1.md`.
+
+## Stage 8 mobile integration gate
+
+The next acceptance gate must wrap the verified core in a small mobile-facing
+lifecycle API with these boundaries:
+
+- inputs alter fields, contact geometry, declared sensory stimuli, or declared
+  neural/muscle lesions; no crawl/turn/stop/seek action API is permitted;
+- fixed neural/body clocks, deterministic reset, versioned fixture identity,
+  and replay checks remain explicit;
+- the simulation returns state snapshots and trace records, while the renderer
+  receives a separate smooth mesh projection and never changes physics nodes;
+- a release-build target-like host benchmark records initialization time,
+  simulated-time throughput, memory, and snapshot cost without weakening the
+  Stage 7 numerical gate;
+- mobile packaging claims only host-tested readiness until Android/iOS target
+  builds and device measurements actually exist.
+
+GitHub Actions remains manual-only through `workflow_dispatch`; local
+acceptance is the default during this research phase.

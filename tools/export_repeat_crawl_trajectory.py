@@ -72,6 +72,8 @@ def render_trajectory() -> str:
             "maximum_pending_trace_count": (
                 result.maximum_pending_trace_count
             ),
+            "spike_counts": dict(result.spike_counts),
+            "first_spike_s": dict(result.first_spike_s),
             "premotor_spike_times_s": {
                 key: list(values)
                 for key, values in result.premotor_spike_times_s.items()

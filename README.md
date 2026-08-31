@@ -142,6 +142,17 @@ single held-out evaluation, but all six segment-amplitude and all six duty
 comparisons fail. It therefore remains a research approximation with
 release_validated false. See docs/REPEAT_CRAWL_HELD_OUT_V0.md.
 
+Stage 7 now executes that same frozen 16 s path in a dependency-free C++17 core
+rather than replaying Python frames. One shared fixture covers 164 LIF neurons,
+307 sparse delayed synapses, 144 mapped sources, 146 named fibers, 13 body
+nodes, feedback, traces, and physical cycle detection. All 164 spike
+counts/first-spike times match; all 535 sampled node, activation, and node-force
+frames stay within declared strict tolerances. Zero input and sensory,
+premotor, mapped-MN, and fiber lesions also match. This establishes numerical
+parity only: the held-out amplitude/duty failures and
+`release_validated: false` are unchanged. See
+`docs/REPEAT_CRAWL_NATIVE_PARITY_V1.md`.
+
 The isolated A1 mechanics fixture gives all 29 A1-left fibers normalized
 origins, insertions, rest lengths, lines of action, passive elasticity, damping,
 and activation-driven tension. Stage 4 now reuses the supported subset in the
@@ -267,6 +278,19 @@ python tools/evaluate_repeat_crawl.py --check
 python tools/render_repeat_crawl_gif.py
 ```
 
+The paired diagnostic below is generated from the checked Python/C++ parity
+report. Both panels render independently computed body nodes; neither panel
+changes or synthesizes motion.
+
+![Python and C++ repeat-crawl parity](docs/assets/oraclarva_repeat_native_parity.gif)
+
+```bash
+python tools/export_native_repeat_fixture.py --check
+python tools/export_native_repeat_parity.py --check
+python tools/render_native_repeat_parity_gif.py
+pytest -q tests/test_native_repeat_parity.py
+```
+
 ## Isolated A1 muscle mechanics diagnostic
 
 The Stage 3 artifact shows the 29 schematic A1-left attachment lines, two
@@ -301,9 +325,16 @@ zero-input, and lesion cases match Python on every spike, summary, activation,
 shortening value, and all 151 trajectory frames. Run
 `pytest tests/test_native_bilateral_parity.py`.
 
-This establishes native numerical parity for the research approximation, not a
-complete L1 brain/VNC, individual muscle mechanics, held-out biological
-validation, or on-device performance.
+The fourth fixture, `data/parity/repeat_crawl_native_v1.tsv`, executes the
+frozen repeat path: 164 neurons, 307 synapses, adaptation and delayed feedback,
+144 mapped sources, 146 fiber forces, 13-node XPBD, and cycle detection. The
+normal 16 s run plus zero-input and four causal lesions match the Python oracle
+on exact spikes and strict sampled-state tolerances. Run
+`pytest tests/test_native_repeat_parity.py`.
+
+This establishes native numerical parity for the current research
+approximations, not a complete L1 brain/VNC, measured individual muscle
+mechanics, held-out biological validation, or on-device performance.
 
 ## Non-goals for the reference core
 

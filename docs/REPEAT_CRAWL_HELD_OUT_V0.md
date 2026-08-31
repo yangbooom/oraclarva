@@ -111,14 +111,19 @@ The GIF is rendered only from checked body nodes and activation values. Its
 smoothed capsule-union skin is a render mesh over the internal mechanics, not
 an animation that changes motion.
 
-## Native impact and next gate
+## Native parity
 
-This repeat path is Python-only. Existing native fixtures are unchanged and
-must continue to pass locally. Stage 7 must add a shared native fixture for the
-164-node reduced repeat network, delayed sensory relays, adaptation, mapped MN
-events, 146-fiber activation/force, 13-node body state, trace ancestry, all
-lesion cases, and three complete cycles. Native/mobile support is not claimed
-until that parity gate passes.
+Stage 7 now executes this frozen path in both Python and a dependency-free C++17
+core using one generated fixture. All 164 neuron spike counts/first-spike times,
+535 sampled node/activation/force frames, trace ancestry, three complete cycles,
+three physical waves, summary metrics, zero input, and four causal lesion cases
+pass the declared numerical gates. The C++ result is computed, not replayed
+from the Python trajectory.
 
-GitHub Actions remains manual-only through workflow_dispatch and was not run
+This does not repair the behavioral failures above. Native output and the
+checked parity report retain all twelve failed amplitude/duty comparisons and
+`release_validated=false`. See
+`docs/REPEAT_CRAWL_NATIVE_PARITY_V1.md` for exact tolerances and reproduction.
+
+GitHub Actions remains manual-only through `workflow_dispatch` and was not run
 for this stage.
