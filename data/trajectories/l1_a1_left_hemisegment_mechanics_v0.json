@@ -1,0 +1,1826 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_a1_left_hemisegment_mechanics_v0",
+  "status": "isolated_normalized_attachment_hypothesis_not_full_body_ready",
+  "stage": "L1",
+  "scope": "isolated_A1_left_hemisegment",
+  "causal_contract": [
+    "motor_identity_spike",
+    "one_step_delayed_muscle_activation",
+    "active_tension",
+    "passive_elasticity_and_damping",
+    "fiber_shortening"
+  ],
+  "claim_boundary": {
+    "coordinate_unit": "normalized_body_unit",
+    "force_unit": "model_unit_not_newton",
+    "absolute_scale_claimed": false,
+    "measured_attachment_claimed": false,
+    "csa_claimed": false,
+    "fmax_claimed": false,
+    "full_body_motion_executed": false
+  },
+  "parameter_provenance": {
+    "attachments": "ANATOMY_DERIVED",
+    "rest_length": "ANATOMY_DERIVED",
+    "mechanics": "MODEL_FITTED",
+    "observed_A1_neural_muscle_mapping": "MEASURED_PUBLISHED"
+  },
+  "dt_s": 0.001,
+  "sample_interval_s": 0.01,
+  "fiber_count": 29,
+  "geometry": [
+    {
+      "fiber_id": "A1:left:M1:DA1",
+      "muscle_number": "1",
+      "synonym": "DA1",
+      "spatial_group": "DL",
+      "origin": {
+        "s": 0.055,
+        "theta_rad": -0.645,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.945,
+        "theta_rad": -0.595,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.890383646,
+      "line_of_action": [
+        0.999569123,
+        0.025225874,
+        0.015007482
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M2:DA2",
+      "muscle_number": "2",
+      "synonym": "DA2",
+      "spatial_group": "DL",
+      "origin": {
+        "s": 0.065,
+        "theta_rad": -0.577,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.935,
+        "theta_rad": -0.527,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.870400832,
+      "line_of_action": [
+        0.999539485,
+        0.026997136,
+        0.013855389
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M3:DA3",
+      "muscle_number": "3",
+      "synonym": "DA3",
+      "spatial_group": "DL",
+      "origin": {
+        "s": 0.075,
+        "theta_rad": -0.509,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.925,
+        "theta_rad": -0.459,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.850418258,
+      "line_of_action": [
+        0.999508174,
+        0.028723912,
+        0.012583602
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M4:LL1",
+      "muscle_number": "4",
+      "synonym": "LL1",
+      "spatial_group": "DL",
+      "origin": {
+        "s": 0.085,
+        "theta_rad": -0.441,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.915,
+        "theta_rad": -0.391,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.830435789,
+      "line_of_action": [
+        0.999475229,
+        0.030397823,
+        0.011191044
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M5:LO1",
+      "muscle_number": "5",
+      "synonym": "LO1",
+      "spatial_group": "DO",
+      "origin": {
+        "s": 0.075,
+        "theta_rad": -1.28,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.905,
+        "theta_rad": -1.06,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.836530555,
+      "line_of_action": [
+        0.992193286,
+        0.056524568,
+        0.111164094
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M6:VL3",
+      "muscle_number": "6",
+      "synonym": "VL3",
+      "spatial_group": "VL",
+      "origin": {
+        "s": 0.08,
+        "theta_rad": -2.15,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.92,
+        "theta_rad": -2.21,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.840518438,
+      "line_of_action": [
+        0.999383193,
+        0.022544305,
+        -0.026925613
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M7:VL4",
+      "muscle_number": "7",
+      "synonym": "VL4",
+      "spatial_group": "VL",
+      "origin": {
+        "s": 0.088,
+        "theta_rad": -2.09,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.912,
+        "theta_rad": -2.15,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.824517336,
+      "line_of_action": [
+        0.99937256,
+        0.020965378,
+        -0.028547158
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M8:SBM",
+      "muscle_number": "8",
+      "synonym": "SBM",
+      "spatial_group": "T",
+      "origin": {
+        "s": 0.14,
+        "theta_rad": -0.72,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.18,
+        "theta_rad": -2.45,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.701380255,
+      "line_of_action": [
+        0.057030405,
+        0.01701534,
+        -0.998227435
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M9:DO1",
+      "muscle_number": "9",
+      "synonym": "DO1",
+      "spatial_group": "DL",
+      "origin": {
+        "s": 0.095,
+        "theta_rad": -0.373,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.905,
+        "theta_rad": -0.323,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.810453292,
+      "line_of_action": [
+        0.999440693,
+        0.032010309,
+        0.009676814
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M10:DO2",
+      "muscle_number": "10",
+      "synonym": "DO2",
+      "spatial_group": "DL",
+      "origin": {
+        "s": 0.105,
+        "theta_rad": -0.305,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.895,
+        "theta_rad": -0.255,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.790470637,
+      "line_of_action": [
+        0.999404611,
+        0.033552628,
+        0.008040169
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M11:DO3",
+      "muscle_number": "11",
+      "synonym": "DO3",
+      "spatial_group": "DO",
+      "origin": {
+        "s": 0.091666667,
+        "theta_rad": -1.166666667,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.888333333,
+        "theta_rad": -0.946666667,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.803718482,
+      "line_of_action": [
+        0.991226013,
+        0.074156636,
+        0.109415646
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M12:VL1",
+      "muscle_number": "12",
+      "synonym": "VL1",
+      "spatial_group": "VL",
+      "origin": {
+        "s": 0.096,
+        "theta_rad": -2.03,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.904,
+        "theta_rad": -2.09,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.808516868,
+      "line_of_action": [
+        0.999360721,
+        0.019246994,
+        -0.03012809
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M13:VL2",
+      "muscle_number": "13",
+      "synonym": "VL2",
+      "spatial_group": "VL",
+      "origin": {
+        "s": 0.104,
+        "theta_rad": -1.97,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.896,
+        "theta_rad": -2.03,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.792517229,
+      "line_of_action": [
+        0.999347359,
+        0.017388538,
+        -0.031662207
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M14:VO2",
+      "muscle_number": "14",
+      "synonym": "VO2",
+      "spatial_group": "VL",
+      "origin": {
+        "s": 0.112,
+        "theta_rad": -1.91,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.888,
+        "theta_rad": -1.97,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.77651862,
+      "line_of_action": [
+        0.999332121,
+        0.015389608,
+        -0.033143202
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M15:VO4",
+      "muscle_number": "15",
+      "synonym": "VO4",
+      "spatial_group": "VO",
+      "origin": {
+        "s": 0.1,
+        "theta_rad": -2.46,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.88,
+        "theta_rad": -2.68,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.788527009,
+      "line_of_action": [
+        0.989186155,
+        0.129266471,
+        -0.069288749
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M16:VO5",
+      "muscle_number": "16",
+      "synonym": "VO5",
+      "spatial_group": "VO",
+      "origin": {
+        "s": 0.113333333,
+        "theta_rad": -2.366666667,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.866666667,
+        "theta_rad": -2.586666667,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.761899487,
+      "line_of_action": [
+        0.988756846,
+        0.125182007,
+        -0.081788537
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M17:VO6",
+      "muscle_number": "17",
+      "synonym": "VO6",
+      "spatial_group": "VO",
+      "origin": {
+        "s": 0.126666667,
+        "theta_rad": -2.273333333,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.853333333,
+        "theta_rad": -2.493333333,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.73526215,
+      "line_of_action": [
+        0.988309634,
+        0.11967416,
+        -0.094457198
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M18:DT1",
+      "muscle_number": "18",
+      "synonym": "DT1",
+      "spatial_group": "T",
+      "origin": {
+        "s": 0.316,
+        "theta_rad": -0.72,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.276,
+        "theta_rad": -2.45,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.701380255,
+      "line_of_action": [
+        -0.057030405,
+        0.01701534,
+        -0.998227435
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M19:DO4",
+      "muscle_number": "19",
+      "synonym": "DO4",
+      "spatial_group": "DO",
+      "origin": {
+        "s": 0.108333333,
+        "theta_rad": -1.053333333,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.871666667,
+        "theta_rad": -0.833333333,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.770989574,
+      "line_of_action": [
+        0.990069593,
+        0.092287716,
+        0.106043287
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M20:DO5",
+      "muscle_number": "20",
+      "synonym": "DO5",
+      "spatial_group": "DO",
+      "origin": {
+        "s": 0.125,
+        "theta_rad": -0.94,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.855,
+        "theta_rad": -0.72,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.7383389,
+      "line_of_action": [
+        0.988705863,
+        0.110778035,
+        0.100940292
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M21:LT1",
+      "muscle_number": "21",
+      "synonym": "LT1",
+      "spatial_group": "T",
+      "origin": {
+        "s": 0.412,
+        "theta_rad": -0.72,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.452,
+        "theta_rad": -2.45,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.701380255,
+      "line_of_action": [
+        0.057030405,
+        0.01701534,
+        -0.998227435
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M22:LT2",
+      "muscle_number": "22",
+      "synonym": "LT2",
+      "spatial_group": "T",
+      "origin": {
+        "s": 0.588,
+        "theta_rad": -0.72,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.548,
+        "theta_rad": -2.45,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.701380255,
+      "line_of_action": [
+        -0.057030405,
+        0.01701534,
+        -0.998227435
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M23:LT3",
+      "muscle_number": "23",
+      "synonym": "LT3",
+      "spatial_group": "T",
+      "origin": {
+        "s": 0.684,
+        "theta_rad": -0.72,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.724,
+        "theta_rad": -2.45,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.701380255,
+      "line_of_action": [
+        0.057030405,
+        0.01701534,
+        -0.998227435
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M24:LT4",
+      "muscle_number": "24",
+      "synonym": "LT4",
+      "spatial_group": "T",
+      "origin": {
+        "s": 0.86,
+        "theta_rad": -0.72,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.82,
+        "theta_rad": -2.45,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.701380255,
+      "line_of_action": [
+        -0.057030405,
+        0.01701534,
+        -0.998227435
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M26:VA1",
+      "muscle_number": "26",
+      "synonym": "VA1",
+      "spatial_group": "VA",
+      "origin": {
+        "s": 0.105,
+        "theta_rad": -2.84,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.895,
+        "theta_rad": -2.96,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.792720521,
+      "line_of_action": [
+        0.99656812,
+        0.081084928,
+        -0.016649803
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M27:VA2",
+      "muscle_number": "27",
+      "synonym": "VA2",
+      "spatial_group": "VA",
+      "origin": {
+        "s": 0.12,
+        "theta_rad": -2.74,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.88,
+        "theta_rad": -2.86,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.762779264,
+      "line_of_action": [
+        0.996356398,
+        0.08177381,
+        -0.024227524
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M28:VO3",
+      "muscle_number": "28",
+      "synonym": "VO3",
+      "spatial_group": "VO",
+      "origin": {
+        "s": 0.14,
+        "theta_rad": -2.18,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.84,
+        "theta_rad": -2.4,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.708624036,
+      "line_of_action": [
+        0.987829886,
+        0.112671458,
+        -0.107225274
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M29:VA3",
+      "muscle_number": "29",
+      "synonym": "VA3",
+      "spatial_group": "VA",
+      "origin": {
+        "s": 0.135,
+        "theta_rad": -2.64,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.865,
+        "theta_rad": -2.76,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.732828688,
+      "line_of_action": [
+        0.996140042,
+        0.081669584,
+        -0.03217289
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    },
+    {
+      "fiber_id": "A1:left:M30:VO1",
+      "muscle_number": "30",
+      "synonym": "VO1",
+      "spatial_group": "VL",
+      "origin": {
+        "s": 0.12,
+        "theta_rad": -1.85,
+        "d": 0.08
+      },
+      "insertion": {
+        "s": 0.88,
+        "theta_rad": -1.91,
+        "d": 0.08
+      },
+      "rest_length_body_units": 0.760521242,
+      "line_of_action": [
+        0.999314626,
+        0.013250005,
+        -0.034564662
+      ],
+      "coordinate_provenance": "ANATOMY_DERIVED",
+      "rest_length_provenance": "ANATOMY_DERIVED",
+      "quantitative_image_coordinates_used": false,
+      "individual_layer_claimed": false
+    }
+  ],
+  "zero_input": {
+    "duration_s": 0.599,
+    "deformed_fiber_count": 0,
+    "maximum_shortening_fraction": 0.0,
+    "exact_equilibrium": true
+  },
+  "scenarios": [
+    {
+      "scenario": "control",
+      "lesioned_fibers": [],
+      "upstream_sources": {
+        "A1:left:M10:DO2": "motor_identity:8026224:left",
+        "A1:left:M1:DA1": "motor_identity:10649843:left"
+      },
+      "mapping_provenance": {
+        "A1:left:M10:DO2": "MEASURED_PUBLISHED",
+        "A1:left:M1:DA1": "MEASURED_PUBLISHED"
+      },
+      "first_spike_s": {
+        "A1:left:M1:DA1": 0.05,
+        "A1:left:M10:DO2": 0.182
+      },
+      "first_activation_s": {
+        "A1:left:M1:DA1": 0.051,
+        "A1:left:M10:DO2": 0.183
+      },
+      "first_shortening_s": {
+        "A1:left:M1:DA1": 0.051,
+        "A1:left:M10:DO2": 0.183
+      },
+      "peak_activation": {
+        "A1:left:M1:DA1": 0.486981654,
+        "A1:left:M10:DO2": 0.38852403
+      },
+      "peak_shortening_body_units": {
+        "A1:left:M1:DA1": 0.025960464,
+        "A1:left:M10:DO2": 0.020458291
+      },
+      "frames": [
+        {
+          "time_s": 0.0,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.01,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.02,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.03,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.04,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.05,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.06,
+          "target_activation": 0.08836923,
+          "target_shortening_fraction": 5.1782e-05,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.07,
+          "target_activation": 0.160719836,
+          "target_shortening_fraction": 0.000265043,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.08,
+          "target_activation": 0.219955502,
+          "target_shortening_fraction": 0.000707048,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.09,
+          "target_activation": 0.268453564,
+          "target_shortening_fraction": 0.001407731,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.1,
+          "target_activation": 0.308160418,
+          "target_shortening_fraction": 0.002370728,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.11,
+          "target_activation": 0.340669641,
+          "target_shortening_fraction": 0.003581833,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.12,
+          "target_activation": 0.367285942,
+          "target_shortening_fraction": 0.005015395,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.13,
+          "target_activation": 0.389077525,
+          "target_shortening_fraction": 0.006639108,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.14,
+          "target_activation": 0.406918965,
+          "target_shortening_fraction": 0.008417524,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.15,
+          "target_activation": 0.421526301,
+          "target_shortening_fraction": 0.01031458,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.16,
+          "target_activation": 0.433485775,
+          "target_shortening_fraction": 0.012295356,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.17,
+          "target_activation": 0.443277365,
+          "target_shortening_fraction": 0.01432725,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.18,
+          "target_activation": 0.451294041,
+          "target_shortening_fraction": 0.016380702,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.19,
+          "target_activation": 0.45785754,
+          "target_shortening_fraction": 0.018429592,
+          "sibling_activation": 0.091810457,
+          "sibling_shortening_fraction": 3.1464e-05,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.2,
+          "target_activation": 0.463231278,
+          "target_shortening_fraction": 0.020451386,
+          "sibling_activation": 0.125015912,
+          "sibling_shortening_fraction": 0.00018889,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.21,
+          "target_activation": 0.408800168,
+          "target_shortening_fraction": 0.022392961,
+          "sibling_activation": 0.151512121,
+          "sibling_shortening_fraction": 0.000530077,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.22,
+          "target_activation": 0.360764882,
+          "target_shortening_fraction": 0.024163658,
+          "sibling_activation": 0.213591282,
+          "sibling_shortening_fraction": 0.001086617,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.23,
+          "target_activation": 0.318373891,
+          "target_shortening_fraction": 0.025700107,
+          "sibling_activation": 0.227371742,
+          "sibling_shortening_fraction": 0.00186524,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.24,
+          "target_activation": 0.280963973,
+          "target_shortening_fraction": 0.02696481,
+          "sibling_activation": 0.276826207,
+          "sibling_shortening_fraction": 0.002857423,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.25,
+          "target_activation": 0.247949836,
+          "target_shortening_fraction": 0.027940167,
+          "sibling_activation": 0.281698736,
+          "sibling_shortening_fraction": 0.004046476,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.26,
+          "target_activation": 0.218814962,
+          "target_shortening_fraction": 0.028623605,
+          "sibling_activation": 0.322445876,
+          "sibling_shortening_fraction": 0.005405579,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.27,
+          "target_activation": 0.193103526,
+          "target_shortening_fraction": 0.029023602,
+          "sibling_activation": 0.321059729,
+          "sibling_shortening_fraction": 0.006908931,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.28,
+          "target_activation": 0.170413264,
+          "target_shortening_fraction": 0.029156492,
+          "sibling_activation": 0.318152519,
+          "sibling_shortening_fraction": 0.008524988,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.29,
+          "target_activation": 0.150389177,
+          "target_shortening_fraction": 0.029043905,
+          "sibling_activation": 0.350024901,
+          "sibling_shortening_fraction": 0.010226259,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.3,
+          "target_activation": 0.132717983,
+          "target_shortening_fraction": 0.028710743,
+          "sibling_activation": 0.343342513,
+          "sibling_shortening_fraction": 0.011984326,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.31,
+          "target_activation": 0.117123209,
+          "target_shortening_fraction": 0.028183613,
+          "sibling_activation": 0.371775044,
+          "sibling_shortening_fraction": 0.013773073,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.32,
+          "target_activation": 0.103360869,
+          "target_shortening_fraction": 0.027489607,
+          "sibling_activation": 0.362406776,
+          "sibling_shortening_fraction": 0.015570891,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.33,
+          "target_activation": 0.091215647,
+          "target_shortening_fraction": 0.026655407,
+          "sibling_activation": 0.38852403,
+          "sibling_shortening_fraction": 0.01735556,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.34,
+          "target_activation": 0.080497526,
+          "target_shortening_fraction": 0.025706611,
+          "sibling_activation": 0.342871253,
+          "sibling_shortening_fraction": 0.019105311,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.35,
+          "target_activation": 0.071038817,
+          "target_shortening_fraction": 0.024667278,
+          "sibling_activation": 0.302582819,
+          "sibling_shortening_fraction": 0.020744968,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.36,
+          "target_activation": 0.062691536,
+          "target_shortening_fraction": 0.023559618,
+          "sibling_activation": 0.2670284,
+          "sibling_shortening_fraction": 0.02220413,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.37,
+          "target_activation": 0.055325087,
+          "target_shortening_fraction": 0.02240381,
+          "sibling_activation": 0.235651736,
+          "sibling_shortening_fraction": 0.023438444,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.38,
+          "target_activation": 0.048824218,
+          "target_shortening_fraction": 0.021217922,
+          "sibling_activation": 0.207961927,
+          "sibling_shortening_fraction": 0.024423771,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.39,
+          "target_activation": 0.043087221,
+          "target_shortening_fraction": 0.020017902,
+          "sibling_activation": 0.183525757,
+          "sibling_shortening_fraction": 0.025151391,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.4,
+          "target_activation": 0.038024339,
+          "target_shortening_fraction": 0.018817626,
+          "sibling_activation": 0.161960912,
+          "sibling_shortening_fraction": 0.025624093,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.41,
+          "target_activation": 0.033556361,
+          "target_shortening_fraction": 0.017628986,
+          "sibling_activation": 0.142930003,
+          "sibling_shortening_fraction": 0.025853001,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.42,
+          "target_activation": 0.029613385,
+          "target_shortening_fraction": 0.016462007,
+          "sibling_activation": 0.126135285,
+          "sibling_shortening_fraction": 0.025855037,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.43,
+          "target_activation": 0.02613372,
+          "target_shortening_fraction": 0.015324988,
+          "sibling_activation": 0.111313998,
+          "sibling_shortening_fraction": 0.02565089,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.44,
+          "target_activation": 0.023062927,
+          "target_shortening_fraction": 0.014224642,
+          "sibling_activation": 0.098234259,
+          "sibling_shortening_fraction": 0.025263433,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.45,
+          "target_activation": 0.020352962,
+          "target_shortening_fraction": 0.013166254,
+          "sibling_activation": 0.086691429,
+          "sibling_shortening_fraction": 0.024716492,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.46,
+          "target_activation": 0.017961426,
+          "target_shortening_fraction": 0.012153827,
+          "sibling_activation": 0.076504918,
+          "sibling_shortening_fraction": 0.02403391,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.47,
+          "target_activation": 0.015850903,
+          "target_shortening_fraction": 0.011190235,
+          "sibling_activation": 0.067515353,
+          "sibling_shortening_fraction": 0.023238857,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.48,
+          "target_activation": 0.013988373,
+          "target_shortening_fraction": 0.010277362,
+          "sibling_activation": 0.05958209,
+          "sibling_shortening_fraction": 0.022353333,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.49,
+          "target_activation": 0.012344695,
+          "target_shortening_fraction": 0.009416237,
+          "sibling_activation": 0.05258101,
+          "sibling_shortening_fraction": 0.021397828,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.5,
+          "target_activation": 0.010894155,
+          "target_shortening_fraction": 0.008607155,
+          "sibling_activation": 0.046402578,
+          "sibling_shortening_fraction": 0.02039111,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.51,
+          "target_activation": 0.009614058,
+          "target_shortening_fraction": 0.007849798,
+          "sibling_activation": 0.040950131,
+          "sibling_shortening_fraction": 0.019350107,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.52,
+          "target_activation": 0.008484377,
+          "target_shortening_fraction": 0.007143333,
+          "sibling_activation": 0.036138364,
+          "sibling_shortening_fraction": 0.018289868,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.53,
+          "target_activation": 0.007487436,
+          "target_shortening_fraction": 0.00648651,
+          "sibling_activation": 0.031891994,
+          "sibling_shortening_fraction": 0.017223586,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.54,
+          "target_activation": 0.006607639,
+          "target_shortening_fraction": 0.005877745,
+          "sibling_activation": 0.028144586,
+          "sibling_shortening_fraction": 0.016162653,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.55,
+          "target_activation": 0.005831221,
+          "target_shortening_fraction": 0.005315193,
+          "sibling_activation": 0.02483751,
+          "sibling_shortening_fraction": 0.015116757,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.56,
+          "target_activation": 0.005146035,
+          "target_shortening_fraction": 0.004796816,
+          "sibling_activation": 0.021919026,
+          "sibling_shortening_fraction": 0.014093993,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.57,
+          "target_activation": 0.00454136,
+          "target_shortening_fraction": 0.004320437,
+          "sibling_activation": 0.019343472,
+          "sibling_shortening_fraction": 0.01310099,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.58,
+          "target_activation": 0.004007736,
+          "target_shortening_fraction": 0.003883791,
+          "sibling_activation": 0.017070555,
+          "sibling_shortening_fraction": 0.012143041,
+          "deformed_fiber_count": 2
+        },
+        {
+          "time_s": 0.59,
+          "target_activation": 0.003536814,
+          "target_shortening_fraction": 0.003484566,
+          "sibling_activation": 0.015064711,
+          "sibling_shortening_fraction": 0.011224241,
+          "deformed_fiber_count": 2
+        }
+      ]
+    },
+    {
+      "scenario": "target_mechanics_lesion",
+      "lesioned_fibers": [
+        "A1:left:M1:DA1"
+      ],
+      "upstream_sources": {
+        "A1:left:M10:DO2": "motor_identity:8026224:left",
+        "A1:left:M1:DA1": "motor_identity:10649843:left"
+      },
+      "mapping_provenance": {
+        "A1:left:M10:DO2": "MEASURED_PUBLISHED",
+        "A1:left:M1:DA1": "MEASURED_PUBLISHED"
+      },
+      "first_spike_s": {
+        "A1:left:M1:DA1": 0.05,
+        "A1:left:M10:DO2": 0.182
+      },
+      "first_activation_s": {
+        "A1:left:M1:DA1": 0.051,
+        "A1:left:M10:DO2": 0.183
+      },
+      "first_shortening_s": {
+        "A1:left:M1:DA1": null,
+        "A1:left:M10:DO2": 0.183
+      },
+      "peak_activation": {
+        "A1:left:M1:DA1": 0.486981654,
+        "A1:left:M10:DO2": 0.38852403
+      },
+      "peak_shortening_body_units": {
+        "A1:left:M1:DA1": 0.0,
+        "A1:left:M10:DO2": 0.020458291
+      },
+      "frames": [
+        {
+          "time_s": 0.0,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.01,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.02,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.03,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.04,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.05,
+          "target_activation": 0.0,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.06,
+          "target_activation": 0.08836923,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.07,
+          "target_activation": 0.160719836,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.08,
+          "target_activation": 0.219955502,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.09,
+          "target_activation": 0.268453564,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.1,
+          "target_activation": 0.308160418,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.11,
+          "target_activation": 0.340669641,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.12,
+          "target_activation": 0.367285942,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.13,
+          "target_activation": 0.389077525,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.14,
+          "target_activation": 0.406918965,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.15,
+          "target_activation": 0.421526301,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.16,
+          "target_activation": 0.433485775,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.17,
+          "target_activation": 0.443277365,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.18,
+          "target_activation": 0.451294041,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.0,
+          "sibling_shortening_fraction": 0.0,
+          "deformed_fiber_count": 0
+        },
+        {
+          "time_s": 0.19,
+          "target_activation": 0.45785754,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.091810457,
+          "sibling_shortening_fraction": 3.1464e-05,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.2,
+          "target_activation": 0.463231278,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.125015912,
+          "sibling_shortening_fraction": 0.00018889,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.21,
+          "target_activation": 0.408800168,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.151512121,
+          "sibling_shortening_fraction": 0.000530077,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.22,
+          "target_activation": 0.360764882,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.213591282,
+          "sibling_shortening_fraction": 0.001086617,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.23,
+          "target_activation": 0.318373891,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.227371742,
+          "sibling_shortening_fraction": 0.00186524,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.24,
+          "target_activation": 0.280963973,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.276826207,
+          "sibling_shortening_fraction": 0.002857423,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.25,
+          "target_activation": 0.247949836,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.281698736,
+          "sibling_shortening_fraction": 0.004046476,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.26,
+          "target_activation": 0.218814962,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.322445876,
+          "sibling_shortening_fraction": 0.005405579,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.27,
+          "target_activation": 0.193103526,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.321059729,
+          "sibling_shortening_fraction": 0.006908931,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.28,
+          "target_activation": 0.170413264,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.318152519,
+          "sibling_shortening_fraction": 0.008524988,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.29,
+          "target_activation": 0.150389177,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.350024901,
+          "sibling_shortening_fraction": 0.010226259,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.3,
+          "target_activation": 0.132717983,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.343342513,
+          "sibling_shortening_fraction": 0.011984326,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.31,
+          "target_activation": 0.117123209,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.371775044,
+          "sibling_shortening_fraction": 0.013773073,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.32,
+          "target_activation": 0.103360869,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.362406776,
+          "sibling_shortening_fraction": 0.015570891,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.33,
+          "target_activation": 0.091215647,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.38852403,
+          "sibling_shortening_fraction": 0.01735556,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.34,
+          "target_activation": 0.080497526,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.342871253,
+          "sibling_shortening_fraction": 0.019105311,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.35,
+          "target_activation": 0.071038817,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.302582819,
+          "sibling_shortening_fraction": 0.020744968,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.36,
+          "target_activation": 0.062691536,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.2670284,
+          "sibling_shortening_fraction": 0.02220413,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.37,
+          "target_activation": 0.055325087,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.235651736,
+          "sibling_shortening_fraction": 0.023438444,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.38,
+          "target_activation": 0.048824218,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.207961927,
+          "sibling_shortening_fraction": 0.024423771,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.39,
+          "target_activation": 0.043087221,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.183525757,
+          "sibling_shortening_fraction": 0.025151391,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.4,
+          "target_activation": 0.038024339,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.161960912,
+          "sibling_shortening_fraction": 0.025624093,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.41,
+          "target_activation": 0.033556361,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.142930003,
+          "sibling_shortening_fraction": 0.025853001,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.42,
+          "target_activation": 0.029613385,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.126135285,
+          "sibling_shortening_fraction": 0.025855037,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.43,
+          "target_activation": 0.02613372,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.111313998,
+          "sibling_shortening_fraction": 0.02565089,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.44,
+          "target_activation": 0.023062927,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.098234259,
+          "sibling_shortening_fraction": 0.025263433,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.45,
+          "target_activation": 0.020352962,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.086691429,
+          "sibling_shortening_fraction": 0.024716492,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.46,
+          "target_activation": 0.017961426,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.076504918,
+          "sibling_shortening_fraction": 0.02403391,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.47,
+          "target_activation": 0.015850903,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.067515353,
+          "sibling_shortening_fraction": 0.023238857,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.48,
+          "target_activation": 0.013988373,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.05958209,
+          "sibling_shortening_fraction": 0.022353333,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.49,
+          "target_activation": 0.012344695,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.05258101,
+          "sibling_shortening_fraction": 0.021397828,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.5,
+          "target_activation": 0.010894155,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.046402578,
+          "sibling_shortening_fraction": 0.02039111,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.51,
+          "target_activation": 0.009614058,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.040950131,
+          "sibling_shortening_fraction": 0.019350107,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.52,
+          "target_activation": 0.008484377,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.036138364,
+          "sibling_shortening_fraction": 0.018289868,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.53,
+          "target_activation": 0.007487436,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.031891994,
+          "sibling_shortening_fraction": 0.017223586,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.54,
+          "target_activation": 0.006607639,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.028144586,
+          "sibling_shortening_fraction": 0.016162653,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.55,
+          "target_activation": 0.005831221,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.02483751,
+          "sibling_shortening_fraction": 0.015116757,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.56,
+          "target_activation": 0.005146035,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.021919026,
+          "sibling_shortening_fraction": 0.014093993,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.57,
+          "target_activation": 0.00454136,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.019343472,
+          "sibling_shortening_fraction": 0.01310099,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.58,
+          "target_activation": 0.004007736,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.017070555,
+          "sibling_shortening_fraction": 0.012143041,
+          "deformed_fiber_count": 1
+        },
+        {
+          "time_s": 0.59,
+          "target_activation": 0.003536814,
+          "target_shortening_fraction": 0.0,
+          "sibling_activation": 0.015064711,
+          "sibling_shortening_fraction": 0.011224241,
+          "deformed_fiber_count": 1
+        }
+      ]
+    }
+  ]
+}
