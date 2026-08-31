@@ -84,11 +84,10 @@ does not erase upstream evidence.
     python tools/render_a1_hemisegment_gif.py
     pytest tests/test_hemisegment.py
 
-## Gate to stage 4
+## Stage 4 full-body integration
 
-Stage 4 may replace the parallel fitted segment bridge only after it explicitly
-aggregates individual fiber attachment forces onto shared physical nodes. The
-new route must remain:
+Stage 4 projects the supported named-fiber attachment forces onto shared
+physical nodes through this executed route:
 
     identified/derived MN spike
       -> named-fiber activation
@@ -96,7 +95,8 @@ new route must remain:
       -> shared body node and continuous skin
       -> environment/contact
 
-It must preserve the current isolated fixture as a regression test, retain A7
-and unsupported muscles as silent, and show that MN/segment/fiber lesions change
-body physics through this route. The existing aggregate body bridge must not be
-silently mixed into the new causal result.
+The A1-left fixture remains a regression test. Full-body integration uses exact
+right-side mirroring and A2-A6 homology only as ANATOMY_DERIVED hypotheses,
+keeps A7 and 212 unsupported fibers silent, and executes no parallel aggregate
+body bridge. MN, segment, and individual-fiber lesions now change body physics
+through this path.

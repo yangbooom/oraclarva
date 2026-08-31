@@ -8,7 +8,6 @@ from oraclarva.body3d import Vec3
 from oraclarva.environment_inputs import LinearScalarField
 from oraclarva.spatial import SpatialSensoryState
 from oraclarva.visual import (
-    BRIDGE_INPUT_LABELS,
     L1VisualCircuitProtocol,
     L1VisualClosedLoopLarva,
     PHOTORECEPTOR_CLASSES,
@@ -46,23 +45,26 @@ def test_visual_config_preserves_measured_and_fitted_boundaries():
     assert config["lon_dynamics"]["effect_provenance"] == "MODEL_FITTED"
     assert config["descending_path_dynamics"]["effect_provenance"] == "MODEL_FITTED"
     assert config["a03o_motor_path_dynamics"]["effect_provenance"] == "MODEL_FITTED"
-    assert (
-        config["a03o_segmental_projection_dynamics"]["provenance"]
-        == "MODEL_FITTED"
-    )
+    assert config["a03o_segmental_projection_dynamics"]["provenance"] == "MODEL_FITTED"
     activation = config["neural_muscle_activation_dynamics"]
     assert activation["provenance"] == "MODEL_FITTED"
     assert activation["minimum_spike_to_activation_delay_steps"] == 1
     assert activation["supporting_evidence"]["numeric_parameter_use"] == "none"
-    assert activation["individual_geometry_executed"] is False
-    assert activation["mechanical_force_executed"] is False
+    assert activation["individual_geometry_executed"] is True
+    assert activation["mechanical_force_executed"] is True
     bridge = config["a03o_segmental_bridge"]
     assert bridge["provenance"] == "MODEL_FITTED"
-    assert bridge["readout_class"] == "A03o_A1"
-    assert bridge["readout_segment"] == "A1"
-    assert bridge["direct_dorsoventral_difference_gain"] == 0.0
+    assert bridge["enabled"] is False
+    assert bridge["executed"] is False
+    coupling = config["named_fiber_body_coupling"]
+    assert coupling["geometry_provenance"] == "ANATOMY_DERIVED"
+    assert coupling["mechanics_provenance"] == "MODEL_FITTED"
+    assert coupling["force_unit"] == "model_unit_not_newton"
+    assert coupling["expected_mapped_fibers"] == 146
+    assert coupling["expected_unmapped_fibers"] == 212
+    assert coupling["blocked_segments"] == ["A7"]
+    assert coupling["parallel_fitted_bridge_executed"] is False
     assert config["release_validated"] is False
-
 
 def test_compiled_lon_preserves_published_matrix_counts_and_unknown_signs():
     connectome = load_visual_connectome()
@@ -257,7 +259,7 @@ def test_published_contacts_execute_without_relabeling_effects_as_measured():
     assert protocol.executed_synaptic_contacts == 3159
 
 
-def test_causal_trace_forks_after_a03o_to_motor_identities_and_fitted_body():
+def test_causal_trace_reaches_named_fiber_force_without_parallel_body_bridge():
     result = L1VisualClosedLoopLarva(record_visual_frames=True).run(
         duration_s=0.3
     )
@@ -279,43 +281,39 @@ def test_causal_trace_forks_after_a03o_to_motor_identities_and_fitted_body():
     first_lhn = first["right:down_PVL09_PN-OLP"]
     first_dn = first["right:CPf_DN"]
     first_a03o = first["right:A03o_A1"]
-    first_a1_motor = min(
-        value
-        for label, value in first.items()
-        if label.startswith("motor_identity:") and value is not None
-    )
-    body = result.spatial_result
-    first_bridge = min(
-        body.first_spike_s[item]
-        for item in BRIDGE_INPUT_LABELS
-        if body.first_spike_s[item] is not None
-    )
-    first_premotor = min(
-        value
-        for label, value in body.first_spike_s.items()
-        if label.startswith("premotor_A27h_like:A7") and value is not None
-    )
     first_motor = min(
         value
-        for label, value in body.first_spike_s.items()
-        if label.startswith("motor_pool:A7") and value is not None
+        for label, value in first.items()
+        if (
+            label.startswith("motor_identity:")
+            or label.startswith("derived_motor_target:")
+        )
+        and value is not None
+    )
+    first_event = min(
+        value
+        for value in result.muscle_identity_first_event_s.values()
+        if value is not None
+    )
+    first_activation = min(
+        value for value in result.muscle_first_activation_s.values()
+        if value is not None
+    )
+    first_force = next(
+        frame.time_s for frame in result.body_force_frames
+        if frame.active_fiber_count
     )
     assert first_pr < first_vpn < first_lhn < first_dn < first_a03o
-    first_derived_a03o = min(
-        value
-        for label, value in first.items()
-        if label.startswith("derived:") and value is not None
-    )
-    first_derived_motor = min(
-        value
-        for label, value in first.items()
-        if label.startswith("derived_motor_target:") and value is not None
-    )
-    assert first_a03o < first_a1_motor
-    assert first_dn < first_derived_a03o < first_derived_motor
-    assert first_a03o < first_bridge < first_premotor < first_motor
-    assert not any(
-        label.startswith("environment_receptor") for label in body.spike_counts
+    assert first_a03o < first_motor <= first_event < first_activation
+    assert first_activation == pytest.approx(first_event + 0.001)
+    assert first_force == pytest.approx(first_activation)
+    assert result.spatial_result.neuron_count == 0
+    assert result.spatial_result.synapse_count == 0
+    assert result.spatial_result.spike_counts == {}
+    assert all(
+        frame.parallel_fitted_bridge_executed is False
+        and frame.active_fiber_count == frame.traced_active_fiber_count
+        for frame in result.body_force_frames
     )
 
 
@@ -332,7 +330,9 @@ def test_lesions_break_each_expected_downstream_stage_without_fallback_action():
         lesion_node_ids=all_photoreceptors
     ).run(duration_s=0.3)
     assert sum(photoreceptor_lesion.visual_spike_counts.values()) == 0
-    assert sum(photoreceptor_lesion.spatial_result.spike_counts.values()) == 0
+    assert max(frame.active_fiber_count for frame in photoreceptor_lesion.body_force_frames) == 0
+    assert photoreceptor_lesion.spatial_result.displacement_x_um == pytest.approx(0.0)
+    assert photoreceptor_lesion.spatial_result.displacement_y_um == pytest.approx(0.0)
 
     stages = (
         (
@@ -352,28 +352,42 @@ def test_lesions_break_each_expected_downstream_stage_without_fallback_action():
         )
         assert sum(result.visual_spike_counts.values()) > 0
         assert all(result.visual_spike_counts[item] == 0 for item in downstream)
-        assert sum(result.spatial_result.spike_counts.values()) == 0
-        assert result.spatial_result.displacement_y_um == pytest.approx(0.0)
+        assert result.spatial_result.neuron_count == 0
+        assert result.spatial_result.synapse_count == 0
+        assert all(
+            frame.active_fiber_count == frame.traced_active_fiber_count
+            for frame in result.body_force_frames
+        )
 
 
-
-
-def test_a1_motor_identity_lesion_blocks_only_observed_diagnostic_branch():
+def test_a1_motor_identity_lesion_removes_a1_force_and_changes_body():
     motor_nodes = tuple(
         item["node_id"] for item in load_a03o_motor_connectome()["neurons"]
     )
+    control = L1VisualClosedLoopLarva().run(duration_s=0.3)
     result = L1VisualClosedLoopLarva(
         lesion_node_ids=motor_nodes
     ).run(duration_s=0.3)
     assert all(result.visual_spike_counts[item] == 0 for item in motor_nodes)
     assert result.visual_spike_counts["right:A03o_A1"] > 0
-    assert sum(result.spatial_result.spike_counts.values()) > 0
-    assert result.spatial_result.displacement_y_um != pytest.approx(0.0)
+    assert all(
+        count == 0
+        for fiber_id, count in result.muscle_identity_event_counts.items()
+        if fiber_id.startswith("A1:")
+    )
+    assert any(
+        count > 0
+        for fiber_id, count in result.muscle_identity_event_counts.items()
+        if fiber_id.startswith("A2:")
+    )
+    assert result.spatial_result.displacement_x_um != pytest.approx(
+        control.spatial_result.displacement_x_um
+    )
 
 
-
-def test_segment_specific_derived_a03o_lesion_is_local_to_proxy_branch():
+def test_segment_specific_derived_a03o_lesion_changes_local_force_and_body():
     lesioned = "derived:right:A03o_A4"
+    control = L1VisualClosedLoopLarva().run(duration_s=0.3)
     result = L1VisualClosedLoopLarva(
         lesion_node_ids=(lesioned,)
     ).run(duration_s=0.3)
@@ -383,20 +397,27 @@ def test_segment_specific_derived_a03o_lesion_is_local_to_proxy_branch():
         for label, count in result.visual_spike_counts.items()
         if label.startswith("derived_motor_target:A4:right:")
     )
+    assert all(
+        count == 0
+        for fiber_id, count in result.muscle_identity_event_counts.items()
+        if fiber_id.startswith("A4:right:")
+    )
     for segment in ("A2", "A3", "A5", "A6"):
         assert result.visual_spike_counts[f"derived:right:A03o_{segment}"] > 0
         assert any(
             count > 0
             for label, count in result.visual_spike_counts.items()
-            if label.startswith(
-                f"derived_motor_target:{segment}:right:"
-            )
+            if label.startswith(f"derived_motor_target:{segment}:right:")
         )
-    assert sum(result.spatial_result.spike_counts.values()) > 0
-    assert result.spatial_result.displacement_y_um != pytest.approx(0.0)
+    assert result.spatial_result.displacement_x_um != pytest.approx(
+        control.spatial_result.displacement_x_um
+    )
+    assert result.spatial_result.head_pitch_change_deg != pytest.approx(
+        control.spatial_result.head_pitch_change_deg
+    )
 
 
-def test_mirrored_bilateral_light_fields_reverse_steering_with_specimen_asymmetry():
+def test_mirrored_bilateral_light_fields_reverse_lateral_body_response():
     negative = L1VisualClosedLoopLarva(
         field=validation_light_field(lateral_sign=-1.0)
     ).run(duration_s=0.3).spatial_result
@@ -404,11 +425,28 @@ def test_mirrored_bilateral_light_fields_reverse_steering_with_specimen_asymmetr
         field=validation_light_field(lateral_sign=1.0)
     ).run(duration_s=0.3).spatial_result
 
-    assert positive.displacement_y_um < 0.0 < negative.displacement_y_um
-    assert positive.yaw_change_deg > 0.0 > negative.yaw_change_deg
-    assert abs(positive.displacement_y_um) != pytest.approx(
-        abs(negative.displacement_y_um)
+    assert negative.displacement_y_um < 0.0 < positive.displacement_y_um
+    assert positive.displacement_y_um != pytest.approx(
+        negative.displacement_y_um
     )
+    assert positive.yaw_change_deg != pytest.approx(negative.yaw_change_deg)
+
+def test_zero_light_has_zero_spikes_force_and_body_motion():
+    field = LinearScalarField(
+        modality_id="light",
+        unit="W_m-2",
+        origin_m=Vec3(0.0, 0.0, 0.0),
+        value_at_origin=0.0,
+        gradient_per_m=Vec3(0.0, 0.0, 0.0),
+        lower_bound=0.0,
+        upper_bound=20.0,
+    )
+    result = L1VisualClosedLoopLarva(field=field).run(duration_s=0.3)
+    assert sum(result.visual_spike_counts.values()) == 0
+    assert all(frame.active_fiber_count == 0 for frame in result.body_force_frames)
+    assert result.spatial_result.displacement_x_um == pytest.approx(0.0)
+    assert result.spatial_result.displacement_y_um == pytest.approx(0.0)
+    assert result.spatial_result.displacement_z_um == pytest.approx(0.0)
 
 
 def test_visual_path_exposes_no_movement_or_behavior_commands():
@@ -429,7 +467,6 @@ def test_visual_path_exposes_no_movement_or_behavior_commands():
         "fsm",
     )
     assert all(token not in source for token in forbidden)
-
 
 
 def test_motor_spikes_emit_only_146_named_fiber_identity_events():
@@ -521,7 +558,7 @@ def test_derived_segment_lesion_removes_only_local_named_fiber_events():
         )
 
 
-def test_individual_fiber_lesion_preserves_upstream_mn_and_sibling_event():
+def test_individual_fiber_lesion_preserves_upstream_and_changes_body_force():
     source = "motor_identity:4121534:right"
     target = "A1:right:M23:LT3"
     sibling = "A1:right:M24:LT4"
@@ -539,6 +576,11 @@ def test_individual_fiber_lesion_preserves_upstream_mn_and_sibling_event():
     assert lesioned.muscle_peak_activations[sibling] == pytest.approx(
         control.muscle_peak_activations[sibling]
     )
-    assert lesioned.spatial_result.displacement_y_um == pytest.approx(
+    assert all(
+        frame.fibers[target].activation == 0.0
+        and frame.fibers[target].active_tension_model_units == pytest.approx(0.0)
+        for frame in lesioned.body_force_frames
+    )
+    assert lesioned.spatial_result.displacement_y_um != pytest.approx(
         control.spatial_result.displacement_y_um
     )

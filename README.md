@@ -104,33 +104,32 @@ numeric transduction gains are `MODEL_FITTED`, and this is not validated natural
 taxis. See `docs/ENVIRONMENT_INPUTS_V0.md`; run
 `oraclarva-environment-input --modality light --free`.
 
-The light path now reaches an identified A1 premotor pair. In addition to the
-Larderet bilateral L1 LON matrices (60 side-scoped entries, 422 pairs, and 3,297
-contacts), an audited VFB/L1EM snapshot supplies a bilateral
-`PVL09/pOLP -> LHN -> CPf descending -> A03o(A1)` route: 10 identities, eight
-selected axon-to-dendrite edges, and 98 contacts. A second audit preserves 15
-observed A03o-to-A1-MN edges/26 contacts, then builds a strictly
-`ANATOMY_DERIVED` A2-A6 diagnostic projection with 10 ID-less A03o proxies, 130
-motor-target channels, and 140 no-contact-count edges. A deterministic join
-terminates the observed and derived motor outputs in 146 uniquely named fibers
-of the 358-fiber A1-A6 atlas (16 published-target mappings plus 130 derived
-mappings); the other 212 fibers and A7 remain silent. Each mapped output now
-feeds a one-step-delayed dimensionless activation state. Its 20 ms rise, 80 ms
-decay, and event target are explicitly `MODEL_FITTED`; every applied input
-records an earlier source spike. No NMJ coordinate, force, or individual
-mechanics is claimed, and the parallel body continuation remains separate.
-Mirrored fields reverse yaw; individual MN, segment, and fiber lesions remain
-local to their mapped diagnostic activation. No direct
-dorsal-versus-ventral visual sensor is claimed. See
-`docs/L1_VISUAL_CONNECTOME_LOOP_V0.md`; run `oraclarva-visual --duration 1.5`.
+The light path reaches an identified A1 premotor pair. Audited public
+sources preserve the bilateral L1 LON matrices, a
+PVL09/pOLP -> LHN -> CPf -> A03o(A1) route, and 15 observed A03o-to-A1-MN
+edges. A bounded ANATOMY_DERIVED A2-A6 projection adds 10 ID-less A03o proxies
+and 130 motor-target channels while A7 stays blocked. The observed and derived
+outputs terminate in 146 uniquely mapped fibers; the other 212 atlas fibers
+stay silent.
 
-The first individual-muscle mechanics fixture now gives all 29 A1-left fibers
-explicit normalized `(s, theta, d)` origins and insertions, rest lengths, lines
-of action, passive elasticity, damping, and activation-driven tension. The
-coordinates are `ANATOMY_DERIVED`; all mechanics use `MODEL_FITTED` model units,
-not newtons. Zero input is exact rest, and an M1 mechanics lesion preserves its
-upstream activation while blocking only M1 shortening. This isolated fixture
-does not yet actuate the full body. See `docs/A1_HEMISEGMENT_MECHANICS_V0.md`.
+Every mapped output feeds a one-step-delayed MODEL_FITTED activation and an
+ANATOMY_DERIVED attachment hypothesis. Right attachments exactly mirror the
+A1-left fixture; A2-A6 use an explicitly labeled homology repeat. Active,
+passive, and damping tension use MODEL_FITTED model units and project onto the
+shared 13-node body. The historical parallel A03o-to-generic-body bridge is
+disabled. Zero light gives exact rest, mirrored fields reverse lateral body
+response, and MN, segment, and fiber lesions alter physics through their
+supported mappings. No measured NMJ coordinate, CSA, Fmax, SI-valued muscle
+force, or dorsal-versus-ventral visual sensor is claimed. See
+docs/L1_VISUAL_CONNECTOME_LOOP_V0.md; run oraclarva-visual --duration 1.5.
+
+The isolated A1 mechanics fixture gives all 29 A1-left fibers normalized
+origins, insertions, rest lengths, lines of action, passive elasticity, damping,
+and activation-driven tension. Stage 4 now reuses the supported subset in the
+full visual body loop through right-side mirroring and A2-A6 homology. Those
+coordinates remain ANATOMY_DERIVED and all mechanics remain MODEL_FITTED model
+units rather than measured attachments or newtons. The isolated fixture stays
+checked as a regression test. See docs/A1_HEMISEGMENT_MECHANICS_V0.md.
 
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
@@ -213,14 +212,13 @@ python tools/export_environment_input_trajectory.py --check
 python tools/render_environment_input_gif.py
 ```
 
-The L1 visual-connectome artifact executes published LON contacts, the
-identified `PVL09/pOLP -> LHN -> CPf -> A03o(A1)` path, and 15 observed edges
-from A03o to 14 mapped A1 motor identities. At CPf, an explicitly
-`ANATOMY_DERIVED` branch adds A2-A6 A03o/motor-target proxies while blocking A7;
-the fitted A03o(A1)-to-body bridge remains separate. The third panel lesions
-one M23 named-fiber event and activation while preserving its upstream MN,
-sibling M24 activation, and the parallel fitted body motion. The overlay shows
-continuous bilateral `ACT*` values derived only from earlier events.
+The L1 visual-connectome artifact executes the published LON and selected
+descending/motor contacts, then the explicitly ANATOMY_DERIVED A2-A6 branch.
+Both routes terminate in named fibers whose attachment forces move the shared
+body without a parallel generic motor core. The third panel lesions
+A1:right:M10:DO2 while preserving its upstream MN; the changed trajectory is a
+physical causal test. The overlay shows continuous ACT* and FORCE* values
+derived only from earlier neural events.
 
 ![L1 visual connectome body loop](docs/assets/oraclarva_l1_visual_connectome.gif)
 

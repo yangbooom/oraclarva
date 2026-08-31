@@ -15,10 +15,10 @@
     "fitted_effects_for_anatomy_derived_projection",
     "motor_output_spikes_to_named_muscle_identity_events",
     "model_fitted_individual_fiber_activation_dynamics",
-    "fitted_a03o_a1_to_segmental_core_bridge",
-    "spatial_neural_dynamics",
-    "motor_pools",
-    "muscle_activation",
+    "anatomy_derived_a1_left_attachment_coordinates",
+    "anatomy_derived_bilateral_mirror_and_a2_a6_homology",
+    "model_fitted_named_fiber_attachment_mechanics",
+    "shared_body_node_force_projection",
     "3d_body_physics",
     "analytic_light_field"
   ],
@@ -72,7 +72,7 @@
     "expected_derived_a2_a6_mappings": 130,
     "event_rule_provenance": "ANATOMY_DERIVED",
     "activation_dynamics_executed": false,
-    "individual_geometry_executed": false,
+    "individual_geometry_executed": true,
     "limitations": [
       "A named-fiber event is causal bookkeeping from a source-node spike, not muscle activation, force, or contraction.",
       "The 16 A1 mappings preserve published motor-to-muscle target identities; no individual NMJ location is claimed.",
@@ -162,7 +162,7 @@
     "limitations": [
       "The 15 A03o-to-A1-motor edges and 26 contacts are measured structural observations; the executable effect sign and current are fitted.",
       "A single fitted current per contact does not claim measured conductance, release probability, delay, or recruitment strength.",
-      "The 14 motor identities are an observed diagnostic branch and do not replace the parallel fitted A03o-to-full-body segmental bridge."
+      "The 14 motor identities feed only their explicitly mapped named fibers; they do not invoke a generic segmental body branch."
     ]
   },
   "a03o_segmental_projection_dynamics": {
@@ -176,7 +176,7 @@
     "limitations": [
       "The 140 executable edges have ANATOMY_DERIVED topology; neither physiological effect nor current is measured.",
       "A1 contact mass is used only as a normalized target-distribution prior and is not repeated as A2-A6 synaptic contacts.",
-      "All derived homolog and motor-target compartments are diagnostics and do not replace the parallel fitted body bridge."
+      "Derived homolog and motor-target compartments feed only their explicitly mapped A2-A6 named fibers; A7 remains blocked."
     ]
   },
   "neural_muscle_activation_dynamics": {
@@ -187,9 +187,18 @@
     "event_target": 1.0,
     "minimum_spike_to_activation_delay_steps": 1,
     "calibration_ranges": {
-      "rise_tau_s": [0.005, 0.1],
-      "decay_tau_s": [0.02, 0.4],
-      "event_target": [0.1, 1.0]
+      "rise_tau_s": [
+        0.005,
+        0.1
+      ],
+      "decay_tau_s": [
+        0.02,
+        0.4
+      ],
+      "event_target": [
+        0.1,
+        1.0
+      ]
     },
     "provenance": "MODEL_FITTED",
     "calibration_objective": "Produce bounded, temporally smooth diagnostic activation traces at 1 ms resolution while preserving a strict source-spike-before-activation invariant; no behavior or force target was fitted.",
@@ -200,35 +209,17 @@
       "numeric_parameter_use": "none",
       "limitations": "The study does not provide per-MN spike times or L1 excitation-contraction rise and decay constants; GCaMP6f kinetics are not muscle activation kinetics."
     },
-    "individual_geometry_executed": false,
-    "mechanical_force_executed": false
+    "individual_geometry_executed": true,
+    "mechanical_force_executed": true
   },
   "a03o_segmental_bridge": {
-    "readout_class": "A03o_A1",
-    "readout_segment": "A1",
-    "activity_tau_s": 0.08,
-    "spike_increment": 0.1,
-    "side_activity_gain": {
-      "left": 1.0,
-      "right": 1.0
-    },
-    "common_output_gain": 0.4,
-    "lateral_difference_gain": 0.6,
-    "lateral_mapping": "crossed_light_avoidance_prior",
-    "lateral_mapping_evidence": {
-      "doi": "10.1073/pnas.1215295110",
-      "stage": "L2",
-      "use": "response-direction prior only; no numeric value or L1 connection is copied"
-    },
-    "direct_dorsoventral_difference_gain": 0.0,
+    "enabled": false,
+    "executed": false,
+    "replaced_by": "named_fiber_body_coupling",
     "provenance": "MODEL_FITTED",
     "limitations": [
-      "The full-body fitted bridge remains a parallel branch from the identified A03o pair; it does not route motor-neuron output back into an upstream premotor core.",
-      "The observed A1 motor branch and anatomy-derived A2-A6 proxy branch remain diagnostic; A7, segment-specific MN/NMJ identities, and individual mechanics are missing.",
-      "The bridge still spreads the observed A1 premotor activity into the generic A1-A7 spatial locomotor core as a fitted approximation, not as an all-segment anatomical connection.",
-      "The crossed lateral mapping uses L2 light-avoidance direction as a response prior only; it is not a measured A03o motor effect.",
-      "Side activity gains are diagnostic calibration values and not measured hemispheric gains.",
-      "Dorsal and ventral bridge currents receive the same common visual drive; vertical steering cannot be attributed to a fabricated dorsal-versus-ventral Bolwig-organ comparison."
+      "Historical fitted A03o activity filtering and generic spatial motor pools are retained only as an explicit disabled tombstone.",
+      "No value from this section is executed by the body runner."
     ]
   },
   "validation_light_field": {
@@ -252,19 +243,64 @@
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
-    "objective": "Exercise the published bilateral L1 LON-to-A03o(A1) and sparse A1 motor branch, the explicit ANATOMY_DERIVED A2-A6 projection, and strict one-step-delayed activation on 146 mapped fibers while retaining the separately fitted body bridge.",
-    "uncertainty": "All phototransduction values, LIF effects/currents, derived-projection dynamics, per-fiber activation kinetics, A03o activity filtering, and the parallel A1-to-segmental body bridge are calibration parameters rather than measured L1 constants."
+    "objective": "Exercise the published bilateral L1 LON-to-A03o(A1) and sparse A1 motor branch, the explicit ANATOMY_DERIVED A2-A6 projection, strict one-step-delayed activation, and attachment-force projection on 146 mapped fibers without a parallel body bridge.",
+    "uncertainty": "All phototransduction values, LIF effects/currents, derived-projection dynamics, activation kinetics, attachment coordinates, tension parameters, and model-force-to-acceleration conversion remain fitted or anatomy-derived rather than measured L1 constants."
   },
   "limitations": [
     "This is a connectome-driven LON-to-A03o research approximation with an observed A1 motor branch and an ANATOMY_DERIVED A2-A6 diagnostic projection, not validated natural L1 phototaxis.",
     "Only 14 of 56 mapped A1 motor identities and 15 A03o-to-MN edges are specimen observations; A2-A6 proxy nodes have no public skeleton IDs or segmental contact counts.",
-    "The 146 mapped fibers execute MODEL_FITTED diagnostic activation; the remaining 212 atlas fibers are silent, and no activation applies force to the body.",
-    "The 130 derived motor-target channels identify supported muscle targets but not segment-specific motor neurons, NMJs, 3D attachments, CSA, or force gains.",
+    "The 146 mapped fibers execute MODEL_FITTED activation and attachment tension; the remaining 212 atlas fibers remain silent.",
+    "The 130 derived motor-target channels identify supported muscle targets but not segment-specific measured motor neurons, NMJs, 3D attachments, CSA, or force gains.",
     "A7 remains blocked by the public A03o instance audit and current terminal-segment muscle atlas gate.",
-    "Full-body motion remains on the explicitly fitted parallel A03o(A1)-to-segmental branch; diagnostic motor outputs are never fed backward into an upstream premotor layer.",
+    "Body motion is driven only by named-fiber attachment forces projected onto shared physical nodes; the historical fitted A03o-to-segmental body bridge is disabled.",
     "The 2-versus-11 CPf-to-A03o and sparse A03o-to-MN asymmetries are one-specimen observations, not population hemispheric constants.",
     "The validation light field and virtual bilateral sample locations are model fixtures, not reconstructed natural illumination or measured Bolwig-organ coordinates.",
     "The executed topology contains no action command, target selector, finite-state machine, behavior tree, or policy network."
   ],
-  "release_validated": false
+  "release_validated": false,
+  "named_fiber_body_coupling": {
+    "model_id": "dmel_l1_named_fiber_body_v0",
+    "dt_s": 0.001,
+    "active_tension_gain_model_units": 15.0,
+    "passive_stiffness_model_units": 180.0,
+    "damping_model_units": 24.0,
+    "acceleration_scale_m_s2_per_model_force": 0.002,
+    "body_velocity_retention": 0.98,
+    "ground_negative_x_retention": 0.9,
+    "ground_positive_x_retention": 0.1,
+    "expected_mapped_fibers": 146,
+    "expected_unmapped_fibers": 212,
+    "blocked_segments": [
+      "A7"
+    ],
+    "geometry_provenance": "ANATOMY_DERIVED",
+    "mechanics_provenance": "MODEL_FITTED",
+    "force_unit": "model_unit_not_newton",
+    "parallel_fitted_bridge_executed": false,
+    "calibration_objective": "Keep shared-body node motion numerically stable while exposing the causal effect of earlier motor spikes, per-fiber activation, attachment tension, and directional contact friction; no measured force or held-out behavior target is claimed.",
+    "calibration_ranges": {
+      "active_tension_gain_model_units": [
+        1.0,
+        100.0
+      ],
+      "passive_stiffness_model_units": [
+        10.0,
+        1000.0
+      ],
+      "damping_model_units": [
+        1.0,
+        100.0
+      ],
+      "acceleration_scale_m_s2_per_model_force": [
+        0.001,
+        1.0
+      ]
+    },
+    "limitations": [
+      "A1-left normalized attachments are an anatomy-derived hypothesis, not measured 3D L1 coordinates.",
+      "Right-side geometry is an exact mirror and A2-A6 geometry is a repeated homology hypothesis; A7 is not derived.",
+      "Tension and acceleration are model units; no CSA, Fmax, specific stress, or newton-valued force is asserted.",
+      "The remaining 212 atlas fibers stay silent because they lack a supported motor-identity mapping."
+    ]
+  }
 }

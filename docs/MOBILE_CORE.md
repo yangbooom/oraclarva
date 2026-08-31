@@ -10,7 +10,7 @@ The Python implementation is the readable scientific oracle. A Rust or C++ produ
 - Process outgoing synapses only when a presynaptic neuron spikes.
 - Keep excitatory and inhibitory state separate, including their decay constants.
 - Run neural, body-physics, and rendering clocks independently.
-- Record enough state to trace every muscle command to prior motor-neuron events.
+- Record enough state to trace every active muscle force to prior motor-neuron events.
 - Use deterministic seeds and versioned parameter bundles for replay.
 
 Indicative clocks, subject to device benchmarks:
@@ -49,7 +49,22 @@ active-curvature XPBD, local-tangent substrate friction, and bilateral rail
 feedback. Symmetric, left, right, zero-input, and premotor/motor-identity/muscle
 lesion cases match Python across every spike and all 151 sampled frames.
 
+## Stage 4 native-impact audit
+
+The visual named-fiber body path is currently a Python reference path. It adds
+146 attachment geometries, per-fiber active/passive/damping tension, and shared
+node-force projection, but does not change the three existing native fixture
+schemas or their checked numerical outputs. The native files therefore require
+no compatibility edit in Stage 4.
+
+This is an explicit parity gap, not implied native support. A future native
+gate must consume the same visual configuration and attachment fixture, match
+per-step activation and model-unit node forces, preserve every upstream source
+trace, and reproduce sampled 13-node trajectories within a declared tolerance
+before the mobile product uses this path.
+
 This is correctness parity for the current `research_approximation`, not
-biological validation or a performance result. The full brain/VNC, individual
-muscle attachments and force gains, held-out behavior validation, and mobile
+biological validation or a performance result. The full brain/VNC, measured individual
+muscle attachments and force gains, visual named-fiber native parity, held-out
+behavior validation, and mobile
 device benchmarks remain absent.

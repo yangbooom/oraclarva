@@ -351,6 +351,7 @@ class ScientificBody3D:
         use_local_tangent_friction: bool = False,
         contact_surface: ContactSurface | None = None,
         contact_friction_coefficient: float = 0.0,
+        external_accelerations_m_s2: Mapping[int, Vec3] | None = None,
     ) -> None:
         if ground_z is not None and contact_surface is not None:
             raise ValueError("provide either ground_z or a contact surface")
@@ -368,6 +369,14 @@ class ScientificBody3D:
             raise ValueError("active curvature gain must be non-negative")
         if active_bending_stiffness_ratio <= 0:
             raise ValueError("active bending stiffness ratio must be positive")
+        external_accelerations = external_accelerations_m_s2 or {}
+        if set(external_accelerations) - set(range(len(self.particles))):
+            raise ValueError("external acceleration references an unknown body node")
+        if any(
+            not all(isfinite(value) for value in (vector.x, vector.y, vector.z))
+            for vector in external_accelerations.values()
+        ):
+            raise ValueError("external body acceleration must be finite")
 
         for index, particle in enumerate(self.particles):
             if particle.inverse_mass == 0:
@@ -444,8 +453,11 @@ class ScientificBody3D:
                         friction_limit
                     )
             old_position = particle.position
+            acceleration = particle_gravity + external_accelerations.get(
+                index, Vec3(0.0, 0.0, 0.0)
+            )
             particle.position = (
-                particle.position + velocity + particle_gravity * (dt_s * dt_s)
+                particle.position + velocity + acceleration * (dt_s * dt_s)
             )
             particle.previous_position = old_position
             if contact_surface is not None:

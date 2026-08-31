@@ -185,17 +185,14 @@ def draw_causal_trace(draw, scenario, frame, panel_left, small):
         ("LHN", trace["lateral_horn_neuron"]),
         ("DN", trace["cpf_descending_neuron"]),
         ("A03o", trace["a03o_a1_premotor"]),
-        ("A1MN*", trace["a1_motor_identity_branch"]),
+        ("MN*", trace["a1_motor_identity"]),
         ("FIB*", trace["named_muscle_identity_event"]),
         ("ACT*", trace["named_muscle_activation"]),
-        ("A2-6*", trace["a03o_a2_a6_derived"]),
-        ("M*", trace["a2_a6_motor_target_derived"]),
-        ("FIT*", trace["fitted_a03o_segmental_bridge"]),
-        ("PM", trace["a7_premotor"]),
-        ("MN", trace["a7_motor"]),
+        ("FORCE*", trace["named_attachment_force"]),
+        ("3D", trace["named_attachment_force"]),
     )
     x = panel_left + 18
-    spacing = 24
+    spacing = 31
     for index, (label, onset) in enumerate(stages):
         active = onset is not None and time_s >= onset
         color = (105, 220, 143) if active else (68, 62, 75)
@@ -223,7 +220,7 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
     irradiance = visual["irradiance_w_m2"]
     rh5 = visual["receptor_drive"]["Rh5-PR"]
     spike_counts = visual["spike_counts_in_window"]
-    bridge = visual["bridge_stimulus"]
+    force = visual["attachment_force"]
     fiber_events = visual["muscle_identity_events_in_window"]
     activation = visual["muscle_activation"]
     draw_pair(
@@ -277,7 +274,16 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
         draw, panel_left, 630, "ACT*",
         activation["left"]["mean"], activation["right"]["mean"], small,
     )
-    draw_pair(draw, panel_left, 646, "FIT*", bridge[0], bridge[1], small)
+    draw_pair(
+        draw,
+        panel_left,
+        646,
+        "FORCE*",
+        force["tension_model_units_by_side"]["left"],
+        force["tension_model_units_by_side"]["right"],
+        small,
+        0.002,
+    )
     summary = scenario["summary"]
     draw_text(
         draw,
@@ -300,7 +306,7 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
         draw_text(
             draw,
             (panel_left + PANEL_WIDTH - 18, 459),
-            "M23 EVENT + ACTIVATION LESION",
+            "M10 NAMED-FIBER LESION",
             (240, 91, 91),
             mono,
             anchor="ra",
@@ -329,14 +335,14 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
         draw,
         (25, 53),
         "LIGHT > Rh5/Rh6 > LON > LHN > CPf DN > "
-        "[A03o(A1)>A1 MN | A03o(A2-6)*>M*] > EVENT* > ACT* | FIT BODY > 3D",
+        "[A03o(A1)>A1 MN | A03o(A2-6)*>MN*] > FIBER* > ACT* > FORCE* > 3D",
         (165, 148, 172),
         mono,
     )
     panel_titles = (
         "BRIGHTER RIGHT / INTACT",
         "BRIGHTER LEFT / INTACT",
-        "BRIGHTER RIGHT / M23 FIBER LESION",
+        "BRIGHTER RIGHT / M10 FIBER LESION",
     )
     scenarios = artifact["scenarios"]
     for panel_left, title, scenario in zip(
@@ -361,7 +367,7 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
         (24, 705),
         "MEASURED: LON 422/3297 + DESC 8/98 + A1 MN 15/26   "
         "IDENTITY MAP: 16 OBS + 130 DERIVED = 146/358; A7 BLOCKED   "
-        "MODEL_FITTED ACT*: 1-STEP DELAY; NO FORCE/GEOMETRY   FIT BODY: PARALLEL",
+        "ATTACH*: ANATOMY_DERIVED   ACT/FORCE*: MODEL_FITTED UNITS   PARALLEL BODY BRIDGE: OFF",
         (137, 126, 145),
         mono,
     )
