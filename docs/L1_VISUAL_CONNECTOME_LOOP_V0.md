@@ -2,9 +2,10 @@
 
 This research extension executes an identified first-instar path from the
 Bolwig organ through an A1 premotor pair and into 14 observed A1 motor-neuron
-identities. It does not add a phototaxis command,
-target selector, finite-state machine, behavior tree, external policy, or
-renderer-authored movement.
+identities. It also executes a separately labeled `ANATOMY_DERIVED` A2-A6
+A03o-to-motor-target diagnostic projection while explicitly blocking A7. It
+does not add a phototaxis command, target selector, finite-state machine,
+behavior tree, external policy, or renderer-authored movement.
 
 The executed causal chain is:
 
@@ -14,12 +15,14 @@ local analytic irradiance at two moving Bolwig-organ proxy positions
   -> published bilateral L1 LON identities and contact counts
   -> published PVL09/pOLP contacts onto a bilateral LHN pair
   -> published LHN contacts onto a bilateral CPf descending pair
-  -> published CPf contacts onto an A03o premotor pair in A1
-  -> fork A: published A03o contacts onto 14 mapped A1 motor identities
-             (diagnostic identity/muscle-target trace; no invented A2-A7 copy)
-  -> fork B: declared MODEL_FITTED A03o(A1)-to-segmental-core bridge
-             -> sparse spatial premotor and motor dynamics
-             -> muscle activation and 3D XPBD body physics
+  -> fork A1: published CPf contacts onto an A03o premotor pair in A1
+              -> published A03o contacts onto 14 mapped A1 motor identities
+  -> fork A2-A6*: ANATOMY_DERIVED CPf-to-A03o homolog topology
+                  -> ANATOMY_DERIVED normalized motor-target topology
+                  -> diagnostic proxy spikes only; A7 is blocked
+  -> fork body: declared MODEL_FITTED A03o(A1)-to-segmental-core bridge
+                -> sparse spatial premotor and motor dynamics
+                -> muscle activation and 3D XPBD body physics
   -> next bilateral irradiance samples
 ```
 
@@ -134,6 +137,58 @@ All selected motor terms expose CC BY-SA 4.0. The bundled snapshot preserves
 the unmodified connectivity, annotation, and term-info responses; derived
 records retain attribution and share-alike conditions.
 
+### A2-A6 derived segmental projection and A7 gate
+
+A public VFB SOLR/Owlery audit was frozen as an unmodified CC BY-SA 4.0
+snapshot:
+
+```text
+data/sources/vfb_l1em_a03o_segmental_audit/
+  vfb-a03o-segmental-ontology-audit-2026-08-31.tar
+SHA-256:
+  459763508bebc9969ae22b25697565e30001e341b363d27fe648ad429b486228
+```
+
+The label query returns seven A03o-labeled records. The generic A03o1 class and
+the abdominal A1 class both resolve to the same two public L1EM instances,
+`VFB_00100635` and `VFB_00100686`. The abdominal A2 A03o1 class exists but its
+Owlery instance list is empty. No A3-A7 segment-specific A03o1 class appears in
+the audited label result. Ontology class existence is therefore not treated as
+a reconstructed neuron or measured segmental connection.
+
+Mark et al. ([DOI](https://doi.org/10.7554/eLife.67510)) supports the A03o1
+NB7-1 lineage identity. Hasegawa et al.
+([DOI](https://doi.org/10.1038/srep30806)) provides only a research-case prior
+that larval excitatory premotor interneurons can be segmentally arrayed; it is
+not evidence that A03o has the same contacts in every segment. Zarin et al.
+supports the A1 versus A2-A6 muscle identity homology boundary.
+
+`tools/compile_l1_a03o_segmental_projection.py` consequently makes a bounded
+hypothesis:
+
+1. split each observed A1 A03o-to-MN contact mass equally among that motor neuron’s
+   listed muscle targets;
+2. pool both specimen sides and normalize the 13 target-muscle masses to one;
+3. instantiate one ID-less A03o proxy and 13 ID-less motor-target proxies per
+   side in A2-A6;
+4. store every resulting node and edge as `ANATOMY_DERIVED`, with
+   `synaptic_contacts: null`;
+5. instantiate nothing in A7.
+
+| derived diagnostic scope | count |
+|---|---:|
+| A2-A6 segments | 5 |
+| bilateral A03o homolog proxies | 10 |
+| bilateral motor-target proxies | 130 |
+| CPf-to-A03o projection edges | 10 |
+| A03o-to-motor-target projection edges | 130 |
+| A7 proxies | 0 |
+
+The executable sign and current for these 140 edges are separately
+`MODEL_FITTED`. The normalized A1 target distribution is dimensionless: it is
+not copied as A2-A6 contact counts, conductances, release strengths, identified
+motor neurons, or NMJs.
+
 ## What is measured and what is fitted
 
 The following are `MEASURED_PUBLISHED`:
@@ -145,13 +200,23 @@ The following are `MEASURED_PUBLISHED`:
 - 14 A1 motor identities, 15 A03o-to-MN edges, and 26 confidence-5 contacts;
 - the existing published motor-identity-to-muscle-target crosswalk.
 
+The following are `ANATOMY_DERIVED` rather than measured:
+
+- 10 ID-less bilateral A03o homolog proxies in A2-A6;
+- 130 ID-less muscle-target channels covering the 13 A1-supported targets;
+- 10 CPf-to-homolog and 130 homolog-to-target topology edges;
+- pooled, bilateralized, normalized A1 target-distribution weights.
+
+A7 is an explicit failed evidence gate, not a derived node.
+
 The source graphs deliberately store every physiological effect as `null` with
 `unknown` provenance. The executable model separately declares these as
 `MODEL_FITTED`:
 
 - Rh5/Rh6 transduction and adaptation parameters;
 - excitatory/inhibitory effect assumptions for all executed structural edges;
-- current per structural contact, including A03o-to-MN contacts;
+- current per structural contact, including observed A03o-to-MN contacts;
+- effect signs and currents for all 140 anatomy-derived projection edges;
 - A03o activity filtering and side gains;
 - crossed lateral response mapping;
 - the A03o(A1)-to-all-segment spatial-core bridge.
@@ -159,10 +224,11 @@ The source graphs deliberately store every physiological effect as `null` with
 The LIF execution uses 368 of 422 LON pairs and 3,035 of 3,297 LON contacts;
 serotonergic SP2-1, octopaminergic/tyraminergic sVUM2, and Pdf-LaN outputs remain
 structural-only. All eight descending edges (98 contacts) and all 15
-A03o-to-MN edges (26 contacts) execute. The visual/path runtime has 80
-compartments, 391 executed pairs, and 3,159 executed contacts. A contact
-count multiplied by a fitted current is not a measured conductance, release
-probability, delay, or physiological weight.
+A03o-to-MN edges (26 contacts) execute. The runtime adds 140 derived edges but
+no derived contact counts, for 220 visual/path compartments and 531 executed
+pairs. The executed measured-contact total remains 3,159. A contact count or
+dimensionless projection weight multiplied by a fitted current is not a
+measured conductance, release probability, delay, or physiological weight.
 
 ## Bilateral light transduction and steering boundary
 
@@ -182,15 +248,17 @@ drive(class, side) = clamp(
 a(t + dt) = a(t) + (q(t) - a(t)) * (1 - exp(-dt / tau))
 ```
 
-The imported anatomy now has two explicit branches after A03o. The observed
-branch reaches 14 A1 motor identities and executes their sparse contacts for
-causal diagnostics. It does not drive the all-segment body because A1-only
-coverage cannot justify an A2-A7 locomotor wave or measured per-muscle forces.
+The imported/derived anatomy now has three explicit branches. The observed A1
+branch reaches 14 motor identities and executes their sparse contacts. At CPf,
+a separate anatomy-derived diagnostic branch reaches A2-A6 A03o and
+motor-target proxies. Neither diagnostic branch drives individual muscles or
+the all-segment body: A7 is blocked, segment-specific motor neurons/NMJs are
+missing, and no target has measured 3D attachment or force.
 
-The full-body branch remains labeled
-`fitted_a03o_to_segmental_core`. It starts in parallel after A03o, does not feed
-motor output back into an upstream premotor layer, and does not claim an
-A03o-to-A27h synapse or an A1-to-A7 anatomical repetition.
+The full-body branch remains labeled `fitted_a03o_to_segmental_core`. It starts
+in parallel after observed A03o(A1), does not feed motor output backward into
+an upstream premotor layer, and does not claim an A03o-to-A27h synapse or a
+measured A1-to-A7 anatomical repetition.
 
 The crossed lateral mapping still uses L2 light-avoidance direction from Kane
 et al. ([DOI](https://doi.org/10.1073/pnas.1215295110)) as a response-direction
@@ -201,13 +269,13 @@ visual pitch sensing.
 ## Deterministic causal and lesion checks
 
 The checked 1.5-second artifact contains two intact mirrored fields and an
-A03o-pair lesion:
+A03o(A1)-pair lesion:
 
 | scenario | visual/path spikes | downstream spikes | dy (um) | yaw (deg) |
 |---|---:|---:|---:|---:|
-| brighter right, intact | 3,336 | 7,048 | -15.239 | +6.231 |
-| brighter left, intact | 1,244 | 2,296 | +14.957 | -6.020 |
-| brighter right, A03o pair lesion | 1,669 | 0 | 0.000 | 0.000 |
+| brighter right, intact | 11,556 | 7,048 | -15.239 | +6.231 |
+| brighter left, intact | 5,899 | 2,296 | +14.957 | -6.020 |
+| brighter right, A03o(A1) pair lesion | 11,244 | 0 | 0.000 | 0.000 |
 
 The intact fixtures reverse displacement and yaw signs. Their differing neural
 counts preserve the observed specimen and fitted-model asymmetries; this is not
@@ -222,19 +290,22 @@ identified LHN              0.057 s
 identified CPf DN           0.061 s
 identified A03o(A1)         0.062 s
 observed A1 MN branch       0.063 s
+derived A03o(A2-A6)         0.063 s
+derived motor targets       0.064 s
 fitted A03o segment bridge  0.071 s
 A7 premotor core            0.074 s
 A7 motor pool               0.077 s
 ```
 
-Tests lesion the photoreceptors, PVL09/pOLP inputs, LHN pair, CPf pair, and A03o
-pair independently. At every shared-path cut, upstream activity remains where
-expected and both downstream branches stop. The A03o lesion leaves 1,669
-upstream spikes but produces zero A1-MN diagnostic activity, bridge, muscle, or
-body displacement. A separate 14-MN lesion stops only the observed diagnostic
-branch while the parallel fitted full-body branch remains active; this verifies
-that motor output is not routed backward into the segmental premotor core. No
-fallback action is invoked.
+Tests lesion the photoreceptors, PVL09/pOLP inputs, LHN pair, CPf pair, and
+A03o(A1) pair independently. A CPf cut stops both the measured A1 and derived
+A2-A6 branches. The A03o(A1) lesion leaves the parallel CPf-derived A2-A6
+diagnostic branch active but produces zero A1-MN activity, fitted body bridge,
+muscle activation, or displacement. A separate 14-MN lesion stops only the
+observed diagnostic branch. Finally, lesioning `derived:right:A03o_A4` removes
+only the 13 right A4 target channels while A2, A3, A5, A6 and the fitted body
+bridge remain active. These interventions verify graph direction and segment
+scope; no fallback action is invoked.
 
 ![L1 visual connectome body loop](assets/oraclarva_l1_visual_connectome.gif)
 
@@ -251,6 +322,7 @@ oraclarva-visual --duration 1.5 --lesion-class A03o_A1
 python tools/compile_l1_visual_connectome.py --check
 python tools/compile_l1_visual_descending_path.py --check
 python tools/compile_l1_a03o_motor_path.py --check
+python tools/compile_l1_a03o_segmental_projection.py --check
 python tools/export_visual_trajectory.py --check
 python tools/render_visual_gif.py
 pytest tests/test_visual.py tests/test_sources.py
@@ -259,14 +331,18 @@ pytest tests/test_visual.py tests/test_sources.py
 ## Claim boundary and next scientific step
 
 This is an embodied execution of a selected published L1 structural route to an
-A1 premotor pair plus a sparse observed A1 motor branch. It is not proof that
-this route alone mediates natural phototaxis, not a population-average graph,
-and not a complete sensor-to-muscle connectome. The CPf-to-A03o and
-A03o-to-MN asymmetries are one-specimen observations.
+A1 premotor pair plus a sparse observed A1 motor branch, alongside a bounded
+A2-A6 anatomy-derived diagnostic projection. It is not proof that this route
+alone mediates natural phototaxis, not a population-average graph, and not a
+complete sensor-to-muscle connectome. The CPf-to-A03o and A03o-to-MN
+asymmetries are one-specimen observations; the repeated A2-A6 topology is a
+hypothesis rather than additional connectome data.
 
-The next scientific step is segment-specific expansion: identify A03o homologs
-and their motor contacts in A2-A7 only where public skeleton IDs and contact
-evidence exist. After that, connect each verified motor identity through its
-published NMJ target to the 358-fiber atlas while keeping attachment geometry,
-CSA, force gain, and any missing segmental homology explicitly derived or
-fitted. Physiological signs remain fitted until direct evidence is available.
+The next implementation step is the neuromuscular identity boundary: route each
+observed A1 motor identity and each derived A2-A6 target channel to the matching
+named fiber in the 358-fiber atlas, while preserving an explicit distinction
+between published MN-to-muscle targets and derived segmental channels. That
+branch must remain diagnostic/aggregate until segment-specific MN/NMJ IDs, 3D
+attachments, CSA, and force gains are available. A7 stays blocked rather than
+being filled by an A1 copy. Physiological signs remain fitted until direct
+evidence is available.
