@@ -103,20 +103,38 @@ and duty failures remain present and `release_validated` remains false. See
 
 ## Stage 8 mobile integration gate
 
-The next acceptance gate must wrap the verified core in a small mobile-facing
-lifecycle API with these boundaries:
+The gate now passes on the available host proxy. `RepeatSimulation` owns the
+real sparse-LIF, adaptation, delayed relay, fiber, force, XPBD, trace, and cycle
+state and advances it one fixed 1 ms causal step. The legacy one-shot runner is
+a wrapper around this same lifecycle rather than a parallel implementation.
 
-- inputs alter fields, contact geometry, declared sensory stimuli, or declared
-  neural/muscle lesions; no crawl/turn/stop/seek action API is permitted;
-- fixed neural/body clocks, deterministic reset, versioned fixture identity,
-  and replay checks remain explicit;
-- the simulation returns state snapshots and trace records, while the renderer
-  receives a separate smooth mesh projection and never changes physics nodes;
-- a release-build target-like host benchmark records initialization time,
-  simulated-time throughput, memory, and snapshot cost without weakening the
-  Stage 7 numerical gate;
-- mobile packaging claims only host-tested readiness until Android/iOS target
-  builds and device measurements actually exist.
+`native/mobile_core.h` is a C11 boundary with eight exported functions for
+create/destroy, reset/advance, metadata/snapshot reads, and render
+count/mesh reads. Ordinary input is a normalized posterior-touch environment
+intensity; sensory, premotor, mapped-MN, and fiber lesions are declared
+interventions. There is no action command API.
+
+The 3,144-byte snapshot copies time, displacement, all 13 physics nodes, six
+activations, 13 force vectors, 164 spike counts/first times, last-step spikes,
+trace state, and physical-cycle metrics. A separate const projection returns a
+watertight 302-vertex/600-triangle smooth mesh. Snapshot hashes before and after
+every mesh read prove the renderer does not mutate physics.
+
+The complete 16 s stepped workload exactly matches the Stage 7 one-shot native
+frames and remains inside the frozen Python tolerances. Reset plus the same
+input schedule reproduces canonical digest `4ffd09454349d2c7`. Zero input and
+all four lesion classes continue to match.
+
+One GCC 13.3.0 `-O3 -DNDEBUG` measurement on the available Linux aarch64 host
+reported 1.133 ms initialization, 561.784 ms for 16 simulated seconds (28.48x),
+16.83 MiB peak process RSS, 13.78 us snapshot reads, and 29.58 us render-mesh
+reads. These are host process measurements only. Android/iOS compilation,
+device CPU/GPU, thermal, battery, app lifecycle, and shipping readiness remain
+untested and may not be inferred.
+
+The held-out amplitude and duty failures remain present and
+`release_validated` remains false. See
+`docs/MOBILE_CORE_INTEGRATION_V1.md`.
 
 GitHub Actions remains manual-only through `workflow_dispatch`; local
 acceptance is the default during this research phase.

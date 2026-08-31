@@ -39,7 +39,11 @@ metrics are not evidence of a complete L1 crawl match. The dependency-free
 C++17 repeat core now matches the Python reference on exact spikes and strict
 sampled-state tolerances across the normal run and five zero/lesion cases. That
 is a software numerical-reproducibility result only; it does not turn fitted
-parameters into measurements or override any held-out behavioral failure.
+parameters into measurements or override any held-out behavioral failure. The
+Stage 8 C ABI, deterministic reset digest, watertight render projection, and
+Linux host benchmark are likewise engineering integration evidence. They do
+not establish Android/iOS device performance, natural behavior validity,
+measured muscle mechanics, or a complete L1 nervous system.
 
 ## Provenance labels
 

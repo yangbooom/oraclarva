@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "schema": "mobile_core_host_benchmark_v1",
+  "measurement_date_utc": "2026-08-31",
+  "target_class": "linux_host_proxy",
+  "host_tested_only": true,
+  "android_ios_device_tested": false,
+  "device_performance_claim_allowed": false,
+  "frozen_config_sha256": "5cbaec6a716cf2b8dd2d8e053b00469f5e9f09389fa74645c17a148143b936e3",
+  "canonical_workload_fnv1a64": "4ffd09454349d2c7",
+  "build": {
+    "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "flags": [
+      "-std=c++17",
+      "-O3",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-fvisibility=hidden",
+      "-fvisibility-inlines-hidden"
+    ],
+    "artifacts": {
+      "static_library": {
+        "bytes": 248718,
+        "sha256": "b930d160cc5fab306ce09d1dd0f7cf4a50a2a1b74e515cc7e993504167d9be92"
+      },
+      "shared_library": {
+        "bytes": 155808,
+        "sha256": "522605354453142cb45c9c40b4d0b537e7242f7abd202f95afef253562f81dcc"
+      },
+      "host_harness": {
+        "bytes": 224264,
+        "sha256": "3651c5f6aa6ab0d804a8051f4f3ad049b666439da85f9b427fdf5ee07eb6f229"
+      }
+    }
+  },
+  "host": {
+    "system": "Linux",
+    "release": "6.17.0-1020-oracle",
+    "machine": "aarch64",
+    "python": "3.12.3"
+  },
+  "workload": {
+    "fixed_dt_s": 0.001,
+    "steps": 16000,
+    "simulated_duration_s": 16.0,
+    "posterior_touch_steps": 2,
+    "posterior_touch_intensity": 1.0,
+    "median_run_count": 7,
+    "snapshot_samples": 100,
+    "render_mesh_samples": 100,
+    "render_vertices": 302,
+    "render_triangles": 600
+  },
+  "measurements": {
+    "initialize_ms": 1.132804,
+    "full_16s_run_median_ms": 561.783745,
+    "simulated_seconds_per_wall_second": 28.48071013517844,
+    "peak_process_rss_kib": 17232,
+    "snapshot_struct_bytes": 3144,
+    "snapshot_read_us": 13.77804,
+    "render_mesh_read_us": 29.5817,
+    "shared_library_bytes": 155808,
+    "static_library_bytes": 248718,
+    "host_harness_bytes": 224264
+  },
+  "budgets": {
+    "initialize_ms_max": 250.0,
+    "full_16s_run_median_ms_max": 1000.0,
+    "simulated_seconds_per_wall_second_min": 10.0,
+    "peak_process_rss_kib_max": 65536,
+    "snapshot_struct_bytes_max": 4096,
+    "snapshot_read_us_max": 2000.0,
+    "render_mesh_read_us_max": 5000.0,
+    "shared_library_bytes_max": 2000000,
+    "static_library_bytes_max": 2000000,
+    "host_harness_bytes_max": 2000000
+  },
+  "gates": {
+    "initialize": true,
+    "full_run": true,
+    "throughput": true,
+    "rss": true,
+    "snapshot_size": true,
+    "snapshot_read": true,
+    "render_mesh_read": true,
+    "shared_size": true,
+    "static_size": true,
+    "host_size": true
+  },
+  "all_gates_pass": true,
+  "limitations": [
+    "This is a process-level Linux host proxy, not Android or iOS device data.",
+    "Peak RSS includes the executable, C++ runtime, fixture, and measurement process.",
+    "Timing varies with host load and is an engineering budget, not a biological parameter.",
+    "Passing this benchmark does not repair held-out amplitude or duty failures."
+  ]
+}
