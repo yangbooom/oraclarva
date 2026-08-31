@@ -187,6 +187,7 @@ def draw_causal_trace(draw, scenario, frame, panel_left, small):
         ("A03o", trace["a03o_a1_premotor"]),
         ("A1MN*", trace["a1_motor_identity_branch"]),
         ("FIB*", trace["named_muscle_identity_event"]),
+        ("ACT*", trace["named_muscle_activation"]),
         ("A2-6*", trace["a03o_a2_a6_derived"]),
         ("M*", trace["a2_a6_motor_target_derived"]),
         ("FIT*", trace["fitted_a03o_segmental_bridge"]),
@@ -194,7 +195,7 @@ def draw_causal_trace(draw, scenario, frame, panel_left, small):
         ("MN", trace["a7_motor"]),
     )
     x = panel_left + 18
-    spacing = 26
+    spacing = 24
     for index, (label, onset) in enumerate(stages):
         active = onset is not None and time_s >= onset
         color = (105, 220, 143) if active else (68, 62, 75)
@@ -224,58 +225,63 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
     spike_counts = visual["spike_counts_in_window"]
     bridge = visual["bridge_stimulus"]
     fiber_events = visual["muscle_identity_events_in_window"]
+    activation = visual["muscle_activation"]
     draw_pair(
         draw,
         panel_left,
-        472,
+        470,
         "LIGHT",
         irradiance["left"],
         irradiance["right"],
         small,
         0.125,
     )
-    draw_pair(draw, panel_left, 490, "Rh5", rh5["left"], rh5["right"], small)
+    draw_pair(draw, panel_left, 486, "Rh5", rh5["left"], rh5["right"], small)
     draw_pair(
-        draw, panel_left, 508, "VPN",
+        draw, panel_left, 502, "VPN",
         spike_counts["left:projection"], spike_counts["right:projection"],
         small, 0.05,
     )
     draw_pair(
-        draw, panel_left, 526, "LHN",
+        draw, panel_left, 518, "LHN",
         spike_counts["left:lhn"], spike_counts["right:lhn"], small, 0.05,
     )
     draw_pair(
-        draw, panel_left, 544, "CPf DN",
+        draw, panel_left, 534, "CPf DN",
         spike_counts["left:dn"], spike_counts["right:dn"], small, 0.05,
     )
     draw_pair(
-        draw, panel_left, 562, "A03o",
+        draw, panel_left, 550, "A03o",
         spike_counts["left:a03o"], spike_counts["right:a03o"], small, 0.025,
     )
     draw_pair(
-        draw, panel_left, 580, "A1 MN",
+        draw, panel_left, 566, "A1 MN",
         spike_counts["left:a1_mn"], spike_counts["right:a1_mn"],
         small, 0.025,
     )
     draw_pair(
-        draw, panel_left, 598, "A2-6*",
+        draw, panel_left, 582, "A2-6*",
         spike_counts["left:derived_a03o"],
         spike_counts["right:derived_a03o"], small, 0.01,
     )
     draw_pair(
-        draw, panel_left, 616, "SEG MN*",
+        draw, panel_left, 598, "SEG MN*",
         spike_counts["left:derived_mn"],
         spike_counts["right:derived_mn"], small, 0.0015,
     )
     draw_pair(
-        draw, panel_left, 634, "FIB*",
+        draw, panel_left, 614, "FIB*",
         fiber_events["left"], fiber_events["right"], small, 0.002,
     )
-    draw_pair(draw, panel_left, 652, "FIT*", bridge[0], bridge[1], small)
+    draw_pair(
+        draw, panel_left, 630, "ACT*",
+        activation["left"]["mean"], activation["right"]["mean"], small,
+    )
+    draw_pair(draw, panel_left, 646, "FIT*", bridge[0], bridge[1], small)
     summary = scenario["summary"]
     draw_text(
         draw,
-        (panel_left + 16, 675),
+        (panel_left + 16, 668),
         f"dy {summary['displacement_y_um']:+.2f} um   "
         f"yaw {summary['yaw_change_deg']:+.2f} deg",
         (204, 190, 208),
@@ -294,7 +300,7 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
         draw_text(
             draw,
             (panel_left + PANEL_WIDTH - 18, 459),
-            "M23 IDENTITY EVENT LESION",
+            "M23 EVENT + ACTIVATION LESION",
             (240, 91, 91),
             mono,
             anchor="ra",
@@ -323,7 +329,7 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
         draw,
         (25, 53),
         "LIGHT > Rh5/Rh6 > LON > LHN > CPf DN > "
-        "[A03o(A1)>A1 MN | A03o(A2-6)*>M*] > FIBER EVENT* | FIT BODY > 3D",
+        "[A03o(A1)>A1 MN | A03o(A2-6)*>M*] > EVENT* > ACT* | FIT BODY > 3D",
         (165, 148, 172),
         mono,
     )
@@ -355,7 +361,7 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
         (24, 705),
         "MEASURED: LON 422/3297 + DESC 8/98 + A1 MN 15/26   "
         "IDENTITY MAP: 16 OBS + 130 DERIVED = 146/358; A7 BLOCKED   "
-        "NO ACTIVATION/GEOMETRY   MODEL_FITTED: effects + body bridge",
+        "MODEL_FITTED ACT*: 1-STEP DELAY; NO FORCE/GEOMETRY   FIT BODY: PARALLEL",
         (137, 126, 145),
         mono,
     )

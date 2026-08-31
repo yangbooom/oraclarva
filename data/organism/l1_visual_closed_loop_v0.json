@@ -14,6 +14,7 @@
     "anatomy_derived_a03o_a2_a6_to_motor_target_topology",
     "fitted_effects_for_anatomy_derived_projection",
     "motor_output_spikes_to_named_muscle_identity_events",
+    "model_fitted_individual_fiber_activation_dynamics",
     "fitted_a03o_a1_to_segmental_core_bridge",
     "spatial_neural_dynamics",
     "motor_pools",
@@ -178,6 +179,30 @@
       "All derived homolog and motor-target compartments are diagnostics and do not replace the parallel fitted body bridge."
     ]
   },
+  "neural_muscle_activation_dynamics": {
+    "activation_unit": "dimensionless_0_1",
+    "dt_source": "visual_lif_dt",
+    "rise_tau_s": 0.02,
+    "decay_tau_s": 0.08,
+    "event_target": 1.0,
+    "minimum_spike_to_activation_delay_steps": 1,
+    "calibration_ranges": {
+      "rise_tau_s": [0.005, 0.1],
+      "decay_tau_s": [0.02, 0.4],
+      "event_target": [0.1, 1.0]
+    },
+    "provenance": "MODEL_FITTED",
+    "calibration_objective": "Produce bounded, temporally smooth diagnostic activation traces at 1 ms resolution while preserving a strict source-spike-before-activation invariant; no behavior or force target was fitted.",
+    "supporting_evidence": {
+      "doi": "10.7554/eLife.51781",
+      "stage": "L1_or_L2",
+      "observation": "Ratiometric GCaMP6f imaging found calcium increases correlated with contraction and activation across all imaged body-wall muscles.",
+      "numeric_parameter_use": "none",
+      "limitations": "The study does not provide per-MN spike times or L1 excitation-contraction rise and decay constants; GCaMP6f kinetics are not muscle activation kinetics."
+    },
+    "individual_geometry_executed": false,
+    "mechanical_force_executed": false
+  },
   "a03o_segmental_bridge": {
     "readout_class": "A03o_A1",
     "readout_segment": "A1",
@@ -227,12 +252,13 @@
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
-    "objective": "Exercise the published bilateral L1 LON-to-A03o(A1) and sparse A1 motor branch, plus an explicit ANATOMY_DERIVED CPf-to-A03o-to-motor-target diagnostic projection in A2-A6, while retaining the separately fitted body bridge.",
-    "uncertainty": "All phototransduction values, LIF effects/currents, derived-projection dynamics, A03o activity filtering, and the parallel A1-to-segmental body bridge are calibration parameters rather than measured L1 constants."
+    "objective": "Exercise the published bilateral L1 LON-to-A03o(A1) and sparse A1 motor branch, the explicit ANATOMY_DERIVED A2-A6 projection, and strict one-step-delayed activation on 146 mapped fibers while retaining the separately fitted body bridge.",
+    "uncertainty": "All phototransduction values, LIF effects/currents, derived-projection dynamics, per-fiber activation kinetics, A03o activity filtering, and the parallel A1-to-segmental body bridge are calibration parameters rather than measured L1 constants."
   },
   "limitations": [
     "This is a connectome-driven LON-to-A03o research approximation with an observed A1 motor branch and an ANATOMY_DERIVED A2-A6 diagnostic projection, not validated natural L1 phototaxis.",
     "Only 14 of 56 mapped A1 motor identities and 15 A03o-to-MN edges are specimen observations; A2-A6 proxy nodes have no public skeleton IDs or segmental contact counts.",
+    "The 146 mapped fibers execute MODEL_FITTED diagnostic activation; the remaining 212 atlas fibers are silent, and no activation applies force to the body.",
     "The 130 derived motor-target channels identify supported muscle targets but not segment-specific motor neurons, NMJs, 3D attachments, CSA, or force gains.",
     "A7 remains blocked by the public A03o instance audit and current terminal-segment muscle atlas gate.",
     "Full-body motion remains on the explicitly fitted parallel A03o(A1)-to-segmental branch; diagnostic motor outputs are never fed backward into an upstream premotor layer.",

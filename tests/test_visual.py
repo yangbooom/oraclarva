@@ -50,6 +50,12 @@ def test_visual_config_preserves_measured_and_fitted_boundaries():
         config["a03o_segmental_projection_dynamics"]["provenance"]
         == "MODEL_FITTED"
     )
+    activation = config["neural_muscle_activation_dynamics"]
+    assert activation["provenance"] == "MODEL_FITTED"
+    assert activation["minimum_spike_to_activation_delay_steps"] == 1
+    assert activation["supporting_evidence"]["numeric_parameter_use"] == "none"
+    assert activation["individual_geometry_executed"] is False
+    assert activation["mechanical_force_executed"] is False
     bridge = config["a03o_segmental_bridge"]
     assert bridge["provenance"] == "MODEL_FITTED"
     assert bridge["readout_class"] == "A03o_A1"
@@ -441,11 +447,32 @@ def test_motor_spikes_emit_only_146_named_fiber_identity_events():
         not fiber_id.startswith("A7:")
         for fiber_id in result.muscle_identity_event_counts
     )
+    assert sum(result.muscle_activation_input_counts.values()) > 0
+    assert max(result.muscle_peak_activations.values()) <= 1.0
+    assert sum(
+        value is not None for value in result.muscle_first_activation_s.values()
+    ) == 76
+    for fiber_id, activation_time in result.muscle_first_activation_s.items():
+        event_time = result.muscle_identity_first_event_s[fiber_id]
+        if activation_time is not None:
+            assert event_time is not None
+            assert activation_time == pytest.approx(event_time + 0.001)
     for frame in result.visual_frames:
         events = frame.muscle_identity_events
+        activation = frame.muscle_activation
         assert not events.activation_dynamics_executed
         assert not events.individual_geometry_executed
         assert set(events.source_by_fiber.values()) <= set(events.source_spikes)
+        assert activation.parameter_provenance == "MODEL_FITTED"
+        assert not activation.individual_geometry_executed
+        assert not activation.mechanical_force_executed
+        assert all(
+            spike_time < activation.time_s
+            for spike_time in activation.applied_spike_time_s_by_fiber.values()
+        )
+        assert set(activation.applied_source_by_fiber) == set(
+            activation.applied_event_fibers
+        )
 
 
 def test_observed_mn_lesion_removes_only_its_named_fiber_events():
@@ -461,6 +488,9 @@ def test_observed_mn_lesion_removes_only_its_named_fiber_events():
     assert all(control.muscle_identity_event_counts[item] > 0 for item in target_fibers)
     assert all(lesioned.muscle_identity_event_counts[item] == 0 for item in target_fibers)
     assert lesioned.muscle_identity_event_counts["A1:right:M1:DA1"] > 0
+    assert all(lesioned.muscle_first_activation_s[item] is None for item in target_fibers)
+    assert all(lesioned.muscle_peak_activations[item] == 0.0 for item in target_fibers)
+    assert lesioned.muscle_first_activation_s["A1:right:M1:DA1"] is not None
 
 
 def test_derived_segment_lesion_removes_only_local_named_fiber_events():
@@ -473,10 +503,20 @@ def test_derived_segment_lesion_removes_only_local_named_fiber_events():
         for fiber_id, count in lesioned.muscle_identity_event_counts.items()
         if fiber_id.startswith("A4:right:")
     )
+    assert all(
+        value is None
+        for fiber_id, value in lesioned.muscle_first_activation_s.items()
+        if fiber_id.startswith("A4:right:")
+    )
     for segment in ("A2", "A3", "A5", "A6"):
         assert any(
             count > 0
             for fiber_id, count in lesioned.muscle_identity_event_counts.items()
+            if fiber_id.startswith(f"{segment}:right:")
+        )
+        assert any(
+            value is not None
+            for fiber_id, value in lesioned.muscle_first_activation_s.items()
             if fiber_id.startswith(f"{segment}:right:")
         )
 
@@ -493,6 +533,12 @@ def test_individual_fiber_lesion_preserves_upstream_mn_and_sibling_event():
     assert lesioned.visual_spike_counts[source] == control.visual_spike_counts[source]
     assert lesioned.muscle_identity_event_counts[target] == 0
     assert lesioned.muscle_identity_event_counts[sibling] == control.muscle_identity_event_counts[sibling]
+    assert lesioned.muscle_first_activation_s[target] is None
+    assert lesioned.muscle_peak_activations[target] == 0.0
+    assert lesioned.muscle_first_activation_s[sibling] == control.muscle_first_activation_s[sibling]
+    assert lesioned.muscle_peak_activations[sibling] == pytest.approx(
+        control.muscle_peak_activations[sibling]
+    )
     assert lesioned.spatial_result.displacement_y_um == pytest.approx(
         control.spatial_result.displacement_y_um
     )

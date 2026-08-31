@@ -101,6 +101,9 @@ def _first_spike_trace(result, connectome) -> dict[str, float | None]:
         "named_muscle_identity_event": _earliest(
             list(result.muscle_identity_first_event_s.values())
         ),
+        "named_muscle_activation": _earliest(
+            list(result.muscle_first_activation_s.values())
+        ),
         "fitted_a03o_segmental_bridge": _earliest(
             [
                 value
@@ -198,6 +201,9 @@ def _sampled_visual(protocol, trajectory_index: int) -> dict[str, Any]:
             event_counts[fiber_id.split(":", 2)[1]] += 1
             event_counts[events.mapping_provenance_by_fiber[fiber_id]] += 1
             active_fibers.add(fiber_id)
+    activation_by_side = {"left": [], "right": []}
+    for fiber_id, value in frame.muscle_activation.activations.items():
+        activation_by_side[fiber_id.split(":", 2)[1]].append(value)
     return {
         "sample_time_s": round(transduction.time_s, 9),
         "sample_positions_um": {
@@ -225,6 +231,17 @@ def _sampled_visual(protocol, trajectory_index: int) -> dict[str, Any]:
         "spike_counts_in_window": _window_spike_counts(protocol, frame_index),
         "muscle_identity_events_in_window": event_counts,
         "active_mapped_fibers_in_window": len(active_fibers),
+        "muscle_activation": {
+            side: {
+                "mean": round(sum(values) / len(values), 9),
+                "maximum": round(max(values, default=0.0), 9),
+                "active_fibers": sum(value > 0.0 for value in values),
+            }
+            for side, values in activation_by_side.items()
+        },
+        "applied_activation_events": len(
+            frame.muscle_activation.applied_event_fibers
+        ),
         "bridge_activity": {
             side: round(value, 9)
             for side, value in frame.bridge_activity.items()
@@ -266,8 +283,20 @@ def _summary(result) -> dict[str, Any]:
         "recruited_mapped_fibers": sum(
             count > 0 for count in result.muscle_identity_event_counts.values()
         ),
-        "activation_dynamics_executed": False,
+        "activation_dynamics_executed": True,
+        "activation_parameter_provenance": "MODEL_FITTED",
+        "activation_input_events": sum(
+            result.muscle_activation_input_counts.values()
+        ),
+        "activated_muscle_fibers": sum(
+            value is not None for value in result.muscle_first_activation_s.values()
+        ),
+        "maximum_muscle_activation": round(
+            max(result.muscle_peak_activations.values(), default=0.0), 9
+        ),
+        "minimum_spike_to_activation_delay_steps": 1,
         "individual_muscle_geometry_executed": False,
+        "mechanical_force_executed": False,
         "published_connection_pairs": result.published_connection_pairs,
         "published_descending_connection_pairs": (
             result.published_descending_connection_pairs
@@ -390,6 +419,9 @@ def render_trajectory() -> str:
         "neural_muscle_identity_projection": config[
             "neural_muscle_identity_projection"
         ],
+        "neural_muscle_activation_dynamics": config[
+            "neural_muscle_activation_dynamics"
+        ],
         "a03o_segmental_bridge": config["a03o_segmental_bridge"],
         "validation_light_field": config["validation_light_field"],
         "scenarios": scenarios,
@@ -406,8 +438,11 @@ def render_trajectory() -> str:
             "The third scenario lesions one named fiber event channel; "
             "it does not suppress the upstream motor neuron or alter the "
             "parallel fitted body bridge.",
-            "Named-fiber events are causal identity bookkeeping, not "
-            "activation, force, contraction, or individual mechanics.",
+            "Named-fiber events feed a one-step-delayed MODEL_FITTED "
+            "activation state; every applied input records its earlier spike "
+            "time and source identity.",
+            "Activation remains diagnostic and applies no force, contraction, "
+            "attachment geometry, or individual mechanics.",
         ],
     }
     return json.dumps(artifact, indent=2, ensure_ascii=False) + "\n"

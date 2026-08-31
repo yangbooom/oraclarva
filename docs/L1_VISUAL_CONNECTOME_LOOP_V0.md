@@ -5,8 +5,10 @@ Bolwig organ through an A1 premotor pair and into 14 observed A1 motor-neuron
 identities. It also executes a separately labeled `ANATOMY_DERIVED` A2-A6
 A03o-to-motor-target diagnostic projection while explicitly blocking A7. Both
 motor-output branches now terminate in 146 explicitly mapped named-fiber
-identity events inside the 358-fiber A1-A6 atlas. These are causal events, not
-activation, force, NMJ coordinates, or individual mechanics. It does not add a phototaxis command, target selector, finite-state machine,
+identity events inside the 358-fiber A1-A6 atlas. Each mapped fiber now has a
+one-step-delayed, dimensionless activation state whose numerical kinetics are
+explicitly `MODEL_FITTED`. Activation is diagnostic and does not apply force,
+claim NMJ coordinates, or execute individual mechanics. It does not add a phototaxis command, target selector, finite-state machine,
 behavior tree, external policy, or renderer-authored movement.
 
 The executed causal chain is:
@@ -23,7 +25,8 @@ local analytic irradiance at two moving Bolwig-organ proxy positions
   -> fork A2-A6*: ANATOMY_DERIVED CPf-to-A03o homolog topology
                   -> ANATOMY_DERIVED normalized motor-target topology
                   -> 130 derived named-fiber identity mappings; A7 is blocked
-  -> identity events only: no activation dynamics or individual mechanics
+  -> identity events
+  -> one-step-delayed MODEL_FITTED per-fiber activation; no force or geometry
   -> fork body: declared MODEL_FITTED A03o(A1)-to-segmental-core bridge
                 -> sparse spatial premotor and motor dynamics
                 -> muscle activation and 3D XPBD body physics
@@ -212,10 +215,36 @@ motor-target proxies to the matching segment, side, muscle number, and synonym.
 
 One source-node spike emits one event to each explicitly mapped named fiber,
 unless that fiber is lesioned. This event is causal bookkeeping with
-`ANATOMY_DERIVED` rule provenance. It does not low-pass spikes, define calcium
-or activation, contract a muscle, apply force, or feed the body. No exact NMJ
-position is claimed. `activation_dynamics_executed` and
-`individual_geometry_executed` remain false.
+`ANATOMY_DERIVED` rule provenance. No exact NMJ position is claimed.
+
+### Individual spike-to-activation dynamics
+
+Every mapped fiber has an independent activation `a_i` in `[0, 1]`. Events from
+timestep `k` are queued and may first affect activation at `k + 1`; every
+applied input stores the source node, spike time, and mapping provenance. For a
+one-step target `u_i` and timestep `dt`, the exact first-order update is:
+
+```text
+tau = tau_rise  if u_i > a_i  else tau_decay
+a_i(t + dt) = a_i(t) + (u_i - a_i(t)) * (1 - exp(-dt / tau))
+```
+
+| fitted parameter | value | declared calibration range |
+|---|---:|---:|
+| `rise_tau_s` | 0.020 s | 0.005-0.100 s |
+| `decay_tau_s` | 0.080 s | 0.020-0.400 s |
+| `event_target` | 1.0 | 0.1-1.0 |
+| minimum delay | 1 timestep = 0.001 s | fixed causal invariant |
+
+Zarin et al. ([DOI](https://doi.org/10.7554/eLife.51781)) imaged first- or
+second-instar body-wall muscles with ratiometric GCaMP6f/mCherry, found calcium
+increases correlated with contraction, and observed activation across all
+imaged muscles. That supports an activation state after neural output, but the
+paper does not provide per-MN spike times or L1 rise/decay constants. GCaMP6f
+kinetics are not treated as muscle kinetics, and no numerical value is copied
+from the paper. The values above are `MODEL_FITTED` for bounded, smooth,
+traceable diagnostic signals only. `individual_geometry_executed` and
+`mechanical_force_executed` remain false.
 
 ## What is measured and what is fitted
 
@@ -236,7 +265,7 @@ The following are `ANATOMY_DERIVED` rather than measured:
 - 10 CPf-to-homolog and 130 homolog-to-target topology edges;
 - pooled, bilateralized, normalized A1 target-distribution weights;
 - the 130 A2-A6 motor-target-proxy-to-named-fiber identity mappings;
-- the event bookkeeping rule used to expose causal termination without activation.
+- the event bookkeeping rule used to expose causal termination before activation.
 
 A7 is an explicit failed evidence gate, not a derived node.
 
@@ -248,6 +277,7 @@ The source graphs deliberately store every physiological effect as `null` with
 - excitatory/inhibitory effect assumptions for all executed structural edges;
 - current per structural contact, including observed A03o-to-MN contacts;
 - effect signs and currents for all 140 anatomy-derived projection edges;
+- the per-fiber activation rise, decay, and event-target parameters;
 - A03o activity filtering and side gains;
 - crossed lateral response mapping;
 - the A03o(A1)-to-all-segment spatial-core bridge.
@@ -284,9 +314,10 @@ The imported/derived anatomy now has three explicit branches. The observed A1
 branch reaches 14 motor identities and executes their sparse contacts. At CPf,
 a separate anatomy-derived diagnostic branch reaches A2-A6 A03o and
 motor-target proxies. Both diagnostic branches now emit events into the explicitly mapped named
-fibers, but those events do not drive activation, force, or the all-segment
-body. A7 is blocked, segment-specific motor neurons/NMJs remain missing in
-A2-A6, and no target has measured 3D attachment or force.
+fibers and drive their diagnostic activation states. Those activations do not
+apply force or drive the all-segment body. A7 is blocked, segment-specific
+motor neurons/NMJs remain missing in A2-A6, and no target has measured 3D
+attachment or force.
 
 The full-body branch remains labeled `fitted_a03o_to_segmental_core`. It starts
 in parallel after observed A03o(A1), does not feed motor output backward into
@@ -302,13 +333,13 @@ visual pitch sensing.
 ## Deterministic causal and lesion checks
 
 The checked 1.5-second artifact contains two intact mirrored fields and one
-individual named-fiber event lesion:
+individual named-fiber event/activation lesion:
 
-| scenario | visual/path spikes | fiber events / reached fibers | dy (um) | yaw (deg) |
+| scenario | fiber events / applied inputs | activated fibers / max `a` | dy (um) | yaw (deg) |
 |---|---:|---:|---:|---:|
-| brighter right, intact | 11,556 | 9,907 / 76 | -15.239 | +6.231 |
-| brighter left, intact | 5,899 | 4,480 / 71 | +14.957 | -6.020 |
-| brighter right, `A1:right:M23:LT3` lesion | 11,556 | 9,754 / 75 | -15.239 | +6.231 |
+| brighter right, intact | 9,907 / 9,885 | 76 / 0.634 | -15.239 | +6.231 |
+| brighter left, intact | 4,480 / 4,480 | 71 / 0.382 | +14.957 | -6.020 |
+| brighter right, `A1:right:M23:LT3` lesion | 9,754 / 9,733 | 75 / 0.634 | -15.239 | +6.231 |
 
 The intact fixtures reverse displacement and yaw signs. Their differing neural
 counts preserve the observed specimen and fitted-model asymmetries; this is not
@@ -325,6 +356,7 @@ identified A03o(A1)         0.062 s
 observed A1 MN branch       0.063 s
 derived A03o(A2-A6)         0.063 s
 named-fiber event           0.063 s
+named-fiber activation      0.064 s
 derived motor targets       0.064 s
 fitted A03o segment bridge  0.071 s
 A7 premotor core            0.074 s
@@ -337,12 +369,14 @@ A2-A6 branches. The A03o(A1) lesion leaves the parallel CPf-derived A2-A6
 diagnostic branch active but produces zero A1-MN activity, fitted body bridge,
 muscle activation, or displacement. A separate 14-MN lesion stops only the
 observed diagnostic branch. Lesioning `derived:right:A03o_A4` removes only the 13 right A4 target
-channels and their fiber events while A2, A3, A5, A6 and the fitted body bridge
-remain active. An observed MN lesion removes only its published target-fiber
-events. Finally, lesioning `A1:right:M23:LT3` suppresses that event while its
-upstream MN, sibling M24 event, and parallel fitted body motion are unchanged.
-These interventions verify graph direction, segment scope, and individual
-identity causality; no fallback action is invoked.
+channels, fiber events, and activations while A2, A3, A5, A6 and the fitted
+body bridge remain active. An observed MN lesion removes only its published
+target-fiber events and activation. Finally, lesioning `A1:right:M23:LT3`
+suppresses that event and activation while its upstream MN, sibling M24
+activation, and parallel fitted body motion are unchanged. Every nonzero first
+activation is exactly one 1 ms timestep after its first event. These
+interventions verify graph direction, segment scope, strict timing, and
+individual identity causality; no fallback action is invoked.
 
 ![L1 visual connectome body loop](assets/oraclarva_l1_visual_connectome.gif)
 
@@ -377,9 +411,9 @@ complete sensor-to-muscle connectome. The CPf-to-A03o and A03o-to-MN
 asymmetries are one-specimen observations; the repeated A2-A6 topology is a
 hypothesis rather than additional connectome data.
 
-The next implementation step is individual spike-to-activation dynamics on
-these 146 mapped fibers. Every activation must be traceable to an earlier
-source-node spike, use explicitly `MODEL_FITTED` time constants until direct L1
-evidence is available, and remain non-mechanical until attachment geometry and
-force parameters pass their separate gates. The 212 unmapped fibers and A7
-remain silent rather than receiving a uniform fallback.
+The next implementation step is 3D attachment and individual muscle mechanics.
+It must define body coordinates `(segment, side, muscle_id, s, theta, d)`,
+derive rest length from origin/insertion distance, and make an isolated A1
+hemisegment mechanically stable before any full-body handoff. Missing attachment
+coordinates, CSA, and force gains must remain `ANATOMY_DERIVED` or
+`MODEL_FITTED`, never measured. The 212 unmapped fibers and A7 remain silent.
