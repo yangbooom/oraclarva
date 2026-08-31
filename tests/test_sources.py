@@ -6,7 +6,7 @@ def source(**kw):
 def manifest(tmp_path,records):
     p=tmp_path/"sources.yaml"; p.write_text(json.dumps(records)); return p
 def test_repository_manifest():
-    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==12
+    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==13
 
 def test_environment_source_stages_are_explicit():
     records={item["source_id"]:item for item in load_source_manifest("data/sources/source_manifest_v0.yaml")}

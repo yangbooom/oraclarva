@@ -197,10 +197,12 @@ python tools/export_environment_input_trajectory.py --check
 python tools/render_environment_input_gif.py
 ```
 
-The L1 visual-connectome artifact executes published LON contacts and the
-identified `PVL09/pOLP -> LHN -> CPf -> A03o(A1)` path. The only downstream
-bridge begins after A03o, and the third panel lesions exactly that bilateral
-pair while retaining all upstream neural activity.
+The L1 visual-connectome artifact executes published LON contacts, the
+identified `PVL09/pOLP -> LHN -> CPf -> A03o(A1)` path, and 15 observed edges
+from A03o to 14 mapped A1 motor identities. After A03o the causal audit shows
+two explicit branches: the measured-topology A1-MN diagnostic branch and the
+parallel fitted full-body bridge. The third panel lesions the A03o pair while
+retaining upstream neural activity.
 
 ![L1 visual connectome body loop](docs/assets/oraclarva_l1_visual_connectome.gif)
 

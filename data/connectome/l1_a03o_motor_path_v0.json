@@ -1,0 +1,548 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_a03o_motor_path_v0",
+  "status": "published_structural_a1_motor_branch_with_unresolved_effect_signs",
+  "stage": "L1",
+  "source": {
+    "source_id": "vfb_l1em_a03o_motor_path",
+    "article_doi": "10.1126/science.add9330",
+    "motor_map_doi": "10.7554/eLife.51781",
+    "vfb_query_api": "https://v3-cached.virtualflybrain.org/",
+    "catmaid_instance": "l1em",
+    "catmaid_project_id": 1,
+    "retrieved_at": "2026-08-31",
+    "license": "CC BY-SA 4.0",
+    "local_artifact": "data/sources/vfb_l1em_a03o_motor_path/vfb-l1em-a03o-motor-api-snapshot-2026-08-31.tar",
+    "sha256": "07dcc865c82ebeff4e8051a7a8f6994c3f8400cdf7c6fa722f65d88a5a2e571e",
+    "provenance": "MEASURED_PUBLISHED"
+  },
+  "upstream_nodes": [
+    {
+      "node_id": "left:A03o_A1",
+      "side": "left",
+      "vfb_id": "VFB_00100635",
+      "catmaid_skeleton_id": 4302562,
+      "segment": "A1",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "right:A03o_A1",
+      "side": "right",
+      "vfb_id": "VFB_00100686",
+      "catmaid_skeleton_id": 3180525,
+      "segment": "A1",
+      "provenance": "MEASURED_PUBLISHED"
+    }
+  ],
+  "summary": {
+    "queried_a03o_neurons": 2,
+    "identified_a1_motor_neurons": 14,
+    "a1_motor_map_denominator": 56,
+    "axon_to_dendrite_connection_pairs": 15,
+    "axon_to_dendrite_synaptic_contacts": 26,
+    "unique_target_muscle_numbers": 13,
+    "motor_neurons_by_side": {
+      "left": 6,
+      "right": 8
+    },
+    "motor_neurons_by_spatial_group": {
+      "DL": 5,
+      "DO": 5,
+      "T": 4
+    }
+  },
+  "neurons": [
+    {
+      "node_id": "motor_identity:4121534:right",
+      "side": "right",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 4121534,
+      "vfb_id": "VFB_00102127",
+      "vfb_name": "MN23/24 (RF: LT3/LT4) LT4_a1r   (L1EM:4121534)",
+      "flybase_type": "[larval LT3/LT4 motor neuron of abdominal 1 neuromere](FBbt_00048639)",
+      "segment": "A1",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "23",
+          "synonym": "LT3",
+          "evidence": "listed"
+        },
+        {
+          "number": "24",
+          "synonym": "LT4",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:4488976:right",
+      "side": "right",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 4488976,
+      "vfb_id": "VFB_00101465",
+      "vfb_name": "MN1 aCC_a1r (L1EM:4488976)",
+      "flybase_type": "[larval DA1 motor neuron of abdominal 1 neuromere](FBbt_00047806)",
+      "segment": "A1",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "1",
+          "synonym": "DA1",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:4535767:right",
+      "side": "right",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 4535767,
+      "vfb_id": "VFB_00101467",
+      "vfb_name": "MN5 LO1_a1r (L1EM:4535767)",
+      "flybase_type": "[larval LO1 motor neuron of abdominal 1 neuromere](FBbt_00048640)",
+      "segment": "A1",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "5",
+          "synonym": "LO1",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:4881629:right",
+      "side": "right",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 4881629,
+      "vfb_id": "VFB_00102291",
+      "vfb_name": "MN8 (RF:SBM) LT3_a1r  (L1EM:4881629)",
+      "flybase_type": "[larval neuron](FBbt_00001446)",
+      "segment": "A1",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "8",
+          "synonym": "SBM",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:5085455:right",
+      "side": "right",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 5085455,
+      "vfb_id": "VFB_00101469",
+      "vfb_name": "MN20 ISN_a1r (L1EM:5085455)",
+      "flybase_type": "[larval DO5 motor neuron of abdominal 1 neuromere](FBbt_00048754)",
+      "segment": "A1",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "20",
+          "synonym": "DO5",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:8026224:left",
+      "side": "left",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 8026224,
+      "vfb_id": "VFB_00101473",
+      "vfb_name": "MN10 U2_a1l (L1EM:8026224)",
+      "flybase_type": "[larval DO2 motor neuron of abdominal 1 neuromere](FBbt_00048726)",
+      "segment": "A1",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "10",
+          "synonym": "DO2",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:10649843:left",
+      "side": "left",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 10649843,
+      "vfb_id": "VFB_00101476",
+      "vfb_name": "MN1 aCC_a1l (L1EM:10649843)",
+      "flybase_type": "[larval DA1 motor neuron of abdominal 1 neuromere](FBbt_00047806)",
+      "segment": "A1",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "1",
+          "synonym": "DA1",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:14047760:right",
+      "side": "right",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 14047760,
+      "vfb_id": "VFB_00102228",
+      "vfb_name": "MN10 U2_a1r (L1EM:14047760)",
+      "flybase_type": "[larval DO2 motor neuron of abdominal 1 neuromere](FBbt_00048726)",
+      "segment": "A1",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "10",
+          "synonym": "DO2",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:14085813:left",
+      "side": "left",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 14085813,
+      "vfb_id": "VFB_00102233",
+      "vfb_name": "MN9 U1_a1l (L1EM:14085813)",
+      "flybase_type": "[larval DO1 motor neuron of abdominal 1 neuromere](FBbt_00002305)",
+      "segment": "A1",
+      "spatial_group": "DL",
+      "target_muscles": [
+        {
+          "number": "9",
+          "synonym": "DO1",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:14088451:left",
+      "side": "left",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 14088451,
+      "vfb_id": "VFB_00102238",
+      "vfb_name": "MN11 (ISN NB3-2)_a1l (L1EM:14088451)",
+      "flybase_type": "[larval DO2 motor neuron of abdominal 1 neuromere](FBbt_00048726)",
+      "segment": "A1",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "11",
+          "synonym": "DO3",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:14199031:left",
+      "side": "left",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 14199031,
+      "vfb_id": "VFB_00102241",
+      "vfb_name": "MN18 (ISN DT1)_a1l (L1EM:14199031)",
+      "flybase_type": "[larval DT1 motor neuron of abdominal 1 neuromere](FBbt_00048761)",
+      "segment": "A1",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "18",
+          "synonym": "DT1",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:16181494:right",
+      "side": "right",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 16181494,
+      "vfb_id": "VFB_00102258",
+      "vfb_name": "MN19 (ISN NB3-2)_a1r (L1EM:16181494)",
+      "flybase_type": "[larval DO4 motor neuron of abdominal 1 neuromere](FBbt_00048747)",
+      "segment": "A1",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "19",
+          "synonym": "DO4",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:16433395:left",
+      "side": "left",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 16433395,
+      "vfb_id": "VFB_00102263",
+      "vfb_name": "MN20 ISN_a1l (L1EM:16433395)",
+      "flybase_type": "[larval DO5 motor neuron of abdominal 1 neuromere](FBbt_00048754)",
+      "segment": "A1",
+      "spatial_group": "DO",
+      "target_muscles": [
+        {
+          "number": "20",
+          "synonym": "DO5",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "node_id": "motor_identity:16713121:right",
+      "side": "right",
+      "neuron_class": "A1_motor_identity",
+      "path_role": "A1_motor_neuron",
+      "catmaid_skeleton_id": 16713121,
+      "vfb_id": "VFB_00102266",
+      "vfb_name": "MN21/22 (RF:LT1/LT2) LT2_a1r   (L1EM:16713121)",
+      "flybase_type": "[larval neuron](FBbt_00001446)",
+      "segment": "A1",
+      "spatial_group": "T",
+      "target_muscles": [
+        {
+          "number": "21",
+          "synonym": "LT1",
+          "evidence": "listed"
+        },
+        {
+          "number": "22",
+          "synonym": "LT2",
+          "evidence": "listed"
+        }
+      ],
+      "motor_map_source_id": "zarin_2019_table1",
+      "synaptic_effect": null,
+      "synaptic_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    }
+  ],
+  "connections": [
+    {
+      "pre": "left:A03o_A1",
+      "post": "motor_identity:8026224:left",
+      "synaptic_contacts": 1,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "left:A03o_A1",
+      "post": "motor_identity:10649843:left",
+      "synaptic_contacts": 1,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "left:A03o_A1",
+      "post": "motor_identity:14085813:left",
+      "synaptic_contacts": 2,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "left:A03o_A1",
+      "post": "motor_identity:14088451:left",
+      "synaptic_contacts": 1,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "left:A03o_A1",
+      "post": "motor_identity:14199031:left",
+      "synaptic_contacts": 1,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "left:A03o_A1",
+      "post": "motor_identity:16433395:left",
+      "synaptic_contacts": 1,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "right:A03o_A1",
+      "post": "motor_identity:4121534:right",
+      "synaptic_contacts": 1,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "right:A03o_A1",
+      "post": "motor_identity:4488976:right",
+      "synaptic_contacts": 4,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "right:A03o_A1",
+      "post": "motor_identity:4535767:right",
+      "synaptic_contacts": 2,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "right:A03o_A1",
+      "post": "motor_identity:4881629:right",
+      "synaptic_contacts": 3,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "right:A03o_A1",
+      "post": "motor_identity:5085455:right",
+      "synaptic_contacts": 2,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "right:A03o_A1",
+      "post": "motor_identity:14047760:right",
+      "synaptic_contacts": 4,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "right:A03o_A1",
+      "post": "motor_identity:14085813:left",
+      "synaptic_contacts": 1,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "right:A03o_A1",
+      "post": "motor_identity:16181494:right",
+      "synaptic_contacts": 1,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "pre": "right:A03o_A1",
+      "post": "motor_identity:16713121:right",
+      "synaptic_contacts": 1,
+      "connection_compartment": "axon_to_dendrite",
+      "confidence": 5,
+      "physiological_effect": null,
+      "physiological_effect_provenance": "unknown",
+      "provenance": "MEASURED_PUBLISHED"
+    }
+  ],
+  "limitations": [
+    "This is one L1EM specimen: 14 of the 56 mapped A1 motor identities receive at least one observed A03o contact.",
+    "The observed 15 edges and 26 contacts are sparse and asymmetric; missing left/right homolog edges are not synthesized.",
+    "Structural contacts do not establish physiological effect sign, current, delay, release probability, or recruitment strength.",
+    "A1 topology is not copied to A2-A7, and this motor branch alone cannot produce or validate a full-body locomotor wave.",
+    "Published motor-to-muscle identities do not provide individual 3D attachment coordinates, CSA, line of action, or force gain."
+  ],
+  "release_validated": false
+}

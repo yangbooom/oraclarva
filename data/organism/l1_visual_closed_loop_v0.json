@@ -9,6 +9,7 @@
     "published_l1_lon_synaptic_contacts",
     "fitted_effects_for_published_contacts",
     "published_polp_to_lhn_to_cpf_to_a03o_a1_contacts",
+    "published_a03o_a1_to_motor_identity_contacts",
     "fitted_a03o_a1_to_segmental_core_bridge",
     "spatial_neural_dynamics",
     "motor_pools",
@@ -34,6 +35,16 @@
     "expected_new_runtime_compartments": 6,
     "expected_axon_to_dendrite_connection_pairs": 8,
     "expected_axon_to_dendrite_synaptic_contacts": 98,
+    "provenance": "MEASURED_PUBLISHED"
+  },
+  "a03o_motor_connectome": {
+    "model_id": "dmel_l1_a03o_motor_path_v0",
+    "source_id": "vfb_l1em_a03o_motor_path",
+    "article_doi": "10.1126/science.add9330",
+    "motor_map_doi": "10.7554/eLife.51781",
+    "expected_identified_a1_motor_neurons": 14,
+    "expected_axon_to_dendrite_connection_pairs": 15,
+    "expected_axon_to_dendrite_synaptic_contacts": 26,
     "provenance": "MEASURED_PUBLISHED"
   },
   "phototransduction": {
@@ -109,6 +120,18 @@
       "CPf_DN": 7.5e-10
     }
   },
+  "a03o_motor_path_dynamics": {
+    "effect_by_presynaptic_class": {
+      "A03o_A1": "excitatory"
+    },
+    "current_per_synaptic_contact_a": 1e-09,
+    "effect_provenance": "MODEL_FITTED",
+    "limitations": [
+      "The 15 A03o-to-A1-motor edges and 26 contacts are measured structural observations; the executable effect sign and current are fitted.",
+      "A single fitted current per contact does not claim measured conductance, release probability, delay, or recruitment strength.",
+      "The 14 motor identities are an observed diagnostic branch and do not replace the parallel fitted A03o-to-full-body segmental bridge."
+    ]
+  },
   "a03o_segmental_bridge": {
     "readout_class": "A03o_A1",
     "readout_segment": "A1",
@@ -129,8 +152,9 @@
     "direct_dorsoventral_difference_gain": 0.0,
     "provenance": "MODEL_FITTED",
     "limitations": [
-      "The fitted bridge now starts only after the identified A03o premotor pair in A1; it is not described as a measured A03o-to-A27h synapse.",
-      "The bridge spreads the A1 observation into the generic A1-A7 spatial locomotor core because a complete public all-segment continuation has not been identified.",
+      "The full-body fitted bridge remains a parallel branch from the identified A03o pair; it does not route motor-neuron output back into an upstream premotor core.",
+      "A separate observed branch now executes 15 A03o-to-14-A1-motor structural edges, but A1-only coverage cannot drive or justify an A2-A7 locomotor wave.",
+      "The bridge spreads the A1 premotor observation into the generic A1-A7 spatial locomotor core because a complete public all-segment continuation has not been identified.",
       "The crossed lateral mapping uses L2 light-avoidance direction as a response prior only; it is not a measured A03o motor effect.",
       "Side activity gains are diagnostic calibration values and not measured hemispheric gains.",
       "Dorsal and ventral bridge currents receive the same common visual drive; vertical steering cannot be attributed to a fabricated dorsal-versus-ventral Bolwig-organ comparison."
@@ -157,13 +181,15 @@
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
-    "objective": "Exercise the published bilateral L1 LON and pOLP-to-A03o structural path in a stable, nonsaturated causal loop and produce opposite-signed steering under mirrored lateral light fields while retaining the published specimen asymmetry.",
-    "uncertainty": "All phototransduction values, LIF contact currents, assumed synaptic effects, A03o activity filtering, and the A1-to-segmental bridge are calibration parameters rather than measured L1 constants."
+    "objective": "Exercise the published bilateral L1 LON, pOLP-to-A03o, and A03o-to-14-A1-motor structural paths in a stable causal loop while producing opposite-signed steering through a separately declared fitted full-body branch.",
+    "uncertainty": "All phototransduction values, LIF contact currents and assumed effects, A03o activity filtering, and the parallel A1-to-segmental bridge are calibration parameters rather than measured L1 constants."
   },
   "limitations": [
-    "This is a connectome-driven LON-to-A03o-to-body research approximation, not validated natural L1 phototaxis.",
-    "The imported path identifies one bilateral structural route to an A1 premotor pair, not the full visual response circuit or complete route to motor neurons.",
-    "The 2-versus-11 CPf-to-A03o contact asymmetry is one specimen observation and is not a population hemispheric constant.",
+    "This is a connectome-driven LON-to-A03o research approximation with an observed A1 motor branch, not validated natural L1 phototaxis.",
+    "The imported topology identifies 14 of 56 mapped A1 motor identities; it is not the complete motor pathway or an all-segment connectome.",
+    "The A03o-to-A1-motor branch is diagnostic only for individual identities because 3D attachment geometry and force gains are unavailable.",
+    "Full-body motion remains on the explicitly fitted parallel A03o-to-segmental branch; motor outputs are never fed back into an upstream premotor layer.",
+    "The 2-versus-11 CPf-to-A03o and sparse A03o-to-MN asymmetries are one-specimen observations, not population hemispheric constants.",
     "The validation light field and virtual bilateral sample locations are model fixtures, not reconstructed natural illumination or measured Bolwig-organ coordinates.",
     "The executed topology contains no action command, target selector, finite-state machine, behavior tree, or policy network."
   ],

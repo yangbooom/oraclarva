@@ -29,6 +29,19 @@
       "local_artifact": "data/sources/vfb_l1em_visual_descending_path/vfb-l1em-api-snapshot-2026-08-31.tar",
       "sha256": "0f558cf16f30b58b760ac7053abb7cd5ccb64243de36492c937760c5642e465b",
       "provenance": "MEASURED_PUBLISHED"
+    },
+    "a03o_motor": {
+      "source_id": "vfb_l1em_a03o_motor_path",
+      "article_doi": "10.1126/science.add9330",
+      "motor_map_doi": "10.7554/eLife.51781",
+      "vfb_query_api": "https://v3-cached.virtualflybrain.org/",
+      "catmaid_instance": "l1em",
+      "catmaid_project_id": 1,
+      "retrieved_at": "2026-08-31",
+      "license": "CC BY-SA 4.0",
+      "local_artifact": "data/sources/vfb_l1em_a03o_motor_path/vfb-l1em-a03o-motor-api-snapshot-2026-08-31.tar",
+      "sha256": "07dcc865c82ebeff4e8051a7a8f6994c3f8400cdf7c6fa722f65d88a5a2e571e",
+      "provenance": "MEASURED_PUBLISHED"
     }
   },
   "published_connectome_summary": {
@@ -59,6 +72,23 @@
       "new_runtime_compartments": 6,
       "axon_to_dendrite_connection_pairs": 8,
       "axon_to_dendrite_synaptic_contacts": 98
+    },
+    "a03o_motor": {
+      "queried_a03o_neurons": 2,
+      "identified_a1_motor_neurons": 14,
+      "a1_motor_map_denominator": 56,
+      "axon_to_dendrite_connection_pairs": 15,
+      "axon_to_dendrite_synaptic_contacts": 26,
+      "unique_target_muscle_numbers": 13,
+      "motor_neurons_by_side": {
+        "left": 6,
+        "right": 8
+      },
+      "motor_neurons_by_spatial_group": {
+        "DL": 5,
+        "DO": 5,
+        "T": 4
+      }
     }
   },
   "phototransduction": {
@@ -134,6 +164,18 @@
       "CPf_DN": 7.5e-10
     }
   },
+  "a03o_motor_path_dynamics": {
+    "effect_by_presynaptic_class": {
+      "A03o_A1": "excitatory"
+    },
+    "current_per_synaptic_contact_a": 1e-09,
+    "effect_provenance": "MODEL_FITTED",
+    "limitations": [
+      "The 15 A03o-to-A1-motor edges and 26 contacts are measured structural observations; the executable effect sign and current are fitted.",
+      "A single fitted current per contact does not claim measured conductance, release probability, delay, or recruitment strength.",
+      "The 14 motor identities are an observed diagnostic branch and do not replace the parallel fitted A03o-to-full-body segmental bridge."
+    ]
+  },
   "a03o_segmental_bridge": {
     "readout_class": "A03o_A1",
     "readout_segment": "A1",
@@ -154,8 +196,9 @@
     "direct_dorsoventral_difference_gain": 0.0,
     "provenance": "MODEL_FITTED",
     "limitations": [
-      "The fitted bridge now starts only after the identified A03o premotor pair in A1; it is not described as a measured A03o-to-A27h synapse.",
-      "The bridge spreads the A1 observation into the generic A1-A7 spatial locomotor core because a complete public all-segment continuation has not been identified.",
+      "The full-body fitted bridge remains a parallel branch from the identified A03o pair; it does not route motor-neuron output back into an upstream premotor core.",
+      "A separate observed branch now executes 15 A03o-to-14-A1-motor structural edges, but A1-only coverage cannot drive or justify an A2-A7 locomotor wave.",
+      "The bridge spreads the A1 premotor observation into the generic A1-A7 spatial locomotor core because a complete public all-segment continuation has not been identified.",
       "The crossed lateral mapping uses L2 light-avoidance direction as a response prior only; it is not a measured A03o motor effect.",
       "Side activity gains are diagnostic calibration values and not measured hemispheric gains.",
       "Dorsal and ventral bridge currents receive the same common visual drive; vertical steering cannot be attributed to a fabricated dorsal-versus-ventral Bolwig-organ comparison."
@@ -186,17 +229,20 @@
       "lateral_gradient_sign": 1.0,
       "lesion_node_ids": [],
       "summary": {
-        "visual_neuron_compartments": 66,
+        "visual_neuron_compartments": 80,
         "identified_descending_neurons": 10,
-        "published_connection_pairs": 430,
+        "identified_a1_motor_neurons": 14,
+        "published_connection_pairs": 445,
         "published_descending_connection_pairs": 8,
-        "published_synaptic_contacts": 3395,
+        "published_synaptic_contacts": 3421,
         "published_descending_synaptic_contacts": 98,
-        "executed_connection_pairs": 376,
-        "executed_synaptic_contacts": 3133,
+        "published_motor_connection_pairs": 15,
+        "published_motor_synaptic_contacts": 26,
+        "executed_connection_pairs": 391,
+        "executed_synaptic_contacts": 3159,
         "downstream_spatial_neurons": 168,
         "downstream_spatial_synapses": 188,
-        "visual_spikes": 1410,
+        "visual_spikes": 3336,
         "downstream_spikes": 7048,
         "bridge_stimulus_min": 0.0,
         "bridge_stimulus_max": 0.808245655,
@@ -213,6 +259,7 @@
         "lateral_horn_neuron": 0.057,
         "cpf_descending_neuron": 0.061,
         "a03o_a1_premotor": 0.062,
+        "a1_motor_identity_branch": 0.063,
         "fitted_a03o_segmental_bridge": 0.071,
         "a7_premotor": 0.074,
         "a7_motor": 0.077
@@ -383,13 +430,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 0,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -568,13 +617,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -753,13 +804,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -938,13 +991,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 1,
               "right:dn": 2,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 50
             },
             "bridge_activity": {
               "left": 0.0,
@@ -1123,13 +1178,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 3,
               "right:lhn": 3,
               "right:dn": 2,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 35
             },
             "bridge_activity": {
               "left": 0.0,
@@ -1308,13 +1365,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 1,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 47
             },
             "bridge_activity": {
               "left": 0.0,
@@ -1493,13 +1552,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 18,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 42
             },
             "bridge_activity": {
               "left": 0.0,
@@ -1678,13 +1739,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 53
             },
             "bridge_activity": {
               "left": 0.0,
@@ -1863,13 +1926,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 3
+              "right:a03o": 3,
+              "right:a1_mn": 36
             },
             "bridge_activity": {
               "left": 0.0,
@@ -2048,13 +2113,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 2,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 19
             },
             "bridge_activity": {
               "left": 0.0,
@@ -2233,13 +2300,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 52
             },
             "bridge_activity": {
               "left": 0.0,
@@ -2418,13 +2487,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 47
             },
             "bridge_activity": {
               "left": 0.0,
@@ -2603,13 +2674,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 55
             },
             "bridge_activity": {
               "left": 0.0,
@@ -2788,13 +2861,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 47
             },
             "bridge_activity": {
               "left": 0.0,
@@ -2973,13 +3048,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 47
             },
             "bridge_activity": {
               "left": 0.0,
@@ -3158,13 +3235,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 7
+              "right:a03o": 7,
+              "right:a1_mn": 51
             },
             "bridge_activity": {
               "left": 0.0,
@@ -3343,13 +3422,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 52
             },
             "bridge_activity": {
               "left": 0.0,
@@ -3528,13 +3609,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 55
             },
             "bridge_activity": {
               "left": 0.0,
@@ -3713,13 +3796,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 39
             },
             "bridge_activity": {
               "left": 0.0,
@@ -3898,13 +3983,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 50
             },
             "bridge_activity": {
               "left": 0.0,
@@ -4083,13 +4170,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 44
             },
             "bridge_activity": {
               "left": 0.0,
@@ -4268,13 +4357,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 55
             },
             "bridge_activity": {
               "left": 0.0,
@@ -4453,13 +4544,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 1
             },
             "bridge_activity": {
               "left": 0.0,
@@ -4638,13 +4731,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 3,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 39
             },
             "bridge_activity": {
               "left": 0.0,
@@ -4823,13 +4918,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 3
+              "right:a03o": 3,
+              "right:a1_mn": 40
             },
             "bridge_activity": {
               "left": 0.0,
@@ -5008,13 +5105,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 1
+              "right:a03o": 1,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -5193,13 +5292,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 7
+              "right:a03o": 7,
+              "right:a1_mn": 60
             },
             "bridge_activity": {
               "left": 0.0,
@@ -5378,13 +5479,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 2,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 1
+              "right:a03o": 1,
+              "right:a1_mn": 22
             },
             "bridge_activity": {
               "left": 0.0,
@@ -5563,13 +5666,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 2,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 23
             },
             "bridge_activity": {
               "left": 0.0,
@@ -5748,13 +5853,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 45
             },
             "bridge_activity": {
               "left": 0.0,
@@ -5933,13 +6040,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 37
             },
             "bridge_activity": {
               "left": 0.0,
@@ -6118,13 +6227,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 7
+              "right:a03o": 7,
+              "right:a1_mn": 58
             },
             "bridge_activity": {
               "left": 0.0,
@@ -6303,13 +6414,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 10
             },
             "bridge_activity": {
               "left": 0.0,
@@ -6488,13 +6601,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 32
             },
             "bridge_activity": {
               "left": 0.0,
@@ -6673,13 +6788,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 47
             },
             "bridge_activity": {
               "left": 0.0,
@@ -6858,13 +6975,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 39
             },
             "bridge_activity": {
               "left": 0.0,
@@ -7043,13 +7162,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 53
             },
             "bridge_activity": {
               "left": 0.0,
@@ -7228,13 +7349,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 2
             },
             "bridge_activity": {
               "left": 0.0,
@@ -7413,13 +7536,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 43
             },
             "bridge_activity": {
               "left": 0.0,
@@ -7598,13 +7723,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 41
             },
             "bridge_activity": {
               "left": 0.0,
@@ -7783,13 +7910,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 3,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 5
+              "right:a03o": 5,
+              "right:a1_mn": 44
             },
             "bridge_activity": {
               "left": 0.0,
@@ -7968,13 +8097,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 45
             },
             "bridge_activity": {
               "left": 0.0,
@@ -8153,13 +8284,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -8338,13 +8471,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 2,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 50
             },
             "bridge_activity": {
               "left": 0.0,
@@ -8523,13 +8658,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 4
+              "right:a03o": 4,
+              "right:a1_mn": 44
             },
             "bridge_activity": {
               "left": 0.0,
@@ -8708,13 +8845,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 7
+              "right:a03o": 7,
+              "right:a1_mn": 47
             },
             "bridge_activity": {
               "left": 0.0,
@@ -8893,13 +9032,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 3,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 2
+              "right:a03o": 2,
+              "right:a1_mn": 32
             },
             "bridge_activity": {
               "left": 0.0,
@@ -9078,13 +9219,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -9263,13 +9406,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -9448,13 +9593,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -9633,13 +9780,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 4,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 6
+              "right:a03o": 6,
+              "right:a1_mn": 43
             },
             "bridge_activity": {
               "left": 0.0,
@@ -9660,17 +9809,20 @@
       "lateral_gradient_sign": -1.0,
       "lesion_node_ids": [],
       "summary": {
-        "visual_neuron_compartments": 66,
+        "visual_neuron_compartments": 80,
         "identified_descending_neurons": 10,
-        "published_connection_pairs": 430,
+        "identified_a1_motor_neurons": 14,
+        "published_connection_pairs": 445,
         "published_descending_connection_pairs": 8,
-        "published_synaptic_contacts": 3395,
+        "published_synaptic_contacts": 3421,
         "published_descending_synaptic_contacts": 98,
-        "executed_connection_pairs": 376,
-        "executed_synaptic_contacts": 3133,
+        "published_motor_connection_pairs": 15,
+        "published_motor_synaptic_contacts": 26,
+        "executed_connection_pairs": 391,
+        "executed_synaptic_contacts": 3159,
         "downstream_spatial_neurons": 168,
         "downstream_spatial_synapses": 188,
-        "visual_spikes": 1119,
+        "visual_spikes": 1244,
         "downstream_spikes": 2296,
         "bridge_stimulus_min": 0.0,
         "bridge_stimulus_max": 0.116137357,
@@ -9687,6 +9839,7 @@
         "lateral_horn_neuron": 0.047,
         "cpf_descending_neuron": 0.05,
         "a03o_a1_premotor": 0.054,
+        "a1_motor_identity_branch": 0.057,
         "fitted_a03o_segmental_bridge": 0.129,
         "a7_premotor": 0.132,
         "a7_motor": 0.135
@@ -9857,13 +10010,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 0,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -10042,13 +10197,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -10227,13 +10384,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.093941306,
@@ -10412,13 +10571,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.064564853,
@@ -10597,13 +10758,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.044374731,
@@ -10782,13 +10945,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.102751012,
@@ -10967,13 +11132,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.070619669,
@@ -11152,13 +11319,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.11900495,
@@ -11337,13 +11506,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.081790827,
@@ -11522,13 +11693,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.133126595,
@@ -11707,13 +11880,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.181980223,
@@ -11892,13 +12067,15 @@
               "left:lhn": 1,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.125073056,
@@ -12077,13 +12254,15 @@
               "left:lhn": 0,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.159122934,
@@ -12262,13 +12441,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.197613176,
@@ -12447,13 +12628,15 @@
               "left:lhn": 1,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.135817418,
@@ -12632,13 +12815,15 @@
               "left:lhn": 0,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.166507418,
@@ -12817,13 +13002,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.202688453,
@@ -13002,13 +13189,15 @@
               "left:lhn": 1,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.139305601,
@@ -13187,13 +13376,15 @@
               "left:lhn": 0,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.168904809,
@@ -13372,13 +13563,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.204336155,
@@ -13557,13 +13750,15 @@
               "left:lhn": 1,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.140438048,
@@ -13742,13 +13937,15 @@
               "left:lhn": 0,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.169683128,
@@ -13927,13 +14124,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.204871085,
@@ -14112,13 +14311,15 @@
               "left:lhn": 1,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.1408057,
@@ -14297,13 +14498,15 @@
               "left:lhn": 0,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.169935811,
@@ -14482,13 +14685,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.20956941,
@@ -14667,13 +14872,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.144034808,
@@ -14852,13 +15059,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.178845201,
@@ -15037,13 +15246,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.22291839,
@@ -15222,13 +15433,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.153209419,
@@ -15407,13 +15620,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.191369989,
@@ -15592,13 +15807,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.131526542,
@@ -15777,13 +15994,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.164478604,
@@ -15962,13 +16181,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.20581873,
@@ -16147,13 +16368,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.141457006,
@@ -16332,13 +16555,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.177073506,
@@ -16517,13 +16742,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.221700722,
@@ -16702,13 +16929,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.152372529,
@@ -16887,13 +17116,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.190794803,
@@ -17072,13 +17303,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.131131223,
@@ -17257,13 +17490,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.164206906,
@@ -17442,13 +17677,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.205631994,
@@ -17627,13 +17864,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.141328665,
@@ -17812,13 +18051,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.176985298,
@@ -17997,13 +18238,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.221640098,
@@ -18182,13 +18425,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.152330863,
@@ -18367,13 +18612,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 6,
               "right:Rh5-PR": 11,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.190766167,
@@ -18552,13 +18799,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 7,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.131111541,
@@ -18737,13 +18986,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.164193379,
@@ -18922,13 +19173,15 @@
               "left:lhn": 1,
               "left:dn": 1,
               "left:a03o": 1,
+              "left:a1_mn": 1,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.209167791,
@@ -19107,13 +19360,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 5,
               "right:Rh5-PR": 6,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.14375878,
@@ -19137,14 +19392,17 @@
         "right:A03o_A1"
       ],
       "summary": {
-        "visual_neuron_compartments": 66,
+        "visual_neuron_compartments": 80,
         "identified_descending_neurons": 10,
-        "published_connection_pairs": 430,
+        "identified_a1_motor_neurons": 14,
+        "published_connection_pairs": 445,
         "published_descending_connection_pairs": 8,
-        "published_synaptic_contacts": 3395,
+        "published_synaptic_contacts": 3421,
         "published_descending_synaptic_contacts": 98,
-        "executed_connection_pairs": 376,
-        "executed_synaptic_contacts": 3133,
+        "published_motor_connection_pairs": 15,
+        "published_motor_synaptic_contacts": 26,
+        "executed_connection_pairs": 391,
+        "executed_synaptic_contacts": 3159,
         "downstream_spatial_neurons": 168,
         "downstream_spatial_synapses": 188,
         "visual_spikes": 1669,
@@ -19164,6 +19422,7 @@
         "lateral_horn_neuron": 0.057,
         "cpf_descending_neuron": 0.061,
         "a03o_a1_premotor": null,
+        "a1_motor_identity_branch": null,
         "fitted_a03o_segmental_bridge": null,
         "a7_premotor": null,
         "a7_motor": null
@@ -19334,13 +19593,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 0,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -19519,13 +19780,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -19704,13 +19967,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -19889,13 +20154,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 1,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -20074,13 +20341,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 3,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -20259,13 +20528,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -20444,13 +20715,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 18,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -20629,13 +20902,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -20814,13 +21089,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 1,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -20999,13 +21276,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -21184,13 +21463,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 1,
               "right:lhn": 2,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -21369,13 +21650,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -21554,13 +21837,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -21739,13 +22024,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 18,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -21924,13 +22211,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -22109,13 +22398,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -22294,13 +22585,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -22479,13 +22772,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -22664,13 +22959,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 3,
               "right:dn": 4,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -22849,13 +23146,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 1,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -23034,13 +23333,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 18,
               "right:Rh6-PR": 0,
               "right:local": 2,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -23219,13 +23520,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 3,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -23404,13 +23707,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -23589,13 +23894,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 3,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -23774,13 +24081,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -23959,13 +24268,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -24144,13 +24455,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -24329,13 +24642,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 18,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -24514,13 +24829,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -24699,13 +25016,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 1,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -24884,13 +25203,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -25069,13 +25390,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 1,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -25254,13 +25577,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -25439,13 +25764,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -25624,13 +25951,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 18,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -25809,13 +26138,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 0,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -25994,13 +26325,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 3,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -26179,13 +26512,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 0,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -26364,13 +26699,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 2,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -26549,13 +26886,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 1,
               "right:projection": 1,
               "right:lhn": 1,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -26734,13 +27073,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 3,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -26919,13 +27260,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 18,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -27104,13 +27447,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -27289,13 +27634,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 2,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -27474,13 +27821,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 3,
               "right:dn": 2,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -27659,13 +28008,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 1,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -27844,13 +28195,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -28029,13 +28382,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 1,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -28214,13 +28569,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 18,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 2,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -28399,13 +28756,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 0,
               "right:local": 0,
               "right:projection": 2,
               "right:lhn": 0,
               "right:dn": 0,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -28584,13 +28943,15 @@
               "left:lhn": 0,
               "left:dn": 0,
               "left:a03o": 0,
+              "left:a1_mn": 0,
               "right:Rh5-PR": 12,
               "right:Rh6-PR": 10,
               "right:local": 3,
               "right:projection": 1,
               "right:lhn": 3,
               "right:dn": 3,
-              "right:a03o": 0
+              "right:a03o": 0,
+              "right:a1_mn": 0
             },
             "bridge_activity": {
               "left": 0.0,
@@ -28608,13 +28969,16 @@
     }
   ],
   "limitations": [
-    "This is a connectome-driven LON-to-A03o-to-body research approximation, not validated natural L1 phototaxis.",
-    "The imported path identifies one bilateral structural route to an A1 premotor pair, not the full visual response circuit or complete route to motor neurons.",
-    "The 2-versus-11 CPf-to-A03o contact asymmetry is one specimen observation and is not a population hemispheric constant.",
+    "This is a connectome-driven LON-to-A03o research approximation with an observed A1 motor branch, not validated natural L1 phototaxis.",
+    "The imported topology identifies 14 of 56 mapped A1 motor identities; it is not the complete motor pathway or an all-segment connectome.",
+    "The A03o-to-A1-motor branch is diagnostic only for individual identities because 3D attachment geometry and force gains are unavailable.",
+    "Full-body motion remains on the explicitly fitted parallel A03o-to-segmental branch; motor outputs are never fed back into an upstream premotor layer.",
+    "The 2-versus-11 CPf-to-A03o and sparse A03o-to-MN asymmetries are one-specimen observations, not population hemispheric constants.",
     "The validation light field and virtual bilateral sample locations are model fixtures, not reconstructed natural illumination or measured Bolwig-organ coordinates.",
     "The executed topology contains no action command, target selector, finite-state machine, behavior tree, or policy network.",
     "The diagnostic renderer reads these checked physical-node frames and never authors body motion.",
     "The intact left/right scenarios test causal sign reversal; their near balance is fitted and is not held-out behavioral validation.",
+    "The observed A1 motor identities form a diagnostic branch; full-body motion remains on the parallel fitted A03o bridge.",
     "The A03o pair lesion is a neural intervention, not a fallback action or scripted stop command."
   ]
 }
