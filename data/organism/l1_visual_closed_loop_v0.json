@@ -10,6 +10,9 @@
     "fitted_effects_for_published_contacts",
     "published_polp_to_lhn_to_cpf_to_a03o_a1_contacts",
     "published_a03o_a1_to_motor_identity_contacts",
+    "anatomy_derived_cpf_to_a03o_a2_a6_topology",
+    "anatomy_derived_a03o_a2_a6_to_motor_target_topology",
+    "fitted_effects_for_anatomy_derived_projection",
     "fitted_a03o_a1_to_segmental_core_bridge",
     "spatial_neural_dynamics",
     "motor_pools",
@@ -46,6 +49,18 @@
     "expected_axon_to_dendrite_connection_pairs": 15,
     "expected_axon_to_dendrite_synaptic_contacts": 26,
     "provenance": "MEASURED_PUBLISHED"
+  },
+  "a03o_segmental_projection": {
+    "model_id": "dmel_l1_a03o_segmental_projection_v0",
+    "source_id": "vfb_l1em_a03o_segmental_audit",
+    "expected_derived_segments": 5,
+    "expected_derived_a03o_homologs": 10,
+    "expected_derived_motor_target_channels": 130,
+    "expected_projection_edges": 140,
+    "blocked_segments": [
+      "A7"
+    ],
+    "provenance": "ANATOMY_DERIVED"
   },
   "phototransduction": {
     "field_unit": "W_m-2",
@@ -132,6 +147,20 @@
       "The 14 motor identities are an observed diagnostic branch and do not replace the parallel fitted A03o-to-full-body segmental bridge."
     ]
   },
+  "a03o_segmental_projection_dynamics": {
+    "effect_by_connection_role": {
+      "cpf_to_derived_a03o": "excitatory",
+      "derived_a03o_to_motor_target": "excitatory"
+    },
+    "cpf_to_a03o_current_a": 3e-09,
+    "a03o_to_motor_total_current_a": 2.6e-08,
+    "provenance": "MODEL_FITTED",
+    "limitations": [
+      "The 140 executable edges have ANATOMY_DERIVED topology; neither physiological effect nor current is measured.",
+      "A1 contact mass is used only as a normalized target-distribution prior and is not repeated as A2-A6 synaptic contacts.",
+      "All derived homolog and motor-target compartments are diagnostics and do not replace the parallel fitted body bridge."
+    ]
+  },
   "a03o_segmental_bridge": {
     "readout_class": "A03o_A1",
     "readout_segment": "A1",
@@ -153,8 +182,8 @@
     "provenance": "MODEL_FITTED",
     "limitations": [
       "The full-body fitted bridge remains a parallel branch from the identified A03o pair; it does not route motor-neuron output back into an upstream premotor core.",
-      "A separate observed branch now executes 15 A03o-to-14-A1-motor structural edges, but A1-only coverage cannot drive or justify an A2-A7 locomotor wave.",
-      "The bridge spreads the A1 premotor observation into the generic A1-A7 spatial locomotor core because a complete public all-segment continuation has not been identified.",
+      "The observed A1 motor branch and anatomy-derived A2-A6 proxy branch remain diagnostic; A7, segment-specific MN/NMJ identities, and individual mechanics are missing.",
+      "The bridge still spreads the observed A1 premotor activity into the generic A1-A7 spatial locomotor core as a fitted approximation, not as an all-segment anatomical connection.",
       "The crossed lateral mapping uses L2 light-avoidance direction as a response prior only; it is not a measured A03o motor effect.",
       "Side activity gains are diagnostic calibration values and not measured hemispheric gains.",
       "Dorsal and ventral bridge currents receive the same common visual drive; vertical steering cannot be attributed to a fabricated dorsal-versus-ventral Bolwig-organ comparison."
@@ -181,14 +210,15 @@
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
-    "objective": "Exercise the published bilateral L1 LON, pOLP-to-A03o, and A03o-to-14-A1-motor structural paths in a stable causal loop while producing opposite-signed steering through a separately declared fitted full-body branch.",
-    "uncertainty": "All phototransduction values, LIF contact currents and assumed effects, A03o activity filtering, and the parallel A1-to-segmental bridge are calibration parameters rather than measured L1 constants."
+    "objective": "Exercise the published bilateral L1 LON-to-A03o(A1) and sparse A1 motor branch, plus an explicit ANATOMY_DERIVED CPf-to-A03o-to-motor-target diagnostic projection in A2-A6, while retaining the separately fitted body bridge.",
+    "uncertainty": "All phototransduction values, LIF effects/currents, derived-projection dynamics, A03o activity filtering, and the parallel A1-to-segmental body bridge are calibration parameters rather than measured L1 constants."
   },
   "limitations": [
-    "This is a connectome-driven LON-to-A03o research approximation with an observed A1 motor branch, not validated natural L1 phototaxis.",
-    "The imported topology identifies 14 of 56 mapped A1 motor identities; it is not the complete motor pathway or an all-segment connectome.",
-    "The A03o-to-A1-motor branch is diagnostic only for individual identities because 3D attachment geometry and force gains are unavailable.",
-    "Full-body motion remains on the explicitly fitted parallel A03o-to-segmental branch; motor outputs are never fed back into an upstream premotor layer.",
+    "This is a connectome-driven LON-to-A03o research approximation with an observed A1 motor branch and an ANATOMY_DERIVED A2-A6 diagnostic projection, not validated natural L1 phototaxis.",
+    "Only 14 of 56 mapped A1 motor identities and 15 A03o-to-MN edges are specimen observations; A2-A6 proxy nodes have no public skeleton IDs or segmental contact counts.",
+    "The 130 derived motor-target channels identify supported muscle targets but not segment-specific motor neurons, NMJs, 3D attachments, CSA, or force gains.",
+    "A7 remains blocked by the public A03o instance audit and current terminal-segment muscle atlas gate.",
+    "Full-body motion remains on the explicitly fitted parallel A03o(A1)-to-segmental branch; diagnostic motor outputs are never fed backward into an upstream premotor layer.",
     "The 2-versus-11 CPf-to-A03o and sparse A03o-to-MN asymmetries are one-specimen observations, not population hemispheric constants.",
     "The validation light field and virtual bilateral sample locations are model fixtures, not reconstructed natural illumination or measured Bolwig-organ coordinates.",
     "The executed topology contains no action command, target selector, finite-state machine, behavior tree, or policy network."

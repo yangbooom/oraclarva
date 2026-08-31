@@ -12,6 +12,7 @@ from oraclarva.visual import (
     L1VisualClosedLoopLarva,
     PHOTORECEPTOR_CLASSES,
     load_a03o_motor_connectome,
+    load_a03o_segmental_projection,
     load_visual_config,
     load_visual_connectome,
     load_visual_descending_connectome,
@@ -83,6 +84,20 @@ def _first_spike_trace(result, connectome) -> dict[str, float | None]:
                 if label.startswith("motor_identity:")
             ]
         ),
+        "a03o_a2_a6_derived": _earliest(
+            [
+                value
+                for label, value in visual.items()
+                if label.startswith("derived:")
+            ]
+        ),
+        "a2_a6_motor_target_derived": _earliest(
+            [
+                value
+                for label, value in visual.items()
+                if label.startswith("derived_motor_target:")
+            ]
+        ),
         "fitted_a03o_segmental_bridge": _earliest(
             [
                 value
@@ -124,6 +139,8 @@ def _window_spike_counts(protocol, frame_index: int) -> dict[str, int]:
         "dn",
         "a03o",
         "a1_mn",
+        "derived_a03o",
+        "derived_mn",
     )
     counts = {
         f"{side}:{group}": 0
@@ -149,6 +166,10 @@ def _window_spike_counts(protocol, frame_index: int) -> dict[str, int]:
                 group = "a03o"
             elif neuron_class == "A1_motor_identity":
                 group = "a1_mn"
+            elif neuron_class == "A03o_homolog_proxy":
+                group = "derived_a03o"
+            elif neuron_class == "segmental_motor_target_proxy":
+                group = "derived_mn"
             else:
                 continue
             counts[f"{side}:{group}"] += 1
@@ -201,6 +222,13 @@ def _summary(result) -> dict[str, Any]:
         "visual_neuron_compartments": result.visual_neuron_compartments,
         "identified_descending_neurons": result.identified_descending_neurons,
         "identified_a1_motor_neurons": result.identified_a1_motor_neurons,
+        "derived_a03o_homologs": result.derived_a03o_homologs,
+        "derived_motor_target_channels": (
+            result.derived_motor_target_channels
+        ),
+        "anatomy_derived_projection_edges": (
+            result.anatomy_derived_projection_edges
+        ),
         "published_connection_pairs": result.published_connection_pairs,
         "published_descending_connection_pairs": (
             result.published_descending_connection_pairs
@@ -240,6 +268,7 @@ def render_trajectory() -> str:
     connectome = load_visual_connectome()
     descending_connectome = load_visual_descending_connectome()
     motor_connectome = load_a03o_motor_connectome()
+    segmental_projection = load_a03o_segmental_projection()
     a03o_pair = visual_node_ids_for_class(
         descending_connectome, "A03o_A1"
     )
@@ -256,6 +285,7 @@ def render_trajectory() -> str:
             connectome=connectome,
             descending_connectome=descending_connectome,
             motor_connectome=motor_connectome,
+            segmental_projection=segmental_projection,
             lesion_node_ids=lesions,
             ground_z_m=None,
             record_visual_frames=True,
@@ -299,16 +329,21 @@ def render_trajectory() -> str:
             "lon": connectome["source"],
             "descending": descending_connectome["source"],
             "a03o_motor": motor_connectome["source"],
+            "a03o_segmental_audit": segmental_projection["source"],
         },
         "published_connectome_summary": {
             "lon": connectome["summary"],
             "descending": descending_connectome["summary"],
             "a03o_motor": motor_connectome["summary"],
+            "a03o_segmental_projection": segmental_projection["summary"],
         },
         "phototransduction": config["phototransduction"],
         "lon_dynamics": config["lon_dynamics"],
         "descending_path_dynamics": config["descending_path_dynamics"],
         "a03o_motor_path_dynamics": config["a03o_motor_path_dynamics"],
+        "a03o_segmental_projection_dynamics": config[
+            "a03o_segmental_projection_dynamics"
+        ],
         "a03o_segmental_bridge": config["a03o_segmental_bridge"],
         "validation_light_field": config["validation_light_field"],
         "scenarios": scenarios,
@@ -318,8 +353,10 @@ def render_trajectory() -> str:
             "and never authors body motion.",
             "The intact left/right scenarios test causal sign reversal; their "
             "near balance is fitted and is not held-out behavioral validation.",
-            "The observed A1 motor identities form a diagnostic branch; "
-            "full-body motion remains on the parallel fitted A03o bridge.",
+            "The observed A1 motor identities and ANATOMY_DERIVED A2-A6 "
+            "motor-target proxies are diagnostic branches; full-body motion "
+            "remains on the parallel fitted A03o bridge.",
+            "A7 remains blocked and has no derived visual motor proxy.",
             "The A03o pair lesion is a neural intervention, not a fallback "
             "action or scripted stop command.",
         ],

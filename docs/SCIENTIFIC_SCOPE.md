@@ -18,9 +18,11 @@ contacts. An audited VFB/L1EM snapshot adds a selected bilateral
 PVL09/pOLP-to-LHN-to-CPf-to-A03o route with eight edges and 98 contacts, reaching
 an annotated A1 premotor pair. Neither source supplies physiological effect
 signs, photoreceptor response constants, an all-segment continuation, or a
-complete route to motor neurons. Those executed quantities remain explicitly
-`MODEL_FITTED`; source graphs retain unknown effects rather than rewriting
-structural contacts as measured excitation or inhibition.
+complete route to motor neurons. A separate A2-A6 projection is explicitly
+`ANATOMY_DERIVED`: its homolog and motor-target proxies have no skeleton IDs,
+its 140 edges have no contact counts, and A7 is blocked. All executable effects
+and currents remain `MODEL_FITTED`; source graphs retain unknown effects rather
+than rewriting structural contacts or derived weights as measured physiology.
 
 ## Provenance labels
 

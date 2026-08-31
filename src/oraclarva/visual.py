@@ -72,6 +72,15 @@ def default_a03o_motor_path() -> Path:
     )
 
 
+def default_a03o_segmental_projection_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "data"
+        / "connectome"
+        / "l1_a03o_segmental_projection_v0.json"
+    )
+
+
 def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
     source = Path(path) if path else default_visual_config_path()
     raw = json.loads(source.read_text(encoding="utf-8"))
@@ -87,6 +96,9 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         "fitted_effects_for_published_contacts",
         "published_polp_to_lhn_to_cpf_to_a03o_a1_contacts",
         "published_a03o_a1_to_motor_identity_contacts",
+        "anatomy_derived_cpf_to_a03o_a2_a6_topology",
+        "anatomy_derived_a03o_a2_a6_to_motor_target_topology",
+        "fitted_effects_for_anatomy_derived_projection",
         "fitted_a03o_a1_to_segmental_core_bridge",
         "spatial_neural_dynamics",
         "motor_pools",
@@ -133,6 +145,27 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         != 26
     ):
         raise ValueError("A03o motor count contract is invalid")
+
+    segmental_projection = raw.get("a03o_segmental_projection", {})
+    if segmental_projection.get("provenance") != "ANATOMY_DERIVED":
+        raise ValueError("A03o segmental projection must remain anatomy-derived")
+    if (
+        segmental_projection.get("model_id")
+        != "dmel_l1_a03o_segmental_projection_v0"
+        or int(segmental_projection.get("expected_derived_segments", 0)) != 5
+        or int(segmental_projection.get("expected_derived_a03o_homologs", 0))
+        != 10
+        or int(
+            segmental_projection.get(
+                "expected_derived_motor_target_channels", 0
+            )
+        )
+        != 130
+        or int(segmental_projection.get("expected_projection_edges", 0))
+        != 140
+        or segmental_projection.get("blocked_segments") != ["A7"]
+    ):
+        raise ValueError("A03o segmental projection count contract is invalid")
 
     transduction = raw.get("phototransduction", {})
     if transduction.get("field_unit") != "W_m-2":
@@ -219,6 +252,22 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
     )
     if not isfinite(motor_current) or motor_current <= 0.0:
         raise ValueError("A03o motor contact current must be positive")
+
+    projection_dynamics = raw.get("a03o_segmental_projection_dynamics", {})
+    if projection_dynamics.get("provenance") != "MODEL_FITTED":
+        raise ValueError("A03o segmental projection effects must remain fitted")
+    if projection_dynamics.get("effect_by_connection_role") != {
+        "cpf_to_derived_a03o": "excitatory",
+        "derived_a03o_to_motor_target": "excitatory",
+    }:
+        raise ValueError("A03o segmental projection effect roles are invalid")
+    for key in (
+        "cpf_to_a03o_current_a",
+        "a03o_to_motor_total_current_a",
+    ):
+        value = float(projection_dynamics.get(key, 0.0))
+        if not isfinite(value) or value <= 0.0:
+            raise ValueError(f"A03o segmental projection {key} must be positive")
 
     bridge = raw.get("a03o_segmental_bridge", {})
     if bridge.get("provenance") != "MODEL_FITTED":
@@ -440,6 +489,126 @@ def load_a03o_motor_connectome(
     return raw
 
 
+def load_a03o_segmental_projection(
+    path: str | Path | None = None,
+) -> dict[str, Any]:
+    source = Path(path) if path else default_a03o_segmental_projection_path()
+    raw = json.loads(source.read_text(encoding="utf-8"))
+    if raw.get("model_id") != "dmel_l1_a03o_segmental_projection_v0":
+        raise ValueError("unexpected A03o segmental projection model")
+    if raw.get("stage") != "L1":
+        raise ValueError("A03o segmental projection must remain L1")
+    source_record = raw.get("source", {})
+    if (
+        source_record.get("source_id")
+        != "vfb_l1em_a03o_segmental_audit"
+        or source_record.get("license") != "CC BY-SA 4.0"
+        or source_record.get("provenance") != "MEASURED_PUBLISHED"
+    ):
+        raise ValueError("A03o segmental audit source contract is invalid")
+    summary = raw.get("summary", {})
+    expected = {
+        "vfb_a03o_label_query_hits": 7,
+        "public_a03o1_instances": 2,
+        "public_a2_a03o1_instances": 0,
+        "derived_segments": 5,
+        "derived_a03o_homologs": 10,
+        "derived_motor_target_channels": 130,
+        "cpf_to_a03o_projection_edges": 10,
+        "a03o_to_motor_projection_edges": 130,
+        "unique_projected_target_muscles": 13,
+        "blocked_segments": 1,
+    }
+    if summary != expected:
+        raise ValueError("A03o segmental projection summary is invalid")
+    audit = raw.get("ontology_audit", {})
+    if (
+        set(audit.get("generic_public_instances", ()))
+        != {"VFB_00100635", "VFB_00100686"}
+        or set(audit.get("a1_public_instances", ()))
+        != {"VFB_00100635", "VFB_00100686"}
+        or audit.get("a2_public_instances") != []
+    ):
+        raise ValueError("A03o public instance boundary is invalid")
+    scope = raw.get("projection_scope", {})
+    segments = ("A2", "A3", "A4", "A5", "A6")
+    if (
+        tuple(scope.get("derived_segments", ())) != segments
+        or scope.get("blocked_segments") != ["A7"]
+        or scope.get("provenance") != "ANATOMY_DERIVED"
+    ):
+        raise ValueError("A03o segmental projection scope is invalid")
+    homologs = raw.get("a03o_homologs", [])
+    homolog_ids = {item.get("node_id") for item in homologs}
+    if len(homologs) != 10 or len(homolog_ids) != 10 or any(
+        item.get("segment") not in segments
+        or item.get("side") not in LON_SIDES
+        or item.get("neuron_class") != "A03o_homolog_proxy"
+        or item.get("catmaid_skeleton_id") is not None
+        or item.get("provenance") != "ANATOMY_DERIVED"
+        for item in homologs
+    ):
+        raise ValueError("derived A03o homolog identities are invalid")
+    targets = raw.get("motor_target_channels", [])
+    target_ids = {item.get("node_id") for item in targets}
+    if len(targets) != 130 or len(target_ids) != 130 or any(
+        item.get("segment") not in segments
+        or item.get("side") not in LON_SIDES
+        or item.get("neuron_class") != "segmental_motor_target_proxy"
+        or item.get("catmaid_skeleton_id") is not None
+        or item.get("provenance") != "ANATOMY_DERIVED"
+        for item in targets
+    ):
+        raise ValueError("derived motor target channels are invalid")
+    connections = raw.get("connections", [])
+    if len(connections) != 140 or any(
+        item.get("synaptic_contacts") is not None
+        or item.get("physiological_effect") is not None
+        or item.get("provenance") != "ANATOMY_DERIVED"
+        or not isfinite(float(item.get("relative_weight", 0.0)))
+        or float(item.get("relative_weight", 0.0)) <= 0.0
+        for item in connections
+    ):
+        raise ValueError("derived A03o segmental connections are invalid")
+    cpf_edges = [
+        item
+        for item in connections
+        if item.get("connection_role") == "cpf_to_derived_a03o"
+    ]
+    motor_edges = [
+        item
+        for item in connections
+        if item.get("connection_role") == "derived_a03o_to_motor_target"
+    ]
+    if (
+        len(cpf_edges) != 10
+        or any(
+            item.get("pre") not in {"left:CPf_DN", "right:CPf_DN"}
+            or item.get("post") not in homolog_ids
+            or float(item["relative_weight"]) != 1.0
+            for item in cpf_edges
+        )
+        or len(motor_edges) != 130
+        or any(
+            item.get("pre") not in homolog_ids
+            or item.get("post") not in target_ids
+            for item in motor_edges
+        )
+    ):
+        raise ValueError("derived A03o segmental edge roles are invalid")
+    for homolog_id in homolog_ids:
+        total = sum(
+            float(item["relative_weight"])
+            for item in motor_edges
+            if item["pre"] == homolog_id
+        )
+        if abs(total - 1.0) > 1e-12:
+            raise ValueError("derived motor weights must sum to one per homolog")
+    if raw.get("release_validated") is not False:
+        raise ValueError("A03o segmental projection cannot be release-validated")
+    return raw
+
+
 def visual_node_ids_for_class(
     connectome: dict[str, Any],
     neuron_class: str,
@@ -565,6 +734,8 @@ class VisualCircuitFrame:
     spiked_neurons: tuple[str, ...]
     a03o_spikes: dict[str, tuple[str, ...]]
     a1_motor_spikes: dict[str, tuple[str, ...]]
+    derived_a03o_spikes: dict[str, tuple[str, ...]]
+    derived_motor_spikes: dict[str, tuple[str, ...]]
     bridge_activity: dict[str, float]
     bridge_stimulus: SpatialStimulus
 
@@ -579,13 +750,21 @@ class VisualCircuitFrame:
                 side: list(values)
                 for side, values in self.a1_motor_spikes.items()
             },
+            "derived_a03o_spikes": {
+                channel: list(values)
+                for channel, values in self.derived_a03o_spikes.items()
+            },
+            "derived_motor_spikes": {
+                channel: list(values)
+                for channel, values in self.derived_motor_spikes.items()
+            },
             "bridge_activity": self.bridge_activity,
             "bridge_stimulus": list(self.bridge_stimulus.values()),
         }
 
 
 class L1VisualCircuitProtocol:
-    """Step published LON-to-A03o and A1 motor contacts plus a fitted branch."""
+    """Step observed and explicitly derived visual-to-motor branches."""
 
     def __init__(
         self,
@@ -595,6 +774,7 @@ class L1VisualCircuitProtocol:
         connectome: dict[str, Any] | None = None,
         descending_connectome: dict[str, Any] | None = None,
         motor_connectome: dict[str, Any] | None = None,
+        segmental_projection: dict[str, Any] | None = None,
         lesion_node_ids: Iterable[str] = (),
         record_frames: bool = False,
     ) -> None:
@@ -604,6 +784,9 @@ class L1VisualCircuitProtocol:
             descending_connectome or load_visual_descending_connectome()
         )
         self.motor_connectome = motor_connectome or load_a03o_motor_connectome()
+        self.segmental_projection = (
+            segmental_projection or load_a03o_segmental_projection()
+        )
         self.transduction = BolwigLightTransduction(field, self.config)
         self.record_frames = record_frames
         self.frames: list[VisualCircuitFrame] = []
@@ -643,6 +826,21 @@ class L1VisualCircuitProtocol:
             merged_index[node_id] = len(merged_neurons)
             merged_neurons.append(neuron)
 
+        for derived_neuron in (
+            self.segmental_projection["a03o_homologs"]
+            + self.segmental_projection["motor_target_channels"]
+        ):
+            node_id = derived_neuron["node_id"]
+            if node_id in merged_index:
+                raise ValueError(f"duplicate derived segmental identity {node_id}")
+            neuron = dict(derived_neuron)
+            neuron["lon_side"] = neuron["side"]
+            neuron["identity"] = node_id
+            neuron["transmitter"] = "unknown"
+            neuron["transmitter_provenance"] = "unknown"
+            merged_index[node_id] = len(merged_neurons)
+            merged_neurons.append(neuron)
+
         self.neurons = tuple(merged_neurons)
         self.labels = tuple(item["node_id"] for item in self.neurons)
         self.index_by_id = {
@@ -651,8 +849,8 @@ class L1VisualCircuitProtocol:
         self.metadata_by_id = {
             item["node_id"]: item for item in self.neurons
         }
-        if len(self.neurons) != 80 or len(self.labels) != len(set(self.labels)):
-            raise ValueError("visual runtime must contain 80 unique compartments")
+        if len(self.neurons) != 220 or len(self.labels) != len(set(self.labels)):
+            raise ValueError("visual runtime must contain 220 unique compartments")
 
         dynamics = self.config["lon_dynamics"]
         effects = dynamics["effect_by_presynaptic_class"]
@@ -729,6 +927,32 @@ class L1VisualCircuitProtocol:
             item["synaptic_contacts"]
             for item in self.motor_connectome["connections"]
         )
+        projection_dynamics = self.config[
+            "a03o_segmental_projection_dynamics"
+        ]
+        projection_effects = projection_dynamics["effect_by_connection_role"]
+        for item in self.segmental_projection["connections"]:
+            role = item["connection_role"]
+            if role == "cpf_to_derived_a03o":
+                current = float(projection_dynamics["cpf_to_a03o_current_a"])
+            elif role == "derived_a03o_to_motor_target":
+                current = float(
+                    projection_dynamics["a03o_to_motor_total_current_a"]
+                ) * float(item["relative_weight"])
+            else:
+                raise ValueError(f"unknown segmental projection role {role}")
+            synapses.append(
+                Synapse(
+                    self.index_by_id[item["pre"]],
+                    self.index_by_id[item["post"]],
+                    current,
+                    kind=projection_effects[role],
+                )
+            )
+        self.executed_segmental_projection_edges = len(
+            self.segmental_projection["connections"]
+        )
+
         self.network = SparseLIFNetwork(len(self.neurons), synapses)
         self.executed_connection_pairs = len(synapses)
         self.executed_synaptic_contacts = (
@@ -774,6 +998,39 @@ class L1VisualCircuitProtocol:
             raise ValueError(
                 "visual motor branch must preserve 6 left and 8 right MNs"
             )
+        derived_segments = tuple(
+            self.segmental_projection["projection_scope"]["derived_segments"]
+        )
+        self.derived_a03o_indices = {
+            f"{segment}:{side}": tuple(
+                index
+                for index, item in enumerate(self.neurons)
+                if item.get("segment") == segment
+                and item["lon_side"] == side
+                and item["neuron_class"] == "A03o_homolog_proxy"
+            )
+            for segment in derived_segments
+            for side in LON_SIDES
+        }
+        self.derived_motor_indices = {
+            f"{segment}:{side}": tuple(
+                index
+                for index, item in enumerate(self.neurons)
+                if item.get("segment") == segment
+                and item["lon_side"] == side
+                and item["neuron_class"]
+                == "segmental_motor_target_proxy"
+            )
+            for segment in derived_segments
+            for side in LON_SIDES
+        }
+        if any(
+            len(values) != 1 for values in self.derived_a03o_indices.values()
+        ) or any(
+            len(values) != 13 for values in self.derived_motor_indices.values()
+        ):
+            raise ValueError("derived A03o segmental runtime indices are invalid")
+
         self.bridge_activity = {side: 0.0 for side in LON_SIDES}
         self.spike_counts = {label: 0 for label in self.labels}
         self.first_spike_s: dict[str, float | None] = {
@@ -836,6 +1093,19 @@ class L1VisualCircuitProtocol:
             for side in LON_SIDES
         }
 
+        derived_a03o_spikes = {
+            channel: tuple(
+                self.labels[index] for index in indices if index in spiked
+            )
+            for channel, indices in self.derived_a03o_indices.items()
+        }
+        derived_motor_spikes = {
+            channel: tuple(
+                self.labels[index] for index in indices if index in spiked
+            )
+            for channel, indices in self.derived_motor_indices.items()
+        }
+
         left_activity = self.bridge_activity["left"]
         right_activity = self.bridge_activity["right"]
         common = (
@@ -865,6 +1135,8 @@ class L1VisualCircuitProtocol:
                     spiked_neurons=spiked_labels,
                     a03o_spikes=a03o_spikes,
                     a1_motor_spikes=a1_motor_spikes,
+                    derived_a03o_spikes=derived_a03o_spikes,
+                    derived_motor_spikes=derived_motor_spikes,
                     bridge_activity=dict(self.bridge_activity),
                     bridge_stimulus=stimulus,
                 )
@@ -880,6 +1152,9 @@ class VisualClosedLoopResult:
     visual_neuron_compartments: int
     identified_descending_neurons: int
     identified_a1_motor_neurons: int
+    derived_a03o_homologs: int
+    derived_motor_target_channels: int
+    anatomy_derived_projection_edges: int
     published_connection_pairs: int
     published_synaptic_contacts: int
     published_descending_connection_pairs: int
@@ -902,6 +1177,13 @@ class VisualClosedLoopResult:
             "visual_neuron_compartments": self.visual_neuron_compartments,
             "identified_descending_neurons": self.identified_descending_neurons,
             "identified_a1_motor_neurons": self.identified_a1_motor_neurons,
+            "derived_a03o_homologs": self.derived_a03o_homologs,
+            "derived_motor_target_channels": (
+                self.derived_motor_target_channels
+            ),
+            "anatomy_derived_projection_edges": (
+                self.anatomy_derived_projection_edges
+            ),
             "downstream_spatial_neurons": body.neuron_count,
             "total_neuron_compartments": (
                 self.visual_neuron_compartments + body.neuron_count
@@ -934,9 +1216,10 @@ class VisualClosedLoopResult:
             "release_validated": False,
             "claim_boundary": (
                 "published L1 LON, pOLP-to-LHN-to-CPf-to-A03o(A1), and "
-                "A03o-to-14-A1-motor-identity structural contacts plus fitted "
-                "effects, phototransduction, and a parallel A03o-to-segmental "
-                "bridge; not validated natural "
+                "A03o-to-14-A1-motor-identity structural contacts; an "
+                "ANATOMY_DERIVED CPf-to-A03o-to-motor-target projection in "
+                "A2-A6 with A7 blocked; fitted effects, phototransduction, "
+                "and a parallel A03o-to-body bridge; not validated natural "
                 "phototaxis or a complete sensor-to-muscle connectome"
             ),
         }
@@ -976,6 +1259,7 @@ class L1VisualClosedLoopLarva:
         connectome: dict[str, Any] | None = None,
         descending_connectome: dict[str, Any] | None = None,
         motor_connectome: dict[str, Any] | None = None,
+        segmental_projection: dict[str, Any] | None = None,
         lesion_node_ids: Iterable[str] = (),
         ground_z_m: float | None = None,
         record_visual_frames: bool = False,
@@ -986,12 +1270,16 @@ class L1VisualClosedLoopLarva:
             descending_connectome or load_visual_descending_connectome()
         )
         self.motor_connectome = motor_connectome or load_a03o_motor_connectome()
+        self.segmental_projection = (
+            segmental_projection or load_a03o_segmental_projection()
+        )
         self.protocol = L1VisualCircuitProtocol(
             field or validation_light_field(self.config),
             config=self.config,
             connectome=self.connectome,
             descending_connectome=self.descending_connectome,
             motor_connectome=self.motor_connectome,
+            segmental_projection=self.segmental_projection,
             lesion_node_ids=lesion_node_ids,
             record_frames=record_visual_frames,
         )
@@ -1022,6 +1310,17 @@ class L1VisualClosedLoopLarva:
             ),
             identified_a1_motor_neurons=int(
                 self.motor_connectome["summary"]["identified_a1_motor_neurons"]
+            ),
+            derived_a03o_homologs=int(
+                self.segmental_projection["summary"]["derived_a03o_homologs"]
+            ),
+            derived_motor_target_channels=int(
+                self.segmental_projection["summary"][
+                    "derived_motor_target_channels"
+                ]
+            ),
+            anatomy_derived_projection_edges=(
+                self.protocol.executed_segmental_projection_edges
             ),
             published_connection_pairs=(
                 int(self.connectome["summary"]["nonzero_connection_pairs"])
@@ -1091,17 +1390,19 @@ def main(argv: list[str] | None = None) -> int:
     connectome = load_visual_connectome()
     descending_connectome = load_visual_descending_connectome()
     motor_connectome = load_a03o_motor_connectome()
+    segmental_projection = load_a03o_segmental_projection()
     lesions: tuple[str, ...] = ()
     if args.lesion_class:
         lesions = tuple(
             dict.fromkeys(
                 item["node_id"]
-                for graph in (
-                    connectome,
-                    descending_connectome,
-                    motor_connectome,
+                for item in (
+                    connectome["neurons"]
+                    + descending_connectome["neurons"]
+                    + motor_connectome["neurons"]
+                    + segmental_projection["a03o_homologs"]
+                    + segmental_projection["motor_target_channels"]
                 )
-                for item in graph["neurons"]
                 if item["neuron_class"] == args.lesion_class
                 and (
                     args.lesion_side is None
@@ -1122,6 +1423,7 @@ def main(argv: list[str] | None = None) -> int:
         connectome=connectome,
         descending_connectome=descending_connectome,
         motor_connectome=motor_connectome,
+        segmental_projection=segmental_projection,
         lesion_node_ids=lesions,
     ).run(duration_s=args.duration)
     print(json.dumps(result.to_dict(), indent=2, sort_keys=True))

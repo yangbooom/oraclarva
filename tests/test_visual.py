@@ -17,6 +17,7 @@ from oraclarva.visual import (
     load_visual_connectome,
     load_visual_descending_connectome,
     load_a03o_motor_connectome,
+    load_a03o_segmental_projection,
     validation_light_field,
     visual_node_ids_for_class,
 )
@@ -38,10 +39,17 @@ def test_visual_config_preserves_measured_and_fitted_boundaries():
     assert config["connectome"]["provenance"] == "MEASURED_PUBLISHED"
     assert config["descending_connectome"]["provenance"] == "MEASURED_PUBLISHED"
     assert config["a03o_motor_connectome"]["provenance"] == "MEASURED_PUBLISHED"
+    projection = config["a03o_segmental_projection"]
+    assert projection["provenance"] == "ANATOMY_DERIVED"
+    assert projection["blocked_segments"] == ["A7"]
     assert config["phototransduction"]["provenance"] == "MODEL_FITTED"
     assert config["lon_dynamics"]["effect_provenance"] == "MODEL_FITTED"
     assert config["descending_path_dynamics"]["effect_provenance"] == "MODEL_FITTED"
     assert config["a03o_motor_path_dynamics"]["effect_provenance"] == "MODEL_FITTED"
+    assert (
+        config["a03o_segmental_projection_dynamics"]["provenance"]
+        == "MODEL_FITTED"
+    )
     bridge = config["a03o_segmental_bridge"]
     assert bridge["provenance"] == "MODEL_FITTED"
     assert bridge["readout_class"] == "A03o_A1"
@@ -151,12 +159,53 @@ def test_compiled_a03o_motor_path_preserves_sparse_asymmetric_contacts():
     )
 
 
+def test_a03o_segmental_projection_is_derived_and_blocks_a7():
+    projection = load_a03o_segmental_projection()
+    assert projection["summary"] == {
+        "vfb_a03o_label_query_hits": 7,
+        "public_a03o1_instances": 2,
+        "public_a2_a03o1_instances": 0,
+        "derived_segments": 5,
+        "derived_a03o_homologs": 10,
+        "derived_motor_target_channels": 130,
+        "cpf_to_a03o_projection_edges": 10,
+        "a03o_to_motor_projection_edges": 130,
+        "unique_projected_target_muscles": 13,
+        "blocked_segments": 1,
+    }
+    assert projection["projection_scope"]["derived_segments"] == [
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+    ]
+    assert projection["projection_scope"]["blocked_segments"] == ["A7"]
+    assert all(
+        item["catmaid_skeleton_id"] is None
+        and item["provenance"] == "ANATOMY_DERIVED"
+        for item in projection["a03o_homologs"]
+        + projection["motor_target_channels"]
+    )
+    assert all(
+        item["synaptic_contacts"] is None
+        and item["provenance"] == "ANATOMY_DERIVED"
+        for item in projection["connections"]
+    )
+    assert not any(
+        item.get("segment") == "A7"
+        for item in projection["a03o_homologs"]
+        + projection["motor_target_channels"]
+    )
+
+
 @pytest.mark.parametrize(
     "loader",
     [
         load_visual_connectome,
         load_visual_descending_connectome,
         load_a03o_motor_connectome,
+        load_a03o_segmental_projection,
     ],
 )
 def test_bundled_source_data_matches_audited_sha256(loader):
@@ -190,14 +239,15 @@ def test_bolwig_transduction_uses_only_two_bilateral_samples():
 
 def test_published_contacts_execute_without_relabeling_effects_as_measured():
     protocol = L1VisualCircuitProtocol(validation_light_field())
-    assert protocol.network.neuron_count == 80
+    assert protocol.network.neuron_count == 220
     assert protocol.executed_lon_connection_pairs == 368
     assert protocol.executed_lon_synaptic_contacts == 3035
     assert protocol.executed_descending_connection_pairs == 8
     assert protocol.executed_descending_synaptic_contacts == 98
     assert protocol.executed_motor_connection_pairs == 15
     assert protocol.executed_motor_synaptic_contacts == 26
-    assert protocol.executed_connection_pairs == 391
+    assert protocol.executed_segmental_projection_edges == 140
+    assert protocol.executed_connection_pairs == 531
     assert protocol.executed_synaptic_contacts == 3159
 
 
@@ -245,7 +295,18 @@ def test_causal_trace_forks_after_a03o_to_motor_identities_and_fitted_body():
         if label.startswith("motor_pool:A7") and value is not None
     )
     assert first_pr < first_vpn < first_lhn < first_dn < first_a03o
+    first_derived_a03o = min(
+        value
+        for label, value in first.items()
+        if label.startswith("derived:") and value is not None
+    )
+    first_derived_motor = min(
+        value
+        for label, value in first.items()
+        if label.startswith("derived_motor_target:") and value is not None
+    )
     assert first_a03o < first_a1_motor
+    assert first_dn < first_derived_a03o < first_derived_motor
     assert first_a03o < first_bridge < first_premotor < first_motor
     assert not any(
         label.startswith("environment_receptor") for label in body.spike_counts
@@ -303,6 +364,30 @@ def test_a1_motor_identity_lesion_blocks_only_observed_diagnostic_branch():
     assert sum(result.spatial_result.spike_counts.values()) > 0
     assert result.spatial_result.displacement_y_um != pytest.approx(0.0)
 
+
+
+def test_segment_specific_derived_a03o_lesion_is_local_to_proxy_branch():
+    lesioned = "derived:right:A03o_A4"
+    result = L1VisualClosedLoopLarva(
+        lesion_node_ids=(lesioned,)
+    ).run(duration_s=0.3)
+    assert result.visual_spike_counts[lesioned] == 0
+    assert all(
+        count == 0
+        for label, count in result.visual_spike_counts.items()
+        if label.startswith("derived_motor_target:A4:right:")
+    )
+    for segment in ("A2", "A3", "A5", "A6"):
+        assert result.visual_spike_counts[f"derived:right:A03o_{segment}"] > 0
+        assert any(
+            count > 0
+            for label, count in result.visual_spike_counts.items()
+            if label.startswith(
+                f"derived_motor_target:{segment}:right:"
+            )
+        )
+    assert sum(result.spatial_result.spike_counts.values()) > 0
+    assert result.spatial_result.displacement_y_um != pytest.approx(0.0)
 
 
 def test_mirrored_bilateral_light_fields_reverse_steering_with_specimen_asymmetry():

@@ -17,7 +17,7 @@ DEFAULT_OUTPUT = ROOT / "docs" / "assets" / "oraclarva_l1_visual_connectome.gif"
 FONT = Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
 FONT_BOLD = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 WIDTH = 1080
-HEIGHT = 680
+HEIGHT = 720
 SUPERSAMPLE = 2
 FRAME_DURATION_MS = 75
 PANEL_LEFTS = (22, 377, 732)
@@ -186,12 +186,14 @@ def draw_causal_trace(draw, scenario, frame, panel_left, small):
         ("DN", trace["cpf_descending_neuron"]),
         ("A03o", trace["a03o_a1_premotor"]),
         ("A1MN*", trace["a1_motor_identity_branch"]),
+        ("A2-6*", trace["a03o_a2_a6_derived"]),
+        ("M*", trace["a2_a6_motor_target_derived"]),
         ("FIT*", trace["fitted_a03o_segmental_bridge"]),
         ("PM", trace["a7_premotor"]),
         ("MN", trace["a7_motor"]),
     )
-    x = panel_left + 24
-    spacing = 35
+    x = panel_left + 18
+    spacing = 29
     for index, (label, onset) in enumerate(stages):
         active = onset is not None and time_s >= onset
         color = (105, 220, 143) if active else (68, 62, 75)
@@ -253,11 +255,21 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
         spike_counts["left:a1_mn"], spike_counts["right:a1_mn"],
         small, 0.025,
     )
-    draw_pair(draw, panel_left, 598, "FIT*", bridge[0], bridge[1], small)
+    draw_pair(
+        draw, panel_left, 598, "A2-6*",
+        spike_counts["left:derived_a03o"],
+        spike_counts["right:derived_a03o"], small, 0.01,
+    )
+    draw_pair(
+        draw, panel_left, 616, "SEG MN*",
+        spike_counts["left:derived_mn"],
+        spike_counts["right:derived_mn"], small, 0.0015,
+    )
+    draw_pair(draw, panel_left, 634, "FIT*", bridge[0], bridge[1], small)
     summary = scenario["summary"]
     draw_text(
         draw,
-        (panel_left + 16, 621),
+        (panel_left + 16, 657),
         f"dy {summary['displacement_y_um']:+.2f} um   "
         f"yaw {summary['yaw_change_deg']:+.2f} deg",
         (204, 190, 208),
@@ -295,8 +307,8 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
     draw_text(
         draw,
         (25, 53),
-        "LIGHT > Rh5/Rh6 > LON > LHN > CPf DN > A03o(A1) > "
-        "[A1 MN* DIAGNOSTIC | FIT* FULL-BODY] > MUSCLE > 3D BODY",
+        "LIGHT > Rh5/Rh6 > LON > LHN > CPf DN > "
+        "[A03o(A1)>A1 MN | A03o(A2-6)*>M* | FIT BODY] > 3D",
         (165, 148, 172),
         mono,
     )
@@ -325,10 +337,10 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
         draw_circuit_panel(draw, scenario, frame, panel_left, small, mono)
     draw_text(
         draw,
-        (24, 649),
-        "MEASURED: LON 422/3297 + DESC 8/98 + A03o->A1 MN 15/26   "
-        "MODEL_FITTED: response/effects + parallel full-body bridge   "
-        "*PARALLEL BRANCHES; A1 MN DOES NOT DRIVE ALL-SEGMENT BODY",
+        (24, 689),
+        "MEASURED: LON 422/3297 + DESC 8/98 + A1 MN 15/26   "
+        "ANATOMY_DERIVED*: A2-A6 140 EDGES; A7 BLOCKED   "
+        "MODEL_FITTED: effects + parallel body bridge",
         (137, 126, 145),
         mono,
     )

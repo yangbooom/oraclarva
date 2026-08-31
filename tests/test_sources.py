@@ -6,7 +6,7 @@ def source(**kw):
 def manifest(tmp_path,records):
     p=tmp_path/"sources.yaml"; p.write_text(json.dumps(records)); return p
 def test_repository_manifest():
-    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==13
+    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==14
 
 def test_environment_source_stages_are_explicit():
     records={item["source_id"]:item for item in load_source_manifest("data/sources/source_manifest_v0.yaml")}
@@ -17,6 +17,10 @@ def test_environment_source_stages_are_explicit():
     assert descending["stage"] == "L1"
     assert descending["sha256"] == "0f558cf16f30b58b760ac7053abb7cd5ccb64243de36492c937760c5642e465b"
     assert "redistribution" in descending["allowed_uses"]
+    segmental = records["vfb_l1em_a03o_segmental_audit"]
+    assert segmental["stage"] == "L1"
+    assert segmental["sha256"] == "459763508bebc9969ae22b25697565e30001e341b363d27fe648ad429b486228"
+    assert "redistribution" in segmental["allowed_uses"]
     assert records["berck_2016_l1_olfactory_circuit"]["stage"]=="L1"
     assert records["luo_2010_l1_thermotaxis"]["stage"]=="L1"
     assert records["kane_2013_l2_phototaxis"]["stage"]=="L2"
