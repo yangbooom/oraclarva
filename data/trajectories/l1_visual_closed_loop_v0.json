@@ -228,6 +228,39 @@
       "The other 212 atlas fibers remain unmapped rather than receiving uniform recruitment."
     ]
   },
+  "neural_muscle_activation_dynamics": {
+    "activation_unit": "dimensionless_0_1",
+    "dt_source": "visual_lif_dt",
+    "rise_tau_s": 0.02,
+    "decay_tau_s": 0.08,
+    "event_target": 1.0,
+    "minimum_spike_to_activation_delay_steps": 1,
+    "calibration_ranges": {
+      "rise_tau_s": [
+        0.005,
+        0.1
+      ],
+      "decay_tau_s": [
+        0.02,
+        0.4
+      ],
+      "event_target": [
+        0.1,
+        1.0
+      ]
+    },
+    "provenance": "MODEL_FITTED",
+    "calibration_objective": "Produce bounded, temporally smooth diagnostic activation traces at 1 ms resolution while preserving a strict source-spike-before-activation invariant; no behavior or force target was fitted.",
+    "supporting_evidence": {
+      "doi": "10.7554/eLife.51781",
+      "stage": "L1_or_L2",
+      "observation": "Ratiometric GCaMP6f imaging found calcium increases correlated with contraction and activation across all imaged body-wall muscles.",
+      "numeric_parameter_use": "none",
+      "limitations": "The study does not provide per-MN spike times or L1 excitation-contraction rise and decay constants; GCaMP6f kinetics are not muscle activation kinetics."
+    },
+    "individual_geometry_executed": false,
+    "mechanical_force_executed": false
+  },
   "a03o_segmental_bridge": {
     "readout_class": "A03o_A1",
     "readout_segment": "A1",
@@ -295,8 +328,14 @@
         "derived_a2_a6_identity_mappings": 130,
         "muscle_identity_events": 9907,
         "recruited_mapped_fibers": 76,
-        "activation_dynamics_executed": false,
+        "activation_dynamics_executed": true,
+        "activation_parameter_provenance": "MODEL_FITTED",
+        "activation_input_events": 9885,
+        "activated_muscle_fibers": 76,
+        "maximum_muscle_activation": 0.634065322,
+        "minimum_spike_to_activation_delay_steps": 1,
         "individual_muscle_geometry_executed": false,
+        "mechanical_force_executed": false,
         "published_connection_pairs": 445,
         "published_descending_connection_pairs": 8,
         "published_synaptic_contacts": 3421,
@@ -328,6 +367,7 @@
         "a03o_a2_a6_derived": 0.063,
         "a2_a6_motor_target_derived": 0.064,
         "named_muscle_identity_event": 0.063,
+        "named_muscle_activation": 0.064,
         "fitted_a03o_segmental_bridge": 0.071,
         "a7_premotor": 0.074,
         "a7_motor": 0.077
@@ -519,6 +559,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.0
@@ -717,6 +770,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.0
@@ -915,6 +981,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.0
@@ -1113,6 +1192,19 @@
               "ANATOMY_DERIVED": 205
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.002196277,
+                "maximum": 0.155935643,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.132093176,
+                "maximum": 0.295573413,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.477768867
@@ -1311,6 +1403,19 @@
               "ANATOMY_DERIVED": 165
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.00319647,
+                "maximum": 0.226949362,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.190326804,
+                "maximum": 0.398805929,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.782647385
@@ -1509,6 +1614,19 @@
               "ANATOMY_DERIVED": 175
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003952079,
+                "maximum": 0.2805976,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.229257976,
+                "maximum": 0.491116941,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.842393867
@@ -1707,6 +1825,19 @@
               "ANATOMY_DERIVED": 190
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004162872,
+                "maximum": 0.295563943,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.258412899,
+                "maximum": 0.505116587,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.100425408
@@ -1905,6 +2036,19 @@
               "ANATOMY_DERIVED": 270
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005022764,
+                "maximum": 0.356616232,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.304200571,
+                "maximum": 0.566778684,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.274260223
@@ -2103,6 +2247,19 @@
               "ANATOMY_DERIVED": 175
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.00457868,
+                "maximum": 0.32508628,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.299756991,
+                "maximum": 0.54255096,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.09729584
@@ -2301,6 +2458,19 @@
               "ANATOMY_DERIVED": 85
             },
             "active_mapped_fibers_in_window": 56,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003684464,
+                "maximum": 0.261596912,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.251143867,
+                "maximum": 0.467518064,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.132613192
@@ -2499,6 +2669,19 @@
               "ANATOMY_DERIVED": 225
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004773003,
+                "maximum": 0.338883193,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.279722439,
+                "maximum": 0.523316873,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 5,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.212728156
@@ -2697,6 +2880,19 @@
               "ANATOMY_DERIVED": 190
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005073648,
+                "maximum": 0.360229025,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.281876241,
+                "maximum": 0.554605454,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.282261016
@@ -2895,6 +3091,19 @@
               "ANATOMY_DERIVED": 220
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005605694,
+                "maximum": 0.398004267,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.323328533,
+                "maximum": 0.587232168,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.284971294
@@ -3093,6 +3302,19 @@
               "ANATOMY_DERIVED": 220
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005596279,
+                "maximum": 0.397335814,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.332617961,
+                "maximum": 0.591227742,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.385411595
@@ -3291,6 +3513,19 @@
               "ANATOMY_DERIVED": 145
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005494593,
+                "maximum": 0.390116101,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.303174559,
+                "maximum": 0.608746186,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.269398623
@@ -3489,6 +3724,19 @@
               "ANATOMY_DERIVED": 250
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005474258,
+                "maximum": 0.388672344,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.322154302,
+                "maximum": 0.608117489,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 11,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.459838699
@@ -3687,6 +3935,19 @@
               "ANATOMY_DERIVED": 205
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005761778,
+                "maximum": 0.409086246,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.326940347,
+                "maximum": 0.596043038,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 17,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.512445122
@@ -3885,6 +4146,19 @@
               "ANATOMY_DERIVED": 265
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005968011,
+                "maximum": 0.423728748,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.353630345,
+                "maximum": 0.634065322,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 17,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.537654099
@@ -4083,6 +4357,19 @@
               "ANATOMY_DERIVED": 160
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005413563,
+                "maximum": 0.384362997,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.312501175,
+                "maximum": 0.601200412,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 19,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.502818212
@@ -4281,6 +4568,19 @@
               "ANATOMY_DERIVED": 190
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005795156,
+                "maximum": 0.411456074,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.328582863,
+                "maximum": 0.599106812,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 39,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.461771195
@@ -4479,6 +4779,19 @@
               "ANATOMY_DERIVED": 175
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005319354,
+                "maximum": 0.377674163,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.301393255,
+                "maximum": 0.57713793,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 15,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.452493793
@@ -4677,6 +4990,19 @@
               "ANATOMY_DERIVED": 220
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005649026,
+                "maximum": 0.401080825,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.328651058,
+                "maximum": 0.598282469,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.401970456
@@ -4875,6 +5201,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 1,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003882515,
+                "maximum": 0.275658551,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.226676581,
+                "maximum": 0.430000041,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.963559264
@@ -5073,6 +5412,19 @@
               "ANATOMY_DERIVED": 180
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004141981,
+                "maximum": 0.294080646,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.257773236,
+                "maximum": 0.471912838,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.183701086
@@ -5271,6 +5623,19 @@
               "ANATOMY_DERIVED": 175
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004501968,
+                "maximum": 0.319639738,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.26194826,
+                "maximum": 0.491581992,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.040769951
@@ -5469,6 +5834,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003094154,
+                "maximum": 0.219684965,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.180034231,
+                "maximum": 0.337859033,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.815310029
@@ -5667,6 +6045,19 @@
               "ANATOMY_DERIVED": 315
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004462205,
+                "maximum": 0.316816543,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.285786256,
+                "maximum": 0.513476263,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.139750549
@@ -5865,6 +6256,19 @@
               "ANATOMY_DERIVED": 40
             },
             "active_mapped_fibers_in_window": 41,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003845653,
+                "maximum": 0.273041376,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.225083298,
+                "maximum": 0.448729407,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.855591068
@@ -6063,6 +6467,19 @@
               "ANATOMY_DERIVED": 120
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003760548,
+                "maximum": 0.266998885,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.20958189,
+                "maximum": 0.408228266,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 16,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.961790868
@@ -6261,6 +6678,19 @@
               "ANATOMY_DERIVED": 155
             },
             "active_mapped_fibers_in_window": 56,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003957547,
+                "maximum": 0.280985852,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.237409647,
+                "maximum": 0.493002695,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 10,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.999357618
@@ -6459,6 +6889,19 @@
               "ANATOMY_DERIVED": 145
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004466402,
+                "maximum": 0.317114559,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.245200986,
+                "maximum": 0.522031483,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 18,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.024826142
@@ -6657,6 +7100,19 @@
               "ANATOMY_DERIVED": 340
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005231985,
+                "maximum": 0.371470947,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.326303017,
+                "maximum": 0.578276617,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 3,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.27470926
@@ -6855,6 +7311,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 11,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003959849,
+                "maximum": 0.281149314,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.235538489,
+                "maximum": 0.43975568,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.876094008
@@ -7053,6 +7522,19 @@
               "ANATOMY_DERIVED": 165
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004302826,
+                "maximum": 0.305500615,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.261171396,
+                "maximum": 0.459011906,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 24,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.050768803
@@ -7251,6 +7733,19 @@
               "ANATOMY_DERIVED": 185
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004349843,
+                "maximum": 0.308838827,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.278868034,
+                "maximum": 0.527964589,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.064715534
@@ -7449,6 +7944,19 @@
               "ANATOMY_DERIVED": 165
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004760554,
+                "maximum": 0.337999308,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.287323575,
+                "maximum": 0.54681754,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 55,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.172232243
@@ -7647,6 +8155,19 @@
               "ANATOMY_DERIVED": 245
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005401896,
+                "maximum": 0.383534632,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.320963066,
+                "maximum": 0.565495756,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.20321101
@@ -7845,6 +8366,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 2,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003712665,
+                "maximum": 0.263599241,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.221141021,
+                "maximum": 0.409154683,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.826954027
@@ -8043,6 +8577,19 @@
               "ANATOMY_DERIVED": 195
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004015834,
+                "maximum": 0.285124233,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.25380798,
+                "maximum": 0.489151011,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.083336127
@@ -8241,6 +8788,19 @@
               "ANATOMY_DERIVED": 160
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004546447,
+                "maximum": 0.322797749,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.271199391,
+                "maximum": 0.519682294,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.090792716
@@ -8439,6 +8999,19 @@
               "ANATOMY_DERIVED": 190
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004924015,
+                "maximum": 0.349605035,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.290147409,
+                "maximum": 0.564834438,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.187251992
@@ -8637,6 +9210,19 @@
               "ANATOMY_DERIVED": 215
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005016525,
+                "maximum": 0.356173261,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.298861882,
+                "maximum": 0.552389363,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.119431485
@@ -8835,6 +9421,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003447804,
+                "maximum": 0.244794064,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.205404567,
+                "maximum": 0.379651287,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.769373258
@@ -9033,6 +9632,19 @@
               "ANATOMY_DERIVED": 205
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004235843,
+                "maximum": 0.300744884,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.251830055,
+                "maximum": 0.484110495,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.006550859
@@ -9231,6 +9843,19 @@
               "ANATOMY_DERIVED": 160
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004717292,
+                "maximum": 0.334927758,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.26046256,
+                "maximum": 0.510795062,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.013001839
@@ -9429,6 +10054,19 @@
               "ANATOMY_DERIVED": 270
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.00507074,
+                "maximum": 0.360022567,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.309384656,
+                "maximum": 0.552309299,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 32,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.296051185
@@ -9627,6 +10265,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 56,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004654481,
+                "maximum": 0.330468137,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.277301391,
+                "maximum": 0.512480198,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.039029918
@@ -9825,6 +10476,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003198975,
+                "maximum": 0.227127208,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.190586273,
+                "maximum": 0.352222146,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.714114123
@@ -10023,6 +10687,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.002198621,
+                "maximum": 0.156102095,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.130987902,
+                "maximum": 0.242078505,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.49080298
@@ -10221,6 +10898,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.001511089,
+                "maximum": 0.107287296,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.090026581,
+                "maximum": 0.166377961,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.337323626
@@ -10419,6 +11109,19 @@
               "ANATOMY_DERIVED": 195
             },
             "active_mapped_fibers_in_window": 76,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.002663714,
+                "maximum": 0.189123708,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.175563527,
+                "maximum": 0.360816248,
+                "active_fibers": 75
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.746818402
@@ -10452,8 +11155,14 @@
         "derived_a2_a6_identity_mappings": 130,
         "muscle_identity_events": 4480,
         "recruited_mapped_fibers": 71,
-        "activation_dynamics_executed": false,
+        "activation_dynamics_executed": true,
+        "activation_parameter_provenance": "MODEL_FITTED",
+        "activation_input_events": 4480,
+        "activated_muscle_fibers": 71,
+        "maximum_muscle_activation": 0.381583239,
+        "minimum_spike_to_activation_delay_steps": 1,
         "individual_muscle_geometry_executed": false,
+        "mechanical_force_executed": false,
         "published_connection_pairs": 445,
         "published_descending_connection_pairs": 8,
         "published_synaptic_contacts": 3421,
@@ -10485,6 +11194,7 @@
         "a03o_a2_a6_derived": 0.052,
         "a2_a6_motor_target_derived": 0.053,
         "named_muscle_identity_event": 0.053,
+        "named_muscle_activation": 0.054,
         "fitted_a03o_segmental_bridge": 0.129,
         "a7_premotor": 0.132,
         "a7_motor": 0.135
@@ -10676,6 +11386,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.0
@@ -10874,6 +11597,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.0
@@ -11072,6 +11808,19 @@
               "ANATOMY_DERIVED": 70
             },
             "active_mapped_fibers_in_window": 46,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.026786822,
+                "maximum": 0.092294179,
+                "active_fibers": 31
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.093941306,
               "right": 0.0
@@ -11270,6 +12019,19 @@
               "ANATOMY_DERIVED": 55
             },
             "active_mapped_fibers_in_window": 30,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.058376729,
+                "maximum": 0.162802403,
+                "active_fibers": 46
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.064564853,
               "right": 0.0
@@ -11468,6 +12230,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.0401217,
+                "maximum": 0.111892346,
+                "active_fibers": 46
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.044374731,
               "right": 0.0
@@ -11666,6 +12441,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.092326111,
+                "maximum": 0.245941989,
+                "active_fibers": 51
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.102751012,
               "right": 0.0
@@ -11864,6 +12652,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.063454746,
+                "maximum": 0.169033292,
+                "active_fibers": 51
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.070619669,
               "right": 0.0
@@ -12062,6 +12863,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 46,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.102784938,
+                "maximum": 0.276236748,
+                "active_fibers": 51
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.11900495,
               "right": 0.0
@@ -12260,6 +13074,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.070642986,
+                "maximum": 0.189854555,
+                "active_fibers": 51
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.081790827,
               "right": 0.0
@@ -12458,6 +13285,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.115872613,
+                "maximum": 0.304553048,
+                "active_fibers": 51
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.133126595,
               "right": 0.0
@@ -12656,6 +13496,19 @@
               "ANATOMY_DERIVED": 85
             },
             "active_mapped_fibers_in_window": 46,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.128685481,
+                "maximum": 0.322517195,
+                "active_fibers": 51
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 10,
             "bridge_activity": {
               "left": 0.181980223,
               "right": 0.0
@@ -12854,6 +13707,19 @@
               "ANATOMY_DERIVED": 90
             },
             "active_mapped_fibers_in_window": 65,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.128125934,
+                "maximum": 0.278047484,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.125073056,
               "right": 0.0
@@ -13052,6 +13918,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.148267581,
+                "maximum": 0.345226436,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.159122934,
               "right": 0.0
@@ -13250,6 +14129,19 @@
               "ANATOMY_DERIVED": 120
             },
             "active_mapped_fibers_in_window": 71,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.173663214,
+                "maximum": 0.34415232,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 35,
             "bridge_activity": {
               "left": 0.197613176,
               "right": 0.0
@@ -13448,6 +14340,19 @@
               "ANATOMY_DERIVED": 55
             },
             "active_mapped_fibers_in_window": 45,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.142093203,
+                "maximum": 0.290055051,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.135817418,
               "right": 0.0
@@ -13646,6 +14551,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 46,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.154622057,
+                "maximum": 0.352068141,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.166507418,
               "right": 0.0
@@ -13844,6 +14762,19 @@
               "ANATOMY_DERIVED": 120
             },
             "active_mapped_fibers_in_window": 71,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.177585823,
+                "maximum": 0.34835422,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 35,
             "bridge_activity": {
               "left": 0.202688453,
               "right": 0.0
@@ -14042,6 +14973,19 @@
               "ANATOMY_DERIVED": 55
             },
             "active_mapped_fibers_in_window": 45,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.144688022,
+                "maximum": 0.292734301,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.139305601,
               "right": 0.0
@@ -14240,6 +15184,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.15898561,
+                "maximum": 0.353594732,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.168904809,
               "right": 0.0
@@ -14438,6 +15395,19 @@
               "ANATOMY_DERIVED": 120
             },
             "active_mapped_fibers_in_window": 66,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.177298847,
+                "maximum": 0.349291791,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 35,
             "bridge_activity": {
               "left": 0.204336155,
               "right": 0.0
@@ -14636,6 +15606,19 @@
               "ANATOMY_DERIVED": 55
             },
             "active_mapped_fibers_in_window": 45,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.144464972,
+                "maximum": 0.293332122,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.140438048,
               "right": 0.0
@@ -14834,6 +15817,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.158720902,
+                "maximum": 0.35393536,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.169683128,
               "right": 0.0
@@ -15032,6 +16028,19 @@
               "ANATOMY_DERIVED": 120
             },
             "active_mapped_fibers_in_window": 71,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.180376052,
+                "maximum": 0.349500991,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 35,
             "bridge_activity": {
               "left": 0.204871085,
               "right": 0.0
@@ -15230,6 +16239,19 @@
               "ANATOMY_DERIVED": 55
             },
             "active_mapped_fibers_in_window": 45,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.146573245,
+                "maximum": 0.293465514,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.1408057,
               "right": 0.0
@@ -15428,6 +16450,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 46,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.15751397,
+                "maximum": 0.354011364,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.169935811,
               "right": 0.0
@@ -15626,6 +16661,19 @@
               "ANATOMY_DERIVED": 75
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.148929057,
+                "maximum": 0.318021791,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 30,
             "bridge_activity": {
               "left": 0.20956941,
               "right": 0.0
@@ -15824,6 +16872,19 @@
               "ANATOMY_DERIVED": 85
             },
             "active_mapped_fibers_in_window": 50,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.143169448,
+                "maximum": 0.301435245,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.144034808,
               "right": 0.0
@@ -16022,6 +17083,19 @@
               "ANATOMY_DERIVED": 140
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.167811185,
+                "maximum": 0.338716393,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.178845201,
               "right": 0.0
@@ -16220,6 +17294,19 @@
               "ANATOMY_DERIVED": 25
             },
             "active_mapped_fibers_in_window": 25,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.118908479,
+                "maximum": 0.258169065,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.22291839,
               "right": 0.0
@@ -16418,6 +17505,19 @@
               "ANATOMY_DERIVED": 135
             },
             "active_mapped_fibers_in_window": 66,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.153524913,
+                "maximum": 0.322582429,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.153209419,
               "right": 0.0
@@ -16616,6 +17716,19 @@
               "ANATOMY_DERIVED": 115
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.167755203,
+                "maximum": 0.3637188,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 10,
             "bridge_activity": {
               "left": 0.191369989,
               "right": 0.0
@@ -16814,6 +17927,19 @@
               "ANATOMY_DERIVED": 10
             },
             "active_mapped_fibers_in_window": 10,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.121149775,
+                "maximum": 0.277363963,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.131526542,
               "right": 0.0
@@ -17012,6 +18138,19 @@
               "ANATOMY_DERIVED": 175
             },
             "active_mapped_fibers_in_window": 71,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.171833872,
+                "maximum": 0.347186629,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.164478604,
               "right": 0.0
@@ -17210,6 +18349,19 @@
               "ANATOMY_DERIVED": 75
             },
             "active_mapped_fibers_in_window": 46,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.140527466,
+                "maximum": 0.313670148,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.20581873,
               "right": 0.0
@@ -17408,6 +18560,19 @@
               "ANATOMY_DERIVED": 50
             },
             "active_mapped_fibers_in_window": 30,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.131272562,
+                "maximum": 0.29876264,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.141457006,
               "right": 0.0
@@ -17606,6 +18771,19 @@
               "ANATOMY_DERIVED": 160
             },
             "active_mapped_fibers_in_window": 71,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.171415098,
+                "maximum": 0.337135399,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 15,
             "bridge_activity": {
               "left": 0.177073506,
               "right": 0.0
@@ -17804,6 +18982,19 @@
               "ANATOMY_DERIVED": 10
             },
             "active_mapped_fibers_in_window": 10,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.121391043,
+                "maximum": 0.257122458,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.221700722,
               "right": 0.0
@@ -18002,6 +19193,19 @@
               "ANATOMY_DERIVED": 130
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.147768919,
+                "maximum": 0.32198609,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.152372529,
               "right": 0.0
@@ -18200,6 +19404,19 @@
               "ANATOMY_DERIVED": 135
             },
             "active_mapped_fibers_in_window": 66,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.174027488,
+                "maximum": 0.363366032,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 10,
             "bridge_activity": {
               "left": 0.190794803,
               "right": 0.0
@@ -18398,6 +19615,19 @@
               "ANATOMY_DERIVED": 25
             },
             "active_mapped_fibers_in_window": 25,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.131648421,
+                "maximum": 0.277130433,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.131131223,
               "right": 0.0
@@ -18596,6 +19826,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.15140614,
+                "maximum": 0.347053567,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.164206906,
               "right": 0.0
@@ -18794,6 +20037,19 @@
               "ANATOMY_DERIVED": 75
             },
             "active_mapped_fibers_in_window": 46,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.144838662,
+                "maximum": 0.313585304,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 15,
             "bridge_activity": {
               "left": 0.205631994,
               "right": 0.0
@@ -18992,6 +20248,19 @@
               "ANATOMY_DERIVED": 100
             },
             "active_mapped_fibers_in_window": 70,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.147765715,
+                "maximum": 0.298710533,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.141328665,
               "right": 0.0
@@ -19190,6 +20459,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 46,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.159102431,
+                "maximum": 0.337104575,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.176985298,
               "right": 0.0
@@ -19388,6 +20670,19 @@
               "ANATOMY_DERIVED": 25
             },
             "active_mapped_fibers_in_window": 25,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.112928789,
+                "maximum": 0.257102052,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.221640098,
               "right": 0.0
@@ -19586,6 +20881,19 @@
               "ANATOMY_DERIVED": 135
             },
             "active_mapped_fibers_in_window": 71,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.151983664,
+                "maximum": 0.321974463,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.152330863,
               "right": 0.0
@@ -19784,6 +21092,19 @@
               "ANATOMY_DERIVED": 115
             },
             "active_mapped_fibers_in_window": 51,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.166751838,
+                "maximum": 0.363359154,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 10,
             "bridge_activity": {
               "left": 0.190766167,
               "right": 0.0
@@ -19982,6 +21303,19 @@
               "ANATOMY_DERIVED": 25
             },
             "active_mapped_fibers_in_window": 25,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.127169774,
+                "maximum": 0.27712588,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.131111541,
               "right": 0.0
@@ -20180,6 +21514,19 @@
               "ANATOMY_DERIVED": 160
             },
             "active_mapped_fibers_in_window": 66,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.164856026,
+                "maximum": 0.347050973,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.164193379,
               "right": 0.0
@@ -20378,6 +21725,19 @@
               "ANATOMY_DERIVED": 30
             },
             "active_mapped_fibers_in_window": 31,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.131149755,
+                "maximum": 0.277311809,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 1,
             "bridge_activity": {
               "left": 0.209167791,
               "right": 0.0
@@ -20576,6 +21936,19 @@
               "ANATOMY_DERIVED": 95
             },
             "active_mapped_fibers_in_window": 50,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.132624216,
+                "maximum": 0.304930522,
+                "active_fibers": 71
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.14375878,
               "right": 0.0
@@ -20611,8 +21984,14 @@
         "derived_a2_a6_identity_mappings": 130,
         "muscle_identity_events": 9754,
         "recruited_mapped_fibers": 75,
-        "activation_dynamics_executed": false,
+        "activation_dynamics_executed": true,
+        "activation_parameter_provenance": "MODEL_FITTED",
+        "activation_input_events": 9733,
+        "activated_muscle_fibers": 75,
+        "maximum_muscle_activation": 0.634065322,
+        "minimum_spike_to_activation_delay_steps": 1,
         "individual_muscle_geometry_executed": false,
+        "mechanical_force_executed": false,
         "published_connection_pairs": 445,
         "published_descending_connection_pairs": 8,
         "published_synaptic_contacts": 3421,
@@ -20644,6 +22023,7 @@
         "a03o_a2_a6_derived": 0.063,
         "a2_a6_motor_target_derived": 0.064,
         "named_muscle_identity_event": 0.063,
+        "named_muscle_activation": 0.064,
         "fitted_a03o_segmental_bridge": 0.071,
         "a7_premotor": 0.074,
         "a7_motor": 0.077
@@ -20835,6 +22215,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.0
@@ -21033,6 +22426,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.0
@@ -21231,6 +22637,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              },
+              "right": {
+                "mean": 0.0,
+                "maximum": 0.0,
+                "active_fibers": 0
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.0
@@ -21429,6 +22848,19 @@
               "ANATOMY_DERIVED": 205
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.002196277,
+                "maximum": 0.155935643,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.130014034,
+                "maximum": 0.295573413,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.477768867
@@ -21627,6 +23059,19 @@
               "ANATOMY_DERIVED": 165
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.00319647,
+                "maximum": 0.226949362,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.187300813,
+                "maximum": 0.398805929,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.782647385
@@ -21825,6 +23270,19 @@
               "ANATOMY_DERIVED": 175
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003952079,
+                "maximum": 0.2805976,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.225516675,
+                "maximum": 0.491116941,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.842393867
@@ -22023,6 +23481,19 @@
               "ANATOMY_DERIVED": 190
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004162872,
+                "maximum": 0.295563943,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.254472046,
+                "maximum": 0.505116587,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.100425408
@@ -22221,6 +23692,19 @@
               "ANATOMY_DERIVED": 270
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005022764,
+                "maximum": 0.356616232,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.299445688,
+                "maximum": 0.566778684,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.274260223
@@ -22419,6 +23903,19 @@
               "ANATOMY_DERIVED": 175
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.00457868,
+                "maximum": 0.32508628,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.295422507,
+                "maximum": 0.54255096,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.09729584
@@ -22617,6 +24114,19 @@
               "ANATOMY_DERIVED": 85
             },
             "active_mapped_fibers_in_window": 55,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003684464,
+                "maximum": 0.261596912,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.247655908,
+                "maximum": 0.467518064,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.132613192
@@ -22815,6 +24325,19 @@
               "ANATOMY_DERIVED": 225
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004773003,
+                "maximum": 0.338883193,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.275203996,
+                "maximum": 0.523316873,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 5,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.212728156
@@ -23013,6 +24536,19 @@
               "ANATOMY_DERIVED": 190
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005073648,
+                "maximum": 0.360229025,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.277073187,
+                "maximum": 0.554605454,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.282261016
@@ -23211,6 +24747,19 @@
               "ANATOMY_DERIVED": 220
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005605694,
+                "maximum": 0.398004267,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.318021809,
+                "maximum": 0.587232168,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.284971294
@@ -23409,6 +24958,19 @@
               "ANATOMY_DERIVED": 220
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005596279,
+                "maximum": 0.397335814,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.32732015,
+                "maximum": 0.591227742,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.385411595
@@ -23607,6 +25169,19 @@
               "ANATOMY_DERIVED": 145
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005494593,
+                "maximum": 0.390116101,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.297973011,
+                "maximum": 0.608746186,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.269398623
@@ -23805,6 +25380,19 @@
               "ANATOMY_DERIVED": 250
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005474258,
+                "maximum": 0.388672344,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.316972004,
+                "maximum": 0.608117489,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 11,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.459838699
@@ -24003,6 +25591,19 @@
               "ANATOMY_DERIVED": 205
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005761778,
+                "maximum": 0.409086246,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.321485864,
+                "maximum": 0.596043038,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 17,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.512445122
@@ -24201,6 +25802,19 @@
               "ANATOMY_DERIVED": 265
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005968011,
+                "maximum": 0.423728748,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.347980628,
+                "maximum": 0.634065322,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 17,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.537654099
@@ -24399,6 +26013,19 @@
               "ANATOMY_DERIVED": 160
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005413563,
+                "maximum": 0.384362997,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.307376335,
+                "maximum": 0.601200412,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 19,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.502818212
@@ -24597,6 +26224,19 @@
               "ANATOMY_DERIVED": 190
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005795156,
+                "maximum": 0.411456074,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.323096782,
+                "maximum": 0.599106812,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 38,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.461771195
@@ -24795,6 +26435,19 @@
               "ANATOMY_DERIVED": 175
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005319354,
+                "maximum": 0.377674163,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.2963576,
+                "maximum": 0.57713793,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 15,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.452493793
@@ -24993,6 +26646,19 @@
               "ANATOMY_DERIVED": 220
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005649026,
+                "maximum": 0.401080825,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.323303313,
+                "maximum": 0.598282469,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.401970456
@@ -25191,6 +26857,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 1,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003882515,
+                "maximum": 0.275658551,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.223001134,
+                "maximum": 0.430000041,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.963559264
@@ -25389,6 +27068,19 @@
               "ANATOMY_DERIVED": 180
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004141981,
+                "maximum": 0.294080646,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.253852161,
+                "maximum": 0.471912838,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.183701086
@@ -25587,6 +27279,19 @@
               "ANATOMY_DERIVED": 175
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004501968,
+                "maximum": 0.319639738,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.257686397,
+                "maximum": 0.491581992,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.040769951
@@ -25785,6 +27490,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003094154,
+                "maximum": 0.219684965,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.177105098,
+                "maximum": 0.337859033,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.815310029
@@ -25983,6 +27701,19 @@
               "ANATOMY_DERIVED": 315
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004462205,
+                "maximum": 0.316816543,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.281562035,
+                "maximum": 0.513476263,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.139750549
@@ -26181,6 +27912,19 @@
               "ANATOMY_DERIVED": 40
             },
             "active_mapped_fibers_in_window": 40,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003845653,
+                "maximum": 0.273041376,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.221442746,
+                "maximum": 0.448729407,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.855591068
@@ -26379,6 +28123,19 @@
               "ANATOMY_DERIVED": 120
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003760548,
+                "maximum": 0.266998885,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.206021904,
+                "maximum": 0.408228266,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 15,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.961790868
@@ -26577,6 +28334,19 @@
               "ANATOMY_DERIVED": 155
             },
             "active_mapped_fibers_in_window": 55,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003957547,
+                "maximum": 0.280985852,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.233663169,
+                "maximum": 0.493002695,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 10,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.999357618
@@ -26775,6 +28545,19 @@
               "ANATOMY_DERIVED": 145
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004466402,
+                "maximum": 0.317114559,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.240972792,
+                "maximum": 0.522031483,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 18,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.024826142
@@ -26973,6 +28756,19 @@
               "ANATOMY_DERIVED": 340
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005231985,
+                "maximum": 0.371470947,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.321350071,
+                "maximum": 0.578276617,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 3,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.27470926
@@ -27171,6 +28967,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 10,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003959849,
+                "maximum": 0.281149314,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.231789831,
+                "maximum": 0.43975568,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.876094008
@@ -27369,6 +29178,19 @@
               "ANATOMY_DERIVED": 165
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004302826,
+                "maximum": 0.305500615,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.257098054,
+                "maximum": 0.459011906,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 23,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.050768803
@@ -27567,6 +29389,19 @@
               "ANATOMY_DERIVED": 185
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004349843,
+                "maximum": 0.308838827,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.274750183,
+                "maximum": 0.527964589,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.064715534
@@ -27765,6 +29600,19 @@
               "ANATOMY_DERIVED": 165
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004760554,
+                "maximum": 0.337999308,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.282816917,
+                "maximum": 0.54681754,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 55,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.172232243
@@ -27963,6 +29811,19 @@
               "ANATOMY_DERIVED": 245
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005401896,
+                "maximum": 0.383534632,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.315849271,
+                "maximum": 0.565495756,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.20321101
@@ -28161,6 +30022,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 2,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003712665,
+                "maximum": 0.263599241,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.217626365,
+                "maximum": 0.409154683,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.826954027
@@ -28359,6 +30233,19 @@
               "ANATOMY_DERIVED": 195
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004015834,
+                "maximum": 0.285124233,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.250006323,
+                "maximum": 0.489151011,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.083336127
@@ -28557,6 +30444,19 @@
               "ANATOMY_DERIVED": 160
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004546447,
+                "maximum": 0.322797749,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.266895421,
+                "maximum": 0.519682294,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.090792716
@@ -28755,6 +30655,19 @@
               "ANATOMY_DERIVED": 190
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004924015,
+                "maximum": 0.349605035,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.285486009,
+                "maximum": 0.564834438,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.187251992
@@ -28953,6 +30866,19 @@
               "ANATOMY_DERIVED": 215
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.005016525,
+                "maximum": 0.356173261,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.294112905,
+                "maximum": 0.552389363,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.119431485
@@ -29151,6 +31077,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003447804,
+                "maximum": 0.244794064,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.202140646,
+                "maximum": 0.379651287,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.769373258
@@ -29349,6 +31288,19 @@
               "ANATOMY_DERIVED": 205
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004235843,
+                "maximum": 0.300744884,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.247820123,
+                "maximum": 0.484110495,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.006550859
@@ -29547,6 +31499,19 @@
               "ANATOMY_DERIVED": 160
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004717292,
+                "maximum": 0.334927758,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.255996857,
+                "maximum": 0.510795062,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.013001839
@@ -29745,6 +31710,19 @@
               "ANATOMY_DERIVED": 270
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.00507074,
+                "maximum": 0.360022567,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.304584355,
+                "maximum": 0.552309299,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 32,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.296051185
@@ -29943,6 +31921,19 @@
               "ANATOMY_DERIVED": 125
             },
             "active_mapped_fibers_in_window": 55,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.004654481,
+                "maximum": 0.330468137,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.272895149,
+                "maximum": 0.512480198,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 1.039029918
@@ -30141,6 +32132,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.003198975,
+                "maximum": 0.227127208,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.18755791,
+                "maximum": 0.352222146,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.714114123
@@ -30339,6 +32343,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.002198621,
+                "maximum": 0.156102095,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.128906541,
+                "maximum": 0.242078505,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.49080298
@@ -30537,6 +32554,19 @@
               "ANATOMY_DERIVED": 0
             },
             "active_mapped_fibers_in_window": 0,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.001511089,
+                "maximum": 0.107287296,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.088596083,
+                "maximum": 0.166377961,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 0,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.337323626
@@ -30735,6 +32765,19 @@
               "ANATOMY_DERIVED": 195
             },
             "active_mapped_fibers_in_window": 75,
+            "muscle_activation": {
+              "left": {
+                "mean": 0.002663714,
+                "maximum": 0.189123708,
+                "active_fibers": 1
+              },
+              "right": {
+                "mean": 0.173041877,
+                "maximum": 0.360816248,
+                "active_fibers": 74
+              }
+            },
+            "applied_activation_events": 2,
             "bridge_activity": {
               "left": 0.0,
               "right": 0.746818402
@@ -30753,6 +32796,7 @@
   "limitations": [
     "This is a connectome-driven LON-to-A03o research approximation with an observed A1 motor branch and an ANATOMY_DERIVED A2-A6 diagnostic projection, not validated natural L1 phototaxis.",
     "Only 14 of 56 mapped A1 motor identities and 15 A03o-to-MN edges are specimen observations; A2-A6 proxy nodes have no public skeleton IDs or segmental contact counts.",
+    "The 146 mapped fibers execute MODEL_FITTED diagnostic activation; the remaining 212 atlas fibers are silent, and no activation applies force to the body.",
     "The 130 derived motor-target channels identify supported muscle targets but not segment-specific motor neurons, NMJs, 3D attachments, CSA, or force gains.",
     "A7 remains blocked by the public A03o instance audit and current terminal-segment muscle atlas gate.",
     "Full-body motion remains on the explicitly fitted parallel A03o(A1)-to-segmental branch; diagnostic motor outputs are never fed backward into an upstream premotor layer.",
@@ -30764,6 +32808,7 @@
     "The observed A1 motor identities and ANATOMY_DERIVED A2-A6 motor-target proxies are diagnostic branches; full-body motion remains on the parallel fitted A03o bridge.",
     "A7 remains blocked and has no derived visual motor proxy.",
     "The third scenario lesions one named fiber event channel; it does not suppress the upstream motor neuron or alter the parallel fitted body bridge.",
-    "Named-fiber events are causal identity bookkeeping, not activation, force, contraction, or individual mechanics."
+    "Named-fiber events feed a one-step-delayed MODEL_FITTED activation state; every applied input records its earlier spike time and source identity.",
+    "Activation remains diagnostic and applies no force, contraction, attachment geometry, or individual mechanics."
   ]
 }

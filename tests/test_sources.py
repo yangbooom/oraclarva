@@ -6,7 +6,7 @@ def source(**kw):
 def manifest(tmp_path,records):
     p=tmp_path/"sources.yaml"; p.write_text(json.dumps(records)); return p
 def test_repository_manifest():
-    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==14
+    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==15
 
 def test_environment_source_stages_are_explicit():
     records={item["source_id"]:item for item in load_source_manifest("data/sources/source_manifest_v0.yaml")}
@@ -25,6 +25,10 @@ def test_environment_source_stages_are_explicit():
     assert records["luo_2010_l1_thermotaxis"]["stage"]=="L1"
     assert records["kane_2013_l2_phototaxis"]["stage"]=="L2"
     assert records["gershow_2012_l2_odor_navigation"]["stage"]=="L2"
+    activation = records["zarin_2019_l1_l2_muscle_calcium"]
+    assert activation["stage"] == "unknown"
+    assert activation["allowed_uses"] == ["reference"]
+    assert not activation["local_artifact"]
 
 def test_unknown_stage_is_reference_only(tmp_path):
     r=audit_source_manifest(manifest(tmp_path,[source(stage="unknown",allowed_uses=["reference","calibration"])])); assert any("reference-only" in e for e in r.errors)

@@ -13,6 +13,8 @@ from .body3d import Vec3
 from .environment_inputs import LinearScalarField, ScalarField
 from .lif import SparseLIFNetwork, Synapse
 from .muscles import (
+    NeuralMuscleActivationFrame,
+    NeuralMuscleActivationModel,
     NeuralMuscleIdentityEventFrame,
     NeuralMuscleIdentityProjection,
     load_neural_muscle_identity_projection,
@@ -105,6 +107,7 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         "anatomy_derived_a03o_a2_a6_to_motor_target_topology",
         "fitted_effects_for_anatomy_derived_projection",
         "motor_output_spikes_to_named_muscle_identity_events",
+        "model_fitted_individual_fiber_activation_dynamics",
         "fitted_a03o_a1_to_segmental_core_bridge",
         "spatial_neural_dynamics",
         "motor_pools",
@@ -190,6 +193,35 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         or identity_projection.get("individual_geometry_executed") is not False
     ):
         raise ValueError("neural-muscle identity projection contract is invalid")
+
+    activation = raw.get("neural_muscle_activation_dynamics", {})
+    if (
+        activation.get("activation_unit") != "dimensionless_0_1"
+        or activation.get("dt_source") != "visual_lif_dt"
+        or activation.get("provenance") != "MODEL_FITTED"
+        or int(activation.get("minimum_spike_to_activation_delay_steps", 0))
+        != 1
+        or activation.get("individual_geometry_executed") is not False
+        or activation.get("mechanical_force_executed") is not False
+    ):
+        raise ValueError("neural-muscle activation claim boundary is invalid")
+    for key in ("rise_tau_s", "decay_tau_s", "event_target"):
+        value = float(activation.get(key, 0.0))
+        bounds = activation.get("calibration_ranges", {}).get(key, ())
+        if (
+            not isfinite(value)
+            or value <= 0.0
+            or len(bounds) != 2
+            or not float(bounds[0]) <= value <= float(bounds[1])
+        ):
+            raise ValueError(f"neural-muscle activation {key} is invalid")
+    evidence = activation.get("supporting_evidence", {})
+    if (
+        evidence.get("doi") != "10.7554/eLife.51781"
+        or evidence.get("stage") != "L1_or_L2"
+        or evidence.get("numeric_parameter_use") != "none"
+    ):
+        raise ValueError("neural-muscle activation evidence boundary is invalid")
 
     transduction = raw.get("phototransduction", {})
     if transduction.get("field_unit") != "W_m-2":
@@ -761,6 +793,7 @@ class VisualCircuitFrame:
     derived_a03o_spikes: dict[str, tuple[str, ...]]
     derived_motor_spikes: dict[str, tuple[str, ...]]
     muscle_identity_events: NeuralMuscleIdentityEventFrame
+    muscle_activation: NeuralMuscleActivationFrame
     bridge_activity: dict[str, float]
     bridge_stimulus: SpatialStimulus
 
@@ -797,6 +830,25 @@ class VisualCircuitFrame:
                 ),
                 "activation_dynamics_executed": False,
                 "individual_geometry_executed": False,
+            },
+            "muscle_activation": {
+                "time_s": self.muscle_activation.time_s,
+                "activations": dict(self.muscle_activation.activations),
+                "applied_event_fibers": list(
+                    self.muscle_activation.applied_event_fibers
+                ),
+                "applied_source_by_fiber": dict(
+                    self.muscle_activation.applied_source_by_fiber
+                ),
+                "applied_spike_time_s_by_fiber": dict(
+                    self.muscle_activation.applied_spike_time_s_by_fiber
+                ),
+                "mapping_provenance_by_fiber": dict(
+                    self.muscle_activation.mapping_provenance_by_fiber
+                ),
+                "parameter_provenance": "MODEL_FITTED",
+                "individual_geometry_executed": False,
+                "mechanical_force_executed": False,
             },
             "bridge_activity": self.bridge_activity,
             "bridge_stimulus": list(self.bridge_stimulus.values()),
@@ -1103,6 +1155,22 @@ class L1VisualCircuitProtocol:
             fiber_id: None
             for fiber_id in self.muscle_identity_projection.mapped_fiber_ids
         }
+        activation = self.config["neural_muscle_activation_dynamics"]
+        self.muscle_activation_model = NeuralMuscleActivationModel(
+            projection=self.muscle_identity_projection,
+            dt_s=self.network.config.dt_s,
+            rise_tau_s=float(activation["rise_tau_s"]),
+            decay_tau_s=float(activation["decay_tau_s"]),
+            event_target=float(activation["event_target"]),
+        )
+        self.muscle_activation_input_counts = {
+            fiber_id: 0
+            for fiber_id in self.muscle_identity_projection.mapped_fiber_ids
+        }
+        self.muscle_peak_activations = {
+            fiber_id: 0.0
+            for fiber_id in self.muscle_identity_projection.mapped_fiber_ids
+        }
 
     def __call__(
         self, time_s: float, state: SpatialSensoryState
@@ -1185,6 +1253,15 @@ class L1VisualCircuitProtocol:
             self.muscle_identity_event_counts[fiber_id] += 1
             if self.muscle_identity_first_event_s[fiber_id] is None:
                 self.muscle_identity_first_event_s[fiber_id] = time_s
+        muscle_activation = self.muscle_activation_model.step(
+            time_s, muscle_identity_events
+        )
+        for fiber_id in muscle_activation.applied_event_fibers:
+            self.muscle_activation_input_counts[fiber_id] += 1
+        for fiber_id, value in muscle_activation.activations.items():
+            self.muscle_peak_activations[fiber_id] = max(
+                self.muscle_peak_activations[fiber_id], value
+            )
 
         left_activity = self.bridge_activity["left"]
         right_activity = self.bridge_activity["right"]
@@ -1218,6 +1295,7 @@ class L1VisualCircuitProtocol:
                     derived_a03o_spikes=derived_a03o_spikes,
                     derived_motor_spikes=derived_motor_spikes,
                     muscle_identity_events=muscle_identity_events,
+                    muscle_activation=muscle_activation,
                     bridge_activity=dict(self.bridge_activity),
                     bridge_stimulus=stimulus,
                 )
@@ -1252,6 +1330,11 @@ class VisualClosedLoopResult:
     visual_first_spike_s: dict[str, float | None]
     muscle_identity_event_counts: dict[str, int]
     muscle_identity_first_event_s: dict[str, float | None]
+    muscle_activation_input_counts: dict[str, int]
+    muscle_first_activation_s: dict[str, float | None]
+    muscle_peak_activations: dict[str, float]
+    muscle_last_applied_spike_s: dict[str, float | None]
+    muscle_last_applied_source: dict[str, str | None]
     lesion_node_ids: tuple[str, ...]
     lesion_muscle_fiber_ids: tuple[str, ...]
     visual_frames: tuple[VisualCircuitFrame, ...]
@@ -1289,8 +1372,21 @@ class VisualClosedLoopResult:
             "recruited_muscle_fibers": sum(
                 count > 0 for count in self.muscle_identity_event_counts.values()
             ),
-            "activation_dynamics_executed": False,
+            "activation_dynamics_executed": True,
+            "activation_parameter_provenance": "MODEL_FITTED",
+            "activation_input_events": sum(
+                self.muscle_activation_input_counts.values()
+            ),
+            "activated_muscle_fibers": sum(
+                value is not None
+                for value in self.muscle_first_activation_s.values()
+            ),
+            "maximum_muscle_activation": max(
+                self.muscle_peak_activations.values(), default=0.0
+            ),
+            "minimum_spike_to_activation_delay_steps": 1,
             "individual_muscle_geometry_executed": False,
+            "mechanical_force_executed": False,
             "downstream_spatial_neurons": body.neuron_count,
             "total_neuron_compartments": (
                 self.visual_neuron_compartments + body.neuron_count
@@ -1327,8 +1423,9 @@ class VisualClosedLoopResult:
                 "A03o-to-14-A1-motor-identity structural contacts; an "
                 "ANATOMY_DERIVED CPf-to-A03o-to-motor-target projection in "
                 "A2-A6 with A7 blocked; 146 causal named-fiber identity "
-                "event mappings with no activation dynamics or geometry; "
-                "fitted effects, phototransduction, and a parallel "
+                "mappings and one-step-delayed MODEL_FITTED activation "
+                "dynamics with no individual geometry or force; fitted "
+                "effects, phototransduction, and a parallel "
                 "A03o-to-body bridge; not validated natural phototaxis or "
                 "a complete sensor-to-muscle connectome"
             ),
@@ -1509,6 +1606,21 @@ class L1VisualClosedLoopLarva:
             ),
             muscle_identity_first_event_s=dict(
                 self.protocol.muscle_identity_first_event_s
+            ),
+            muscle_activation_input_counts=dict(
+                self.protocol.muscle_activation_input_counts
+            ),
+            muscle_first_activation_s=dict(
+                self.protocol.muscle_activation_model.first_activation_s
+            ),
+            muscle_peak_activations=dict(
+                self.protocol.muscle_peak_activations
+            ),
+            muscle_last_applied_spike_s=dict(
+                self.protocol.muscle_activation_model.last_applied_spike_s
+            ),
+            muscle_last_applied_source=dict(
+                self.protocol.muscle_activation_model.last_applied_source
             ),
             lesion_node_ids=self.protocol.lesion_node_ids,
             lesion_muscle_fiber_ids=(

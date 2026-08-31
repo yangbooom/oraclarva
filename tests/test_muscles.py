@@ -2,6 +2,7 @@ import pytest
 
 from oraclarva.muscles import (
     AggregateMuscleIdentityProjection,
+    NeuralMuscleActivationModel,
     load_muscle_atlas,
     load_neural_muscle_identity_projection,
 )
@@ -232,3 +233,78 @@ def test_individual_fiber_lesion_blocks_event_but_not_source_spike():
     assert frame.fiber_events == ("A1:right:M24:LT4",)
     with pytest.raises(ValueError, match="outside A1-A6"):
         projection.emit((source,), lesioned_fiber_ids=("A7:right:M23:LT3",))
+
+
+
+def test_mapped_fiber_activation_starts_one_timestep_after_source_spike():
+    projection = load_neural_muscle_identity_projection()
+    model = NeuralMuscleActivationModel(
+        projection=projection,
+        dt_s=0.001,
+        rise_tau_s=0.02,
+        decay_tau_s=0.08,
+        event_target=1.0,
+    )
+    source = "motor_identity:4121534:right"
+    target = "A1:right:M23:LT3"
+
+    spike_frame = projection.emit((source,))
+    at_spike = model.step(0.0, spike_frame)
+    after_spike = model.step(0.001, projection.emit(()))
+
+    assert at_spike.activations[target] == 0.0
+    assert target not in at_spike.applied_event_fibers
+    assert after_spike.activations[target] > 0.0
+    assert target in after_spike.applied_event_fibers
+    assert after_spike.applied_source_by_fiber[target] == source
+    assert after_spike.applied_spike_time_s_by_fiber[target] == 0.0
+    assert after_spike.applied_spike_time_s_by_fiber[target] < after_spike.time_s
+    assert after_spike.parameter_provenance == "MODEL_FITTED"
+    assert not after_spike.individual_geometry_executed
+    assert not after_spike.mechanical_force_executed
+
+
+def test_mapped_fiber_activation_decays_and_remains_bounded():
+    projection = load_neural_muscle_identity_projection()
+    model = NeuralMuscleActivationModel(
+        projection=projection,
+        dt_s=0.001,
+        rise_tau_s=0.02,
+        decay_tau_s=0.08,
+        event_target=1.0,
+    )
+    source = "motor_identity:4488976:right"
+    target = "A1:right:M1:DA1"
+
+    model.step(0.0, projection.emit((source,)))
+    peak = model.step(0.001, projection.emit(())).activations[target]
+    decayed = model.step(0.002, projection.emit(())).activations[target]
+
+    assert 0.0 < decayed < peak < 1.0
+    assert model.first_activation_s[target] == 0.001
+    assert model.last_applied_spike_s[target] == 0.0
+    with pytest.raises(ValueError, match="once per dt"):
+        model.step(0.004, projection.emit(()))
+
+
+def test_fiber_event_lesion_prevents_activation_without_geometry_fallback():
+    projection = load_neural_muscle_identity_projection()
+    model = NeuralMuscleActivationModel(
+        projection=projection,
+        dt_s=0.001,
+        rise_tau_s=0.02,
+        decay_tau_s=0.08,
+        event_target=1.0,
+    )
+    source = "motor_identity:4121534:right"
+    target = "A1:right:M23:LT3"
+    sibling = "A1:right:M24:LT4"
+
+    events = projection.emit(
+        (source,), lesioned_fiber_ids=(target,)
+    )
+    model.step(0.0, events)
+    activated = model.step(0.001, projection.emit(()))
+
+    assert activated.activations[target] == 0.0
+    assert activated.activations[sibling] > 0.0

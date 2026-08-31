@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 from dataclasses import dataclass, field
+from math import exp, isfinite
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -51,6 +52,119 @@ class NeuralMuscleIdentityEventFrame:
     event_rule_provenance: str = "ANATOMY_DERIVED"
     activation_dynamics_executed: bool = False
     individual_geometry_executed: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class NeuralMuscleActivationFrame:
+    time_s: float
+    activations: Mapping[str, float]
+    applied_event_fibers: tuple[str, ...]
+    applied_source_by_fiber: Mapping[str, str]
+    applied_spike_time_s_by_fiber: Mapping[str, float]
+    mapping_provenance_by_fiber: Mapping[str, str]
+    parameter_provenance: str = "MODEL_FITTED"
+    individual_geometry_executed: bool = False
+    mechanical_force_executed: bool = False
+
+    @property
+    def active_fiber_count(self) -> int:
+        return sum(value > 0.0 for value in self.activations.values())
+
+
+@dataclass(slots=True)
+class NeuralMuscleActivationModel:
+    """One-step-delayed, bounded activation for mapped muscle identities."""
+
+    projection: "NeuralMuscleIdentityProjection"
+    dt_s: float
+    rise_tau_s: float
+    decay_tau_s: float
+    event_target: float
+    activations: dict[str, float] = field(init=False)
+    first_activation_s: dict[str, float | None] = field(init=False)
+    last_applied_spike_s: dict[str, float | None] = field(init=False)
+    last_applied_source: dict[str, str | None] = field(init=False)
+    _pending_event: dict[str, tuple[str, float, str]] = field(
+        init=False, repr=False
+    )
+    _step_index: int = field(init=False, default=0, repr=False)
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("dt_s", self.dt_s),
+            ("rise_tau_s", self.rise_tau_s),
+            ("decay_tau_s", self.decay_tau_s),
+            ("event_target", self.event_target),
+        ):
+            if not isfinite(float(value)) or float(value) <= 0.0:
+                raise ValueError(f"muscle activation {name} must be positive")
+        if self.dt_s >= min(self.rise_tau_s, self.decay_tau_s):
+            raise ValueError(
+                "muscle activation timestep must be below both time constants"
+            )
+        if self.event_target > 1.0:
+            raise ValueError("muscle activation event target cannot exceed one")
+        fiber_ids = self.projection.mapped_fiber_ids
+        self.activations = {fiber_id: 0.0 for fiber_id in fiber_ids}
+        self.first_activation_s = {fiber_id: None for fiber_id in fiber_ids}
+        self.last_applied_spike_s = {fiber_id: None for fiber_id in fiber_ids}
+        self.last_applied_source = {fiber_id: None for fiber_id in fiber_ids}
+        self._pending_event = {}
+
+    def step(
+        self,
+        time_s: float,
+        events: NeuralMuscleIdentityEventFrame,
+    ) -> NeuralMuscleActivationFrame:
+        expected_time = self._step_index * self.dt_s
+        if not isfinite(time_s) or abs(time_s - expected_time) > 1e-9:
+            raise ValueError(
+                "muscle activation must be stepped once per dt in order"
+            )
+        applied = dict(self._pending_event)
+        rise_fraction = 1.0 - exp(-self.dt_s / self.rise_tau_s)
+        decay_fraction = 1.0 - exp(-self.dt_s / self.decay_tau_s)
+        for fiber_id, activation in self.activations.items():
+            if fiber_id in applied:
+                target = self.event_target
+                updated = activation + (target - activation) * rise_fraction
+                source, spike_time_s, _ = applied[fiber_id]
+                if not spike_time_s < time_s:
+                    raise ValueError(
+                        "muscle activation input spike must precede activation"
+                    )
+                self.last_applied_spike_s[fiber_id] = spike_time_s
+                self.last_applied_source[fiber_id] = source
+            else:
+                updated = activation + (0.0 - activation) * decay_fraction
+            bounded = min(1.0, max(0.0, updated))
+            self.activations[fiber_id] = bounded
+            if bounded > 0.0 and self.first_activation_s[fiber_id] is None:
+                self.first_activation_s[fiber_id] = time_s
+
+        self._pending_event = {
+            fiber_id: (
+                events.source_by_fiber[fiber_id],
+                time_s,
+                events.mapping_provenance_by_fiber[fiber_id],
+            )
+            for fiber_id in events.fiber_events
+        }
+        self._step_index += 1
+        return NeuralMuscleActivationFrame(
+            time_s=time_s,
+            activations=dict(self.activations),
+            applied_event_fibers=tuple(applied),
+            applied_source_by_fiber={
+                fiber_id: value[0] for fiber_id, value in applied.items()
+            },
+            applied_spike_time_s_by_fiber={
+                fiber_id: value[1] for fiber_id, value in applied.items()
+            },
+            mapping_provenance_by_fiber={
+                fiber_id: value[2] for fiber_id, value in applied.items()
+            },
+        )
 
 
 @dataclass(frozen=True, slots=True)
