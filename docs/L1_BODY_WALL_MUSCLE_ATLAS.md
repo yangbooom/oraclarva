@@ -36,13 +36,22 @@ The current atlas therefore leaves these release-critical quantities unresolved:
 Until all are source-backed or fitted against held-out L1 data,
 `mechanically_executable` and `full_body_ready` remain false.
 
-## Next anatomical unit
+## Isolated A1-left mechanics
 
-The next implementation target is an A1 hemisegment with explicit tendon cells,
-fiber origins/insertions, and three-layer collision-safe geometry. It will be
-validated in isolation before its supported homologies are instantiated in
-A2-A6. Thoracic and terminal segments require their own atlases rather than an
-A1 copy.
+The v0 isolated fixture now gives the 29 A1-left identities explicit normalized
+origins, insertions, rest lengths, lines of action, passive elasticity, damping,
+and activation-driven tension. These coordinates are a deterministic
+ANATOMY_DERIVED schematic constrained by the published spatial groups; they are
+not digitized or measured attachments. The material and tension values are
+MODEL_FITTED model units. Exact zero-input stability and individual-fiber lesion
+locality are checked in.
+
+This does not make the 358-fiber atlas mechanically executable. Individual
+layers, direct/indirect tendon assignment, shared cuticle nodes, metric scale,
+CSA, Fmax, and A2-A6 attachment homology remain unresolved. Stage 4 must project
+these individual forces onto shared full-body physics without retaining the
+parallel aggregate bridge. Thoracic and terminal segments still require their
+own atlases rather than an A1 copy.
 
 ## Sources
 

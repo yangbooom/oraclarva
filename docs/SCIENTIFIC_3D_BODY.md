@@ -106,9 +106,12 @@ VO, T, and Broad), individual muscle numbers and synonyms, synapse types, side,
 segment, and exact CATMAID skeleton IDs. It does not collapse these anatomical
 groups into a made-up longitudinal/transverse actuator. The current A1/A2 map is
 therefore identity-curated but not yet mechanically executable for release.
-The research fixture instantiates its 58 resolved identities and uses a
-`MODEL_FITTED` normalized A1 aggregate proxy; this does not fill the null gains
-or execute individual lines of action.
+The full-body research fixture still uses its `MODEL_FITTED` aggregate proxy.
+Separately, the isolated A1-left fixture executes all 29 normalized lines of
+action, rest lengths, passive elasticity, damping, and activation-driven
+tension without feeding them into the body. Its coordinates are
+`ANATOMY_DERIVED`, its mechanics are `MODEL_FITTED` model units, and it does not
+fill metric attachments, layers, CSA, Fmax, or shared-cuticle mechanics.
 
 Synthetic mappings are permitted only when a test explicitly opts in. A release
 simulation fails closed until every enabled projection carries an observed

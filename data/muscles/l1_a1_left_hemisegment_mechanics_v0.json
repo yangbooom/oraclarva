@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_a1_left_hemisegment_mechanics_v0",
+  "stage": "L1",
+  "status": "isolated_normalized_attachment_hypothesis_not_full_body_ready",
+  "scope": {
+    "segment": "A1",
+    "side": "left",
+    "fiber_count": 29,
+    "reason": "Validate individual attachment and muscle mechanics in isolation before any A2-A6 homology or full-body actuation."
+  },
+  "claim_boundary": {
+    "absolute_scale_claimed": false,
+    "measured_3d_attachments_claimed": false,
+    "individual_layer_assignments_claimed": false,
+    "csa_claimed": false,
+    "fmax_claimed": false,
+    "force_unit": "dimensionless_model_unit_not_newton",
+    "full_body_motion_enabled": false
+  },
+  "sources": [
+    {
+      "source_id": "zarin_2019_a1_muscle_layout",
+      "doi": "10.7554/eLife.51781",
+      "used_for": ["A1 29-muscle identity pattern", "DL DO VL VO VA T spatial groups", "qualitative location and orientation only"],
+      "numeric_parameter_use": "none"
+    },
+    {
+      "source_id": "carayon_2020_attachment_topology",
+      "doi": "10.7554/eLife.57547",
+      "used_for": ["tendon-cell attachment topology", "direct and indirect attachment distinction", "orientation is muscle-identity-specific"],
+      "numeric_parameter_use": "none"
+    }
+  ],
+  "body_fixed_coordinate_system": {
+    "s": "normalized anterior-to-posterior A1 coordinate, 0 to 1",
+    "theta": "radians around the cross-section; 0 dorsal, -pi/2 left lateral, -pi ventral",
+    "d": "fractional depth inward from the schematic shell",
+    "metric_unit": null,
+    "cross_section_width_body_units": 1.2,
+    "cross_section_height_body_units": 1.0,
+    "attachment_depth_fraction": 0.08,
+    "parameter_provenance": "MODEL_FITTED",
+    "note": "Cross-section ratios and depth are diagnostic geometry, not measured L1 dimensions."
+  },
+  "attachment_hypothesis": {
+    "provenance": "ANATOMY_DERIVED",
+    "derivation": "Preserve published spatial-group order and orientation; assign deterministic lanes within each group without digitizing any source image.",
+    "longitudinal_and_oblique_groups": {
+      "DL": {"origin_s": 0.08, "insertion_s": 0.92, "theta_center_rad": -0.45, "theta_spread_rad": 0.34, "theta_twist_rad": 0.05, "axial_stagger": 0.05},
+      "DO": {"origin_s": 0.10, "insertion_s": 0.88, "theta_center_rad": -1.00, "theta_spread_rad": 0.34, "theta_twist_rad": 0.22, "axial_stagger": 0.05},
+      "VL": {"origin_s": 0.10, "insertion_s": 0.90, "theta_center_rad": -2.03, "theta_spread_rad": 0.30, "theta_twist_rad": -0.06, "axial_stagger": 0.04},
+      "VO": {"origin_s": 0.12, "insertion_s": 0.86, "theta_center_rad": -2.43, "theta_spread_rad": 0.28, "theta_twist_rad": -0.22, "axial_stagger": 0.04},
+      "VA": {"origin_s": 0.12, "insertion_s": 0.88, "theta_center_rad": -2.80, "theta_spread_rad": 0.20, "theta_twist_rad": -0.12, "axial_stagger": 0.03}
+    },
+    "transverse_group": {
+      "first_s": 0.16,
+      "last_s": 0.84,
+      "dorsal_theta_rad": -0.72,
+      "ventral_theta_rad": -2.45,
+      "s_tilt": 0.04
+    }
+  },
+  "isolated_mechanics": {
+    "equation": "q_ddot=(g*a-k*q-c*q_dot)/m; L=L0-q",
+    "coordinate": "one independent shortening coordinate q per fiber",
+    "provenance": "MODEL_FITTED",
+    "dt_s": 0.001,
+    "passive_stiffness_model_units": 180.0,
+    "damping_model_units": 24.0,
+    "inertial_scale_model_units": 1.0,
+    "active_tension_gain_model_units": 15.0,
+    "maximum_shortening_fraction": 0.30,
+    "calibration_objective": "zero-input equilibrium plus bounded non-oscillatory diagnostic response within 0.5 s; not fitted to biological force",
+    "parameter_ranges": {
+      "passive_stiffness_model_units": [120.0, 260.0],
+      "damping_model_units": [18.0, 36.0],
+      "inertial_scale_model_units": [0.5, 2.0],
+      "active_tension_gain_model_units": [8.0, 24.0],
+      "maximum_shortening_fraction": [0.10, 0.35]
+    },
+    "uncertainty": "No biological force, mass, stiffness, damping, or individual attachment coordinate is inferred from these model-unit values."
+  },
+  "limitations": [
+    "The straight origin-to-insertion chord is a schematic line of action, not a traced fiber volume.",
+    "Direct versus indirect tendon topology is not assigned per individual muscle.",
+    "Internal, median, and external layer identity remains unresolved per fiber.",
+    "Fibers have independent generalized coordinates and do not yet share a deformable cuticle or pressure field.",
+    "The fixture cannot move, yaw, pitch, or translate the full body."
+  ]
+}

@@ -124,6 +124,14 @@ local to their mapped diagnostic activation. No direct
 dorsal-versus-ventral visual sensor is claimed. See
 `docs/L1_VISUAL_CONNECTOME_LOOP_V0.md`; run `oraclarva-visual --duration 1.5`.
 
+The first individual-muscle mechanics fixture now gives all 29 A1-left fibers
+explicit normalized `(s, theta, d)` origins and insertions, rest lengths, lines
+of action, passive elasticity, damping, and activation-driven tension. The
+coordinates are `ANATOMY_DERIVED`; all mechanics use `MODEL_FITTED` model units,
+not newtons. Zero input is exact rest, and an M1 mechanics lesion preserves its
+upstream activation while blocking only M1 shortening. This isolated fixture
+does not yet actuate the full body. See `docs/A1_HEMISEGMENT_MECHANICS_V0.md`.
+
 This is infrastructure for a scientific model, **not yet a validated whole-brain emulation**. The included smoke circuit is synthetic and is clearly labeled as such.
 
 ## Quick start
@@ -224,6 +232,20 @@ python tools/compile_l1_a03o_segmental_projection.py --check
 python tools/compile_l1_neural_muscle_identity.py --check
 python tools/export_visual_trajectory.py --check
 python tools/render_visual_gif.py
+```
+
+## Isolated A1 muscle mechanics diagnostic
+
+The Stage 3 artifact shows the 29 schematic A1-left attachment lines, two
+observed MN-to-muscle activations, and a post-activation M1 mechanics lesion.
+The display is an unwrapped normalized coordinate diagnostic; it is not an
+image-derived 3D atlas or a body animation.
+
+![Isolated A1-left mechanics](docs/assets/oraclarva_a1_hemisegment_mechanics.gif)
+
+```bash
+python tools/export_a1_hemisegment_fixture.py --check
+python tools/render_a1_hemisegment_gif.py
 ```
 
 ## Native parity
