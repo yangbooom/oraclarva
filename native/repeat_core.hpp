@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -152,6 +153,52 @@ struct RepeatOutput {
   std::vector<RepeatFrame> trajectory;
   std::vector<RepeatTrace> trace_examples;
   RepeatCycleMetrics cycle_metrics;
+};
+
+struct RepeatEnvironmentInput {
+  double posterior_touch_intensity = 0.0;
+};
+
+struct RepeatStateSnapshot {
+  int step_index = 0;
+  double time_s = 0.0;
+  double displacement_x_um = 0.0;
+  std::vector<RepeatVec3> nodes_m;
+  std::vector<double> segment_activation;
+  std::vector<RepeatVec3> node_force_model_units;
+  std::vector<int> spike_counts;
+  std::vector<double> first_spike_s;
+  std::vector<std::size_t> last_step_spikes;
+  int feedback_force_frames = 0;
+  bool all_active_forces_traced = true;
+  RepeatCycleMetrics cycle_metrics;
+  std::vector<RepeatTrace> trace_examples;
+};
+
+class RepeatSimulation {
+ public:
+  explicit RepeatSimulation(
+      const RepeatFixture& fixture,
+      const RepeatOptions& options = {});
+  ~RepeatSimulation();
+  RepeatSimulation(RepeatSimulation&&) = delete;
+  RepeatSimulation& operator=(RepeatSimulation&&) = delete;
+  RepeatSimulation(const RepeatSimulation&) = delete;
+  RepeatSimulation& operator=(const RepeatSimulation&) = delete;
+
+  void Reset();
+  void Advance(const RepeatEnvironmentInput& input = {});
+  int step_index() const;
+  int maximum_steps() const;
+  double time_s() const;
+  RepeatStateSnapshot Snapshot() const;
+  RepeatOutput Result() const;
+
+ private:
+  struct Impl;
+  RepeatFixture fixture_;
+  RepeatOptions options_;
+  std::unique_ptr<Impl> impl_;
 };
 
 RepeatFixture LoadRepeatFixture(const std::string& path);

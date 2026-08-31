@@ -28,10 +28,16 @@ cycle detection. Its 16 s normal run and five zero/lesion cases match exact
 spikes and strict sampled-state tolerances. The checked report intentionally
 retains `release_validated=false` and the held-out amplitude/duty failures.
 
-Passing these gates establishes numerical parity for the current research
-approximations. It does not establish biological fidelity, held-out validation,
-measured individual muscle mechanics, a complete L1 brain/VNC, or mobile
-performance.
+Stage 8 adds `mobile_core.h/.cpp`: a C11-compatible, hidden-symbol lifecycle
+around the same repeat state. It exposes environment-intensity advance,
+deterministic reset, copied snapshot/trace/cycle state, and a separate read-only
+watertight render mesh. `mobile_main.cpp` is a host acceptance and benchmark
+harness. It does not expose a behavior command.
+
+Passing these gates establishes numerical parity and a host-tested mobile
+source boundary for the current research approximations. It does not establish
+biological fidelity, held-out validation, measured individual muscle
+mechanics, a complete L1 brain/VNC, an Android/iOS build, or device performance.
 
 ```bash
 c++ -std=c++17 -O2 -Wall -Wextra -Werror \
@@ -56,4 +62,9 @@ c++ -std=c++17 -O2 -Wall -Wextra -Werror \
   native/lif_core.cpp native/repeat_core.cpp native/repeat_main.cpp \
   -o /tmp/oraclarva-native-repeat
 /tmp/oraclarva-native-repeat data/parity/repeat_crawl_native_v1.tsv
+
+python tools/build_mobile_core.py --output /tmp/oraclarva-mobile-build
+/tmp/oraclarva-mobile-build/oraclarva-mobile-host \n  data/parity/repeat_crawl_native_v1.tsv
+python tools/export_mobile_core_integration.py --check
+python tools/benchmark_mobile_core.py --check
 ```

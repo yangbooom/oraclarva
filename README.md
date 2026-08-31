@@ -153,6 +153,16 @@ parity only: the held-out amplitude/duty failures and
 `release_validated: false` are unchanged. See
 `docs/REPEAT_CRAWL_NATIVE_PARITY_V1.md`.
 
+Stage 8 exposes that actual C++ state as a C11 mobile lifecycle: deterministic
+reset, one 1 ms environment-input step, copied neural/force/body snapshot, and
+a separate read-only watertight render projection. The full 16 s stepped path
+equals the Stage 7 one-shot path, the same five causal conditions pass, and
+reset replay has a stable canonical digest. A release Linux aarch64 host proxy
+runs the 16 s workload at 28.48x simulated/wall throughput with 16.83 MiB peak
+process RSS.
+These are host engineering results, not Android/iOS device measurements or
+biological validation. See `docs/MOBILE_CORE_INTEGRATION_V1.md`.
+
 The isolated A1 mechanics fixture gives all 29 A1-left fibers normalized
 origins, insertions, rest lengths, lines of action, passive elasticity, damping,
 and activation-driven tension. Stage 4 now reuses the supported subset in the
@@ -291,6 +301,24 @@ python tools/render_native_repeat_parity_gif.py
 pytest -q tests/test_native_repeat_parity.py
 ```
 
+## Stateful mobile core diagnostic
+
+The left panel below shows the 13 internal double-precision physics nodes. The
+right panel is the separate 302-vertex/600-triangle read-only render projection
+returned by the C ABI. Both come from the same stepped state; the renderer
+cannot move the organism. The checked artifact also preserves exact reset
+replay and `release_validated=false`.
+
+![Stateful mobile core and read-only render mesh](docs/assets/oraclarva_mobile_core_integration.gif)
+
+```bash
+python tools/build_mobile_core.py --output /tmp/oraclarva-mobile-build
+python tools/export_mobile_core_integration.py --check
+python tools/benchmark_mobile_core.py --check
+python tools/render_mobile_core_gif.py
+pytest -q tests/test_mobile_core.py
+```
+
 ## Isolated A1 muscle mechanics diagnostic
 
 The Stage 3 artifact shows the 29 schematic A1-left attachment lines, two
@@ -332,9 +360,16 @@ normal 16 s run plus zero-input and four causal lesions match the Python oracle
 on exact spikes and strict sampled-state tolerances. Run
 `pytest tests/test_native_repeat_parity.py`.
 
-This establishes native numerical parity for the current research
-approximations, not a complete L1 brain/VNC, measured individual muscle
-mechanics, held-out biological validation, or on-device performance.
+The Stage 8 C11 ABI advances the same repeat core one fixed step at a time and
+returns copied spike/trace/force/body state plus a separate read-only render
+mesh. Static/shared host artifacts export only eight C symbols. Full stepped,
+one-shot, reset replay, five causal cases, C compatibility, and mesh
+manifoldness are checked by `tests/test_mobile_core.py`.
+
+This establishes native numerical parity and a host-tested integration
+boundary for the current research approximations, not a complete L1 brain/VNC,
+measured individual muscle mechanics, held-out biological validation, an
+Android/iOS build, or device performance.
 
 ## Non-goals for the reference core
 

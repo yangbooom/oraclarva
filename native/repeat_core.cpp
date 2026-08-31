@@ -632,130 +632,174 @@ RepeatFixture LoadRepeatFixture(const std::string& path) {
   return fixture;
 }
 
-RepeatOutput RunRepeat(
-    const RepeatFixture& fixture,
-    const RepeatOptions& options) {
-  const RepeatParameters& p = fixture.parameters;
-  const double dt_s = fixture.lif_config.dt_s;
-  const int steps = options.steps_override > 0
-      ? options.steps_override : fixture.steps;
-  if (steps <= 0 || steps > fixture.steps) {
-    throw std::runtime_error("repeat steps override is outside fixture");
-  }
-
-  SparseLIFNetwork network(
-      fixture.neuron_count, fixture.synapses, fixture.lif_config);
-  if (!options.sensory_lesion.empty()) {
-    const std::size_t wave = FindWaveIndex(fixture, options.sensory_lesion);
-    network.Lesion(
-        options.sensory_lesion == "A1"
-            ? fixture.recovery_neuron
-            : fixture.wave_segments[wave].sensory_neuron);
-  }
-  if (!options.premotor_lesion.empty()) {
-    const std::size_t wave = FindWaveIndex(fixture, options.premotor_lesion);
-    network.Lesion(fixture.wave_segments[wave].premotor_neuron);
-  }
-  std::set<std::size_t> motor_lesions;
-  if (!options.motor_segment_lesion.empty()) {
-    const std::size_t wave =
-        FindWaveIndex(fixture, options.motor_segment_lesion);
-    for (const std::size_t neuron :
-         fixture.wave_segments[wave].source_neurons) {
-      network.Lesion(neuron);
-      motor_lesions.insert(neuron);
-    }
-  }
+struct RepeatSimulation::Impl {
+  const RepeatFixture& fixture;
+  const RepeatOptions& options;
+  const RepeatParameters& p;
+  double dt_s;
+  SparseLIFNetwork network;
+  RepeatBody body;
   std::set<std::size_t> fiber_lesions;
-  if (!options.fiber_segment_lesion.empty()) {
-    FindWaveIndex(fixture, options.fiber_segment_lesion);
-    for (std::size_t index = 0; index < fixture.fibers.size(); ++index) {
-      if (fixture.fibers[index].segment_id
-          == options.fiber_segment_lesion) {
-        fiber_lesions.insert(index);
-      }
-    }
-  }
-
-  RepeatBody body(
-      fixture.body_segments, p.instantaneous_stiffness_n_m);
-  const std::vector<RepeatVec3> no_acceleration(
-      fixture.body_segments.size() + 1);
-  for (int index = 0; index < fixture.equilibrium_steps; ++index) {
-    body.Step(dt_s, p, no_acceleration);
-  }
-  body.ResetVelocity();
-
-  std::vector<double> sensory_rest(6);
-  std::vector<double> sensory_previous(6);
-  for (std::size_t segment = 0; segment < 6; ++segment) {
-    const double length = body.SegmentLength(
-        fixture.wave_segments[segment].body_index);
-    sensory_rest[segment] = length;
-    sensory_previous[segment] = length;
-  }
-
-  std::vector<double> fiber_rest(146);
-  std::vector<double> fiber_previous(146);
-  for (std::size_t index = 0; index < fixture.fibers.size(); ++index) {
-    const auto points = AttachmentPoints(
-        body, fixture.body_segments, fixture.fibers[index]);
-    const double length = Norm(Subtract(points.second, points.first));
-    if (length <= 0.0) {
-      throw std::runtime_error("repeat fiber rest length is not positive");
-    }
-    fiber_rest[index] = length;
-    fiber_previous[index] = length;
-  }
-
-  std::vector<int> source_segment(fixture.neuron_count, -1);
-  for (std::size_t segment = 0; segment < 6; ++segment) {
-    for (const std::size_t neuron :
-         fixture.wave_segments[segment].source_neurons) {
-      if (source_segment[neuron] != -1
-          && source_segment[neuron] != static_cast<int>(segment)) {
-        throw std::runtime_error("repeat source maps to multiple segments");
-      }
-      source_segment[neuron] = static_cast<int>(segment);
-    }
-  }
-
+  std::vector<double> sensory_rest;
+  std::vector<double> sensory_previous;
+  std::vector<double> fiber_rest;
+  std::vector<double> fiber_previous;
+  std::vector<int> source_segment;
   RepeatOutput output;
-  output.spike_counts.assign(fixture.neuron_count, 0);
-  output.first_spike_s.assign(
-      fixture.neuron_count,
-      std::numeric_limits<double>::quiet_NaN());
-  output.premotor_spike_times_s.resize(6);
-  output.motor_spike_times_s.resize(6);
-  output.trace_examples.resize(6);
-
-  std::vector<double> adaptation(7, 0.0);
-  std::vector<double> local_tension(6, 0.0);
-  std::vector<double> activation(146, 0.0);
-  std::vector<PendingFiberEvent> pending(146);
-  std::vector<std::size_t> last_source(146, 0);
-  std::vector<double> last_spike(
-      146, std::numeric_limits<double>::quiet_NaN());
-  std::vector<RepeatTrace> last_trace(146);
-  std::vector<std::vector<Origin>> pending_origins(6);
-  std::vector<Origin> last_origin(6);
-  std::vector<std::vector<double>> length_history(6);
+  std::vector<double> adaptation;
+  std::vector<double> local_tension;
+  std::vector<double> activation;
+  std::vector<PendingFiberEvent> pending;
+  std::vector<std::size_t> last_source;
+  std::vector<double> last_spike;
+  std::vector<RepeatTrace> last_trace;
+  std::vector<std::vector<Origin>> pending_origins;
+  std::vector<Origin> last_origin;
+  std::vector<std::vector<double>> length_history;
   std::vector<double> center_history;
-  const double initial_center = body.CenterX();
-  output.trajectory.push_back({
-      0.0,
-      body.Positions(),
-      std::vector<double>(6, 0.0),
-      std::vector<RepeatVec3>(13)});
-  const double adaptation_decay =
-      std::exp(-dt_s / p.sensory_adaptation_tau_s);
-  const double rise =
-      1.0 - std::exp(-dt_s / p.muscle_activation_rise_tau_s);
-  const double decay =
-      1.0 - std::exp(-dt_s / p.muscle_activation_decay_tau_s);
+  std::vector<std::size_t> last_step_spikes;
+  std::vector<RepeatVec3> last_node_force;
+  double initial_center = 0.0;
+  double adaptation_decay = 0.0;
+  double rise = 0.0;
+  double decay = 0.0;
+  int step_index = 0;
 
-  for (int step = 0; step < steps; ++step) {
-    const double time_s = static_cast<double>(step) * dt_s;
+  Impl(const RepeatFixture& fixture_value, const RepeatOptions& options_value)
+      : fixture(fixture_value),
+        options(options_value),
+        p(fixture.parameters),
+        dt_s(fixture.lif_config.dt_s),
+        network(
+            fixture.neuron_count,
+            fixture.synapses,
+            fixture.lif_config),
+        body(
+            fixture.body_segments,
+            fixture.parameters.instantaneous_stiffness_n_m),
+        sensory_rest(6),
+        sensory_previous(6),
+        fiber_rest(fixture.fibers.size()),
+        fiber_previous(fixture.fibers.size()),
+        source_segment(fixture.neuron_count, -1),
+        adaptation(7, 0.0),
+        local_tension(6, 0.0),
+        activation(fixture.fibers.size(), 0.0),
+        pending(fixture.fibers.size()),
+        last_source(fixture.fibers.size(), 0),
+        last_spike(
+            fixture.fibers.size(),
+            std::numeric_limits<double>::quiet_NaN()),
+        last_trace(fixture.fibers.size()),
+        pending_origins(6),
+        last_origin(6),
+        length_history(6),
+        last_node_force(fixture.body_segments.size() + 1) {
+    ApplyLesions();
+    const std::vector<RepeatVec3> no_acceleration(
+        fixture.body_segments.size() + 1);
+    for (int index = 0; index < fixture.equilibrium_steps; ++index) {
+      body.Step(dt_s, p, no_acceleration);
+    }
+    body.ResetVelocity();
+
+    for (std::size_t segment = 0; segment < 6; ++segment) {
+      const double length = body.SegmentLength(
+          fixture.wave_segments[segment].body_index);
+      sensory_rest[segment] = length;
+      sensory_previous[segment] = length;
+    }
+    for (std::size_t index = 0; index < fixture.fibers.size(); ++index) {
+      const auto points = AttachmentPoints(
+          body, fixture.body_segments, fixture.fibers[index]);
+      const double length = Norm(Subtract(points.second, points.first));
+      if (length <= 0.0) {
+        throw std::runtime_error(
+            "repeat fiber rest length is not positive");
+      }
+      fiber_rest[index] = length;
+      fiber_previous[index] = length;
+    }
+    for (std::size_t segment = 0; segment < 6; ++segment) {
+      for (const std::size_t neuron :
+           fixture.wave_segments[segment].source_neurons) {
+        if (source_segment[neuron] != -1
+            && source_segment[neuron] != static_cast<int>(segment)) {
+          throw std::runtime_error(
+              "repeat source maps to multiple segments");
+        }
+        source_segment[neuron] = static_cast<int>(segment);
+      }
+    }
+
+    output.spike_counts.assign(fixture.neuron_count, 0);
+    output.first_spike_s.assign(
+        fixture.neuron_count,
+        std::numeric_limits<double>::quiet_NaN());
+    output.premotor_spike_times_s.resize(6);
+    output.motor_spike_times_s.resize(6);
+    output.trace_examples.resize(6);
+    initial_center = body.CenterX();
+    output.trajectory.push_back({
+        0.0,
+        body.Positions(),
+        std::vector<double>(6, 0.0),
+        std::vector<RepeatVec3>(
+            fixture.body_segments.size() + 1)});
+    adaptation_decay =
+        std::exp(-dt_s / p.sensory_adaptation_tau_s);
+    rise =
+        1.0 - std::exp(-dt_s / p.muscle_activation_rise_tau_s);
+    decay =
+        1.0 - std::exp(-dt_s / p.muscle_activation_decay_tau_s);
+  }
+
+  void ApplyLesions() {
+    if (!options.sensory_lesion.empty()) {
+      const std::size_t wave =
+          FindWaveIndex(fixture, options.sensory_lesion);
+      network.Lesion(
+          options.sensory_lesion == "A1"
+              ? fixture.recovery_neuron
+              : fixture.wave_segments[wave].sensory_neuron);
+    }
+    if (!options.premotor_lesion.empty()) {
+      const std::size_t wave =
+          FindWaveIndex(fixture, options.premotor_lesion);
+      network.Lesion(fixture.wave_segments[wave].premotor_neuron);
+    }
+    if (!options.motor_segment_lesion.empty()) {
+      const std::size_t wave =
+          FindWaveIndex(fixture, options.motor_segment_lesion);
+      for (const std::size_t neuron :
+           fixture.wave_segments[wave].source_neurons) {
+        network.Lesion(neuron);
+      }
+    }
+    if (!options.fiber_segment_lesion.empty()) {
+      FindWaveIndex(fixture, options.fiber_segment_lesion);
+      for (std::size_t index = 0;
+           index < fixture.fibers.size(); ++index) {
+        if (fixture.fibers[index].segment_id
+            == options.fiber_segment_lesion) {
+          fiber_lesions.insert(index);
+        }
+      }
+    }
+  }
+
+  void Advance(const RepeatEnvironmentInput& input) {
+    if (step_index >= fixture.steps) {
+      throw std::runtime_error(
+          "repeat simulation advanced beyond fixture limit");
+    }
+    if (!std::isfinite(input.posterior_touch_intensity)
+        || input.posterior_touch_intensity < 0.0
+        || input.posterior_touch_intensity > 1.0) {
+      throw std::runtime_error(
+          "posterior touch intensity must be finite in [0, 1]");
+    }
+    const double time_s = static_cast<double>(step_index) * dt_s;
     std::vector<double> strain_rate(6, 0.0);
     std::vector<double> contraction_drive(6, 0.0);
     for (std::size_t segment = 0; segment < 6; ++segment) {
@@ -786,10 +830,10 @@ RepeatOutput RunRepeat(
 
     for (double& value : adaptation) value *= adaptation_decay;
     std::map<std::size_t, double> external;
-    if (options.stimulate
-        && time_s < p.posterior_touch_duration_s) {
+    if (input.posterior_touch_intensity > 0.0) {
       external[fixture.touch_neuron] =
-          p.posterior_touch_current_a;
+          p.posterior_touch_current_a
+          * input.posterior_touch_intensity;
     }
     for (std::size_t segment = 0; segment < 6; ++segment) {
       const double gate = std::min(
@@ -799,9 +843,11 @@ RepeatOutput RunRepeat(
       const double raw =
           contraction_drive[segment] * gate
           * p.sensory_maximum_current_a;
-      const double adapted = std::max(0.0, raw - adaptation[segment]);
+      const double adapted =
+          std::max(0.0, raw - adaptation[segment]);
       if (adapted > 0.0) {
-        external[fixture.wave_segments[segment].sensory_neuron] = adapted;
+        external[fixture.wave_segments[segment].sensory_neuron] =
+            adapted;
       }
     }
     const double recovery_gate = std::min(
@@ -823,6 +869,7 @@ RepeatOutput RunRepeat(
     }
 
     const std::vector<std::size_t> spikes = network.Step(external);
+    last_step_spikes = spikes;
     std::vector<bool> spiked(fixture.neuron_count, false);
     for (const std::size_t neuron : spikes) {
       spiked[neuron] = true;
@@ -832,7 +879,7 @@ RepeatOutput RunRepeat(
       }
     }
 
-    auto queue_origin = [&pending_origins, time_s](
+    auto queue_origin = [this, time_s](
                             std::size_t target,
                             std::size_t sensor,
                             double delay) {
@@ -852,7 +899,8 @@ RepeatOutput RunRepeat(
                 * p.sensory_adaptation_fraction);
         if (segment + 1 < 6) {
           queue_origin(
-              segment + 1, sensor,
+              segment + 1,
+              sensor,
               p.intersegmental_relay_delay_s);
         }
       }
@@ -863,7 +911,8 @@ RepeatOutput RunRepeat(
           p.sensory_maximum_current_a
               * p.recovery_adaptation_fraction);
       queue_origin(
-          0, fixture.recovery_neuron,
+          0,
+          fixture.recovery_neuron,
           p.a1_recovery_to_a6_delay_s);
     }
 
@@ -912,7 +961,8 @@ RepeatOutput RunRepeat(
       }
     }
 
-    for (std::size_t index = 0; index < 146; ++index) {
+    for (std::size_t index = 0;
+         index < fixture.fibers.size(); ++index) {
       if (pending[index].valid) {
         activation[index] +=
             (p.muscle_event_target - activation[index]) * rise;
@@ -925,24 +975,30 @@ RepeatOutput RunRepeat(
       activation[index] =
           std::min(1.0, std::max(0.0, activation[index]));
     }
-    std::vector<PendingFiberEvent> next_pending(146);
-    for (std::size_t index = 0; index < 146; ++index) {
+    std::vector<PendingFiberEvent> next_pending(
+        fixture.fibers.size());
+    for (std::size_t index = 0;
+         index < fixture.fibers.size(); ++index) {
       const RepeatFiber& fiber = fixture.fibers[index];
       if (spiked[fiber.source_neuron]
           && fiber_lesions.count(index) == 0) {
         next_pending[index] = {
-            true, fiber.source_neuron, time_s,
+            true,
+            fiber.source_neuron,
+            time_s,
             source_trace[fiber.source_neuron]};
       }
     }
     pending = std::move(next_pending);
 
-    std::vector<RepeatVec3> node_force(13);
+    std::vector<RepeatVec3> node_force(
+        fixture.body_segments.size() + 1);
     std::vector<double> segment_activation_sum(6, 0.0);
     std::vector<int> segment_fiber_count(6, 0);
     int active_count = 0;
     int traced_count = 0;
-    for (std::size_t index = 0; index < 146; ++index) {
+    for (std::size_t index = 0;
+         index < fixture.fibers.size(); ++index) {
       const RepeatFiber& fiber = fixture.fibers[index];
       const std::size_t segment =
           FindWaveIndex(fixture, fiber.segment_id);
@@ -1021,35 +1077,136 @@ RepeatOutput RunRepeat(
           segment_activation_sum[segment]
           / static_cast<double>(segment_fiber_count[segment]);
     }
-    std::vector<RepeatVec3> accelerations(13);
-    for (std::size_t node = 0; node < 13; ++node) {
+    std::vector<RepeatVec3> accelerations(
+        fixture.body_segments.size() + 1);
+    for (std::size_t node = 0;
+         node < accelerations.size(); ++node) {
       accelerations[node] = Multiply(
           node_force[node],
           p.acceleration_scale_m_s2_per_model_force);
     }
     body.Step(dt_s, p, accelerations);
+    last_node_force = node_force;
 
     center_history.push_back(body.CenterX());
     for (std::size_t segment = 0; segment < 6; ++segment) {
       length_history[segment].push_back(body.SegmentLength(
           fixture.wave_segments[segment].body_index));
     }
-    if ((step + 1) % fixture.sample_stride == 0
-        || step + 1 == steps) {
+    ++step_index;
+    if (step_index % fixture.sample_stride == 0) {
       output.trajectory.push_back({
-          static_cast<double>(step + 1) * dt_s,
+          static_cast<double>(step_index) * dt_s,
           body.Positions(),
           local_tension,
-          node_force});
+          last_node_force});
     }
   }
 
-  output.displacement_x_um =
-      (body.CenterX() - initial_center) * 1e6;
-  output.cycle_metrics = MeasureCycles(
-      output.premotor_spike_times_s,
-      length_history, center_history, dt_s);
-  return output;
+  RepeatCycleMetrics CycleMetrics() const {
+    return MeasureCycles(
+        output.premotor_spike_times_s,
+        length_history,
+        center_history,
+        dt_s);
+  }
+
+  RepeatOutput Result() const {
+    RepeatOutput result = output;
+    result.displacement_x_um =
+        (body.CenterX() - initial_center) * 1e6;
+    result.cycle_metrics = CycleMetrics();
+    const double current_time =
+        static_cast<double>(step_index) * dt_s;
+    if (result.trajectory.empty()
+        || result.trajectory.back().time_s != current_time) {
+      result.trajectory.push_back({
+          current_time,
+          body.Positions(),
+          local_tension,
+          last_node_force});
+    }
+    return result;
+  }
+
+  RepeatStateSnapshot Snapshot() const {
+    return {
+        step_index,
+        static_cast<double>(step_index) * dt_s,
+        (body.CenterX() - initial_center) * 1e6,
+        body.Positions(),
+        local_tension,
+        last_node_force,
+        output.spike_counts,
+        output.first_spike_s,
+        last_step_spikes,
+        output.feedback_force_frames,
+        output.all_active_forces_traced,
+        CycleMetrics(),
+        output.trace_examples};
+  }
+};
+
+RepeatSimulation::RepeatSimulation(
+    const RepeatFixture& fixture,
+    const RepeatOptions& options)
+    : fixture_(fixture), options_(options) {
+  Reset();
+}
+
+RepeatSimulation::~RepeatSimulation() = default;
+
+void RepeatSimulation::Reset() {
+  impl_ = std::make_unique<Impl>(fixture_, options_);
+}
+
+void RepeatSimulation::Advance(
+    const RepeatEnvironmentInput& input) {
+  impl_->Advance(input);
+}
+
+int RepeatSimulation::step_index() const {
+  return impl_->step_index;
+}
+
+int RepeatSimulation::maximum_steps() const {
+  return fixture_.steps;
+}
+
+double RepeatSimulation::time_s() const {
+  return static_cast<double>(impl_->step_index)
+      * fixture_.lif_config.dt_s;
+}
+
+RepeatStateSnapshot RepeatSimulation::Snapshot() const {
+  return impl_->Snapshot();
+}
+
+RepeatOutput RepeatSimulation::Result() const {
+  return impl_->Result();
+}
+
+RepeatOutput RunRepeat(
+    const RepeatFixture& fixture,
+    const RepeatOptions& options) {
+  const int steps = options.steps_override > 0
+      ? options.steps_override : fixture.steps;
+  if (steps <= 0 || steps > fixture.steps) {
+    throw std::runtime_error(
+        "repeat steps override is outside fixture");
+  }
+  RepeatSimulation simulation(fixture, options);
+  for (int step = 0; step < steps; ++step) {
+    const double time_s = simulation.time_s();
+    const double touch_intensity =
+        options.stimulate
+            && time_s
+                < fixture.parameters.posterior_touch_duration_s
+        ? 1.0
+        : 0.0;
+    simulation.Advance({touch_intensity});
+  }
+  return simulation.Result();
 }
 
 }  // namespace oraclarva

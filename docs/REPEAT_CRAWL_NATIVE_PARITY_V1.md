@@ -112,11 +112,15 @@ implementation and never changes their positions:
 GitHub Actions remains manual-only through `workflow_dispatch`; this gate is
 verified locally and does not trigger CI.
 
-## Next gate
+## Stage 8 integration
 
-Stage 8 must expose the verified core through a small mobile-facing lifecycle
-API, preserve fixed-step deterministic replay and intervention boundaries,
-measure release-build cost on a target-like host, and keep internal physics
-nodes separate from the render mesh. Performance work may begin only after the
-same parity artifact continues to pass. No app API may introduce `crawl`,
-`turn`, or other direct behavior commands.
+Stage 8 now exposes this verified implementation through a stateful C11
+lifecycle. The full stepped run exactly matches this one-shot gate, deterministic
+reset replay passes, and a read-only watertight render projection remains
+separate from the 13 physics nodes. See
+`docs/MOBILE_CORE_INTEGRATION_V1.md`.
+
+This does not change the native parity tolerances, frozen configuration, or
+held-out failure. Android/iOS target builds and device measurements remain
+future product work, and no app API may introduce `crawl`, `turn`, or other
+direct behavior commands.
