@@ -78,6 +78,20 @@ one-step-delayed named-fiber events, trace ordering, node-force vectors, and
 Contact and contraction channels remain non-executable and must not be silently
 wired by a mobile implementation.
 
+## Stage 6 native-impact audit
+
+The repeat-crawl path is Python-only. It adds a 164-node sparse LIF circuit,
+delayed shortening relays, A1 recovery feedback, sensory adaptation, the
+146-fiber named attachment path, three complete cycles, and physical
+cycle-metric extraction. Existing native fixtures and schemas remain unchanged
+and are regression gates only; they do not imply support for this path.
+
+Stage 7 must consume one shared frozen fixture and match Python on every sensory,
+premotor, and mapped-MN spike; activation events; model-unit node forces;
+trace ancestry; 13-node body frames; physical cycle boundaries; and zero-input,
+sensory, premotor, MN, and fiber lesions. The held-out biological failure is
+orthogonal to numerical parity and must remain visible in native output.
+
 This is correctness parity for the current `research_approximation`, not
 biological validation or a performance result. The full brain/VNC, measured individual
 muscle attachments and force gains, visual named-fiber native parity, held-out

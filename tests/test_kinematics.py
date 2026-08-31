@@ -104,6 +104,7 @@ def test_held_out_split_is_animal_disjoint_and_exposes_required_metrics():
     assert targets.validation_segments["A1"]["duty_cycle_percent"].median == pytest.approx(37.099573)
     assert targets.validation_cycle_metrics["stride_um"].median == pytest.approx(149.494665)
     assert targets.validation_cycle_metrics["wave_speed_segments_s"].median == pytest.approx(2.051751)
+    assert targets.validation_cycle_metrics["a1_a6_wave_speed_segments_s"].median == pytest.approx(1.760268)
 
 
 def test_held_out_loader_rejects_partition_leakage(tmp_path):

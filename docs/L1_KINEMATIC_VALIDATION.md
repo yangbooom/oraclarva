@@ -23,9 +23,13 @@ public GitHub repository whose code has no declared license at the audited
 commit; no upstream code or MAT file is redistributed here.
 
 The held-out bundle additionally exposes segment duty cycle, per-cycle stride,
-crawl speed, cycle period/frequency, and T3-A7 onset propagation in segment
-intervals per second. Selected held-out medians are 149.495 um stride, 2.052
-segment intervals/s wave speed, and 37.100% A1 duty cycle.
+crawl speed, cycle period/frequency, T3-A7 onset propagation, and the supported
+A6-A1 attachment-window propagation in segment intervals per second. Selected
+held-out medians are 149.495 um stride, 2.052 segment intervals/s full-window
+wave speed, 1.760 segment intervals/s A6-A1 wave speed, and 37.100% A1 duty
+cycle. Stage 6 evaluated the frozen model once: period, stride, and A6-A1 speed
+pass, but every A1-A6 amplitude and duty row fails, so release validation
+remains false.
 
 ## What the target says
 
@@ -77,8 +81,8 @@ requires:
 2. measurements for PSC, T1, T2, and A8;
 3. simultaneous L1 muscle recruitment and kinematics;
 4. free-surface and app-relevant substrate measurements;
-5. a model that generates repeatable cycles whose metrics can be evaluated on
-   the already reserved held-out animals;
+5. a repeat-cycle model whose segment amplitude and duty, not only timing and
+   stride, pass the reserved held-out animals;
 6. neural and lesion predictions, not kinematic curve fitting alone.
 
 ## Reproduction
@@ -92,6 +96,7 @@ python tools/extract_greaney_2026_l1_kinematics.py \
   data/validation/greaney_2026_l1_kinematics_v0.json
 oraclarva-kinematics-targets
 python tools/evaluate_body_feedback_held_out.py --check
+python tools/evaluate_repeat_crawl.py --check
 ```
 
 The extractor requires NumPy and SciPy only for regeneration; the runtime

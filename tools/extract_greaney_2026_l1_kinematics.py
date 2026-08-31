@@ -91,14 +91,16 @@ def summarize(values: list[float | None], label: str) -> dict[str, Any] | None:
     }
 
 
-def wave_speed_segments_s(larva: dict[str, Any]) -> float | None:
-    """Return T3-to-A7 onset propagation in segment intervals per second."""
+def wave_speed_for_delay_indices(
+    larva: dict[str, Any], delay_indices: range
+) -> float | None:
+    """Return onset propagation for an explicit adjacent-delay window."""
     delays = np.vstack(
         [
             np.asarray(
                 larva["segments"][index]["onPhaDelays"], dtype=float
             ).reshape(-1)
-            for index in range(1, len(SEGMENTS))
+            for index in delay_indices
         ]
     )
     periods = np.asarray(
@@ -107,10 +109,20 @@ def wave_speed_segments_s(larva: dict[str, Any]) -> float | None:
     valid = np.all(np.isfinite(delays), axis=0) & np.isfinite(periods)
     phase_span = np.sum(delays[:, valid], axis=0)
     valid_span = phase_span > 0.0
-    speeds = (len(SEGMENTS) - 1) / (
+    speeds = len(delay_indices) / (
         phase_span[valid_span] * periods[valid][valid_span]
     )
     return float(np.mean(speeds)) if speeds.size else None
+
+
+def wave_speed_segments_s(larva: dict[str, Any]) -> float | None:
+    """Return T3-to-A7 onset propagation in segment intervals per second."""
+    return wave_speed_for_delay_indices(larva, range(1, len(SEGMENTS)))
+
+
+def a1_a6_wave_speed_segments_s(larva: dict[str, Any]) -> float | None:
+    """Return A6-to-A1 propagation across the supported five intervals."""
+    return wave_speed_for_delay_indices(larva, range(2, 7))
 
 
 def segment_summaries(
@@ -136,7 +148,11 @@ def cycle_summaries(
             [record["cycle_metrics"][metric] for record in records],
             f"{label}:cycle:{metric}",
         )
-        for metric in (*CYCLE_FIELDS, "wave_speed_segments_s")
+        for metric in (
+            *CYCLE_FIELDS,
+            "wave_speed_segments_s",
+            "a1_a6_wave_speed_segments_s",
+        )
     }
 
 
@@ -183,6 +199,9 @@ def extract(source_path: Path) -> dict[str, Any]:
             for output_name, source_name in CYCLE_FIELDS.items()
         }
         cycle_metrics["wave_speed_segments_s"] = wave_speed_segments_s(larva)
+        cycle_metrics["a1_a6_wave_speed_segments_s"] = (
+            a1_a6_wave_speed_segments_s(larva)
+        )
         split = (
             "calibration"
             if source_index in CALIBRATION_SOURCE_INDICES
@@ -303,6 +322,12 @@ def extract(source_path: Path) -> dict[str, Any]:
                 "seven adjacent onset phase delays times each cycle period, then "
                 "averaged within animal. Unit is segment intervals per second, "
                 "not micrometers per second."
+            ),
+            "a1_a6_wave_speed_segments_s": (
+                "Five segment intervals (A6 to A1) divided by the sum of the "
+                "five A2-A6 adjacent onset phase delays times each cycle "
+                "period, then averaged within animal. This is the supported "
+                "attachment-window metric, not a full T3-A7 wave claim."
             ),
             "stride_um": "Author analysis field cycleStride.",
             "contraction_amplitude_percent": (
