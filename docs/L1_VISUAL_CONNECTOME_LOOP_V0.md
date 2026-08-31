@@ -3,8 +3,10 @@
 This research extension executes an identified first-instar path from the
 Bolwig organ through an A1 premotor pair and into 14 observed A1 motor-neuron
 identities. It also executes a separately labeled `ANATOMY_DERIVED` A2-A6
-A03o-to-motor-target diagnostic projection while explicitly blocking A7. It
-does not add a phototaxis command, target selector, finite-state machine,
+A03o-to-motor-target diagnostic projection while explicitly blocking A7. Both
+motor-output branches now terminate in 146 explicitly mapped named-fiber
+identity events inside the 358-fiber A1-A6 atlas. These are causal events, not
+activation, force, NMJ coordinates, or individual mechanics. It does not add a phototaxis command, target selector, finite-state machine,
 behavior tree, external policy, or renderer-authored movement.
 
 The executed causal chain is:
@@ -17,9 +19,11 @@ local analytic irradiance at two moving Bolwig-organ proxy positions
   -> published LHN contacts onto a bilateral CPf descending pair
   -> fork A1: published CPf contacts onto an A03o premotor pair in A1
               -> published A03o contacts onto 14 mapped A1 motor identities
+              -> 16 published-target named-fiber identity mappings
   -> fork A2-A6*: ANATOMY_DERIVED CPf-to-A03o homolog topology
                   -> ANATOMY_DERIVED normalized motor-target topology
-                  -> diagnostic proxy spikes only; A7 is blocked
+                  -> 130 derived named-fiber identity mappings; A7 is blocked
+  -> identity events only: no activation dynamics or individual mechanics
   -> fork body: declared MODEL_FITTED A03o(A1)-to-segmental-core bridge
                 -> sparse spatial premotor and motor dynamics
                 -> muscle activation and 3D XPBD body physics
@@ -189,6 +193,30 @@ The executable sign and current for these 140 edges are separately
 not copied as A2-A6 contact counts, conductances, release strengths, identified
 motor neurons, or NMJs.
 
+### Neural output to the 358-fiber identity atlas
+
+`tools/compile_l1_neural_muscle_identity.py` deterministically joins the two
+motor-output branches to `l1_abdominal_muscle_template_v0.json`. For A1 it
+preserves each of the 14 observed motor identities and every listed target in
+the published Zarin crosswalk. Two motor identities each list two muscles, so
+this produces 16 mappings. For A2-A6 it maps each of the 130 explicitly derived
+motor-target proxies to the matching segment, side, muscle number, and synonym.
+
+| identity-event scope | mapping count | provenance |
+|---|---:|---|
+| observed A1 motor identity to named fiber | 16 | `MEASURED_PUBLISHED` target identity |
+| A2-A6 motor-target proxy to named fiber | 130 | `ANATOMY_DERIVED` |
+| total uniquely mapped fibers | 146 / 358 | mixed, per mapping |
+| deliberately unmapped atlas fibers | 212 / 358 | no neural evidence |
+| A7 fibers or proxies | 0 | blocked |
+
+One source-node spike emits one event to each explicitly mapped named fiber,
+unless that fiber is lesioned. This event is causal bookkeeping with
+`ANATOMY_DERIVED` rule provenance. It does not low-pass spikes, define calcium
+or activation, contract a muscle, apply force, or feed the body. No exact NMJ
+position is claimed. `activation_dynamics_executed` and
+`individual_geometry_executed` remain false.
+
 ## What is measured and what is fitted
 
 The following are `MEASURED_PUBLISHED`:
@@ -198,14 +226,17 @@ The following are `MEASURED_PUBLISHED`:
 - the eight selected axon-to-dendrite edges and 98 confidence-5 contacts;
 - the A1 side and premotor/pre-MN annotations of the selected A03o pair;
 - 14 A1 motor identities, 15 A03o-to-MN edges, and 26 confidence-5 contacts;
-- the existing published motor-identity-to-muscle-target crosswalk.
+- the existing published motor-identity-to-muscle-target crosswalk;
+- the 16 A1 motor-target-to-named-fiber identity mappings that preserve it.
 
 The following are `ANATOMY_DERIVED` rather than measured:
 
 - 10 ID-less bilateral A03o homolog proxies in A2-A6;
 - 130 ID-less muscle-target channels covering the 13 A1-supported targets;
 - 10 CPf-to-homolog and 130 homolog-to-target topology edges;
-- pooled, bilateralized, normalized A1 target-distribution weights.
+- pooled, bilateralized, normalized A1 target-distribution weights;
+- the 130 A2-A6 motor-target-proxy-to-named-fiber identity mappings;
+- the event bookkeeping rule used to expose causal termination without activation.
 
 A7 is an explicit failed evidence gate, not a derived node.
 
@@ -226,9 +257,10 @@ serotonergic SP2-1, octopaminergic/tyraminergic sVUM2, and Pdf-LaN outputs remai
 structural-only. All eight descending edges (98 contacts) and all 15
 A03o-to-MN edges (26 contacts) execute. The runtime adds 140 derived edges but
 no derived contact counts, for 220 visual/path compartments and 531 executed
-pairs. The executed measured-contact total remains 3,159. A contact count or
-dimensionless projection weight multiplied by a fitted current is not a
-measured conductance, release probability, delay, or physiological weight.
+pairs. The executed measured-contact total remains 3,159. The 146 identity
+mappings add no LIF synapse or contact count. A contact count or dimensionless
+projection weight multiplied by a fitted current is not a measured conductance,
+release probability, delay, or physiological weight.
 
 ## Bilateral light transduction and steering boundary
 
@@ -251,9 +283,10 @@ a(t + dt) = a(t) + (q(t) - a(t)) * (1 - exp(-dt / tau))
 The imported/derived anatomy now has three explicit branches. The observed A1
 branch reaches 14 motor identities and executes their sparse contacts. At CPf,
 a separate anatomy-derived diagnostic branch reaches A2-A6 A03o and
-motor-target proxies. Neither diagnostic branch drives individual muscles or
-the all-segment body: A7 is blocked, segment-specific motor neurons/NMJs are
-missing, and no target has measured 3D attachment or force.
+motor-target proxies. Both diagnostic branches now emit events into the explicitly mapped named
+fibers, but those events do not drive activation, force, or the all-segment
+body. A7 is blocked, segment-specific motor neurons/NMJs remain missing in
+A2-A6, and no target has measured 3D attachment or force.
 
 The full-body branch remains labeled `fitted_a03o_to_segmental_core`. It starts
 in parallel after observed A03o(A1), does not feed motor output backward into
@@ -268,14 +301,14 @@ visual pitch sensing.
 
 ## Deterministic causal and lesion checks
 
-The checked 1.5-second artifact contains two intact mirrored fields and an
-A03o(A1)-pair lesion:
+The checked 1.5-second artifact contains two intact mirrored fields and one
+individual named-fiber event lesion:
 
-| scenario | visual/path spikes | downstream spikes | dy (um) | yaw (deg) |
+| scenario | visual/path spikes | fiber events / reached fibers | dy (um) | yaw (deg) |
 |---|---:|---:|---:|---:|
-| brighter right, intact | 11,556 | 7,048 | -15.239 | +6.231 |
-| brighter left, intact | 5,899 | 2,296 | +14.957 | -6.020 |
-| brighter right, A03o(A1) pair lesion | 11,244 | 0 | 0.000 | 0.000 |
+| brighter right, intact | 11,556 | 9,907 / 76 | -15.239 | +6.231 |
+| brighter left, intact | 5,899 | 4,480 / 71 | +14.957 | -6.020 |
+| brighter right, `A1:right:M23:LT3` lesion | 11,556 | 9,754 / 75 | -15.239 | +6.231 |
 
 The intact fixtures reverse displacement and yaw signs. Their differing neural
 counts preserve the observed specimen and fitted-model asymmetries; this is not
@@ -291,6 +324,7 @@ identified CPf DN           0.061 s
 identified A03o(A1)         0.062 s
 observed A1 MN branch       0.063 s
 derived A03o(A2-A6)         0.063 s
+named-fiber event           0.063 s
 derived motor targets       0.064 s
 fitted A03o segment bridge  0.071 s
 A7 premotor core            0.074 s
@@ -302,10 +336,13 @@ A03o(A1) pair independently. A CPf cut stops both the measured A1 and derived
 A2-A6 branches. The A03o(A1) lesion leaves the parallel CPf-derived A2-A6
 diagnostic branch active but produces zero A1-MN activity, fitted body bridge,
 muscle activation, or displacement. A separate 14-MN lesion stops only the
-observed diagnostic branch. Finally, lesioning `derived:right:A03o_A4` removes
-only the 13 right A4 target channels while A2, A3, A5, A6 and the fitted body
-bridge remain active. These interventions verify graph direction and segment
-scope; no fallback action is invoked.
+observed diagnostic branch. Lesioning `derived:right:A03o_A4` removes only the 13 right A4 target
+channels and their fiber events while A2, A3, A5, A6 and the fitted body bridge
+remain active. An observed MN lesion removes only its published target-fiber
+events. Finally, lesioning `A1:right:M23:LT3` suppresses that event while its
+upstream MN, sibling M24 event, and parallel fitted body motion are unchanged.
+These interventions verify graph direction, segment scope, and individual
+identity causality; no fallback action is invoked.
 
 ![L1 visual connectome body loop](assets/oraclarva_l1_visual_connectome.gif)
 
@@ -319,10 +356,12 @@ it does not author movement independently.
 oraclarva-visual --duration 1.5
 oraclarva-visual --duration 1.5 --mirror
 oraclarva-visual --duration 1.5 --lesion-class A03o_A1
+oraclarva-visual --duration 1.5 --lesion-muscle-fiber A1:right:M23:LT3
 python tools/compile_l1_visual_connectome.py --check
 python tools/compile_l1_visual_descending_path.py --check
 python tools/compile_l1_a03o_motor_path.py --check
 python tools/compile_l1_a03o_segmental_projection.py --check
+python tools/compile_l1_neural_muscle_identity.py --check
 python tools/export_visual_trajectory.py --check
 python tools/render_visual_gif.py
 pytest tests/test_visual.py tests/test_sources.py
@@ -338,11 +377,9 @@ complete sensor-to-muscle connectome. The CPf-to-A03o and A03o-to-MN
 asymmetries are one-specimen observations; the repeated A2-A6 topology is a
 hypothesis rather than additional connectome data.
 
-The next implementation step is the neuromuscular identity boundary: route each
-observed A1 motor identity and each derived A2-A6 target channel to the matching
-named fiber in the 358-fiber atlas, while preserving an explicit distinction
-between published MN-to-muscle targets and derived segmental channels. That
-branch must remain diagnostic/aggregate until segment-specific MN/NMJ IDs, 3D
-attachments, CSA, and force gains are available. A7 stays blocked rather than
-being filled by an A1 copy. Physiological signs remain fitted until direct
-evidence is available.
+The next implementation step is individual spike-to-activation dynamics on
+these 146 mapped fibers. Every activation must be traceable to an earlier
+source-node spike, use explicitly `MODEL_FITTED` time constants until direct L1
+evidence is available, and remain non-mechanical until attachment geometry and
+force parameters pass their separate gates. The 212 unmapped fibers and A7
+remain silent rather than receiving a uniform fallback.

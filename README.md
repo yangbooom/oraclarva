@@ -111,10 +111,14 @@ contacts), an audited VFB/L1EM snapshot supplies a bilateral
 selected axon-to-dendrite edges, and 98 contacts. A second audit preserves 15
 observed A03o-to-A1-MN edges/26 contacts, then builds a strictly
 `ANATOMY_DERIVED` A2-A6 diagnostic projection with 10 ID-less A03o proxies, 130
-motor-target channels, and 140 no-contact-count edges. A7 remains blocked. All
-physiological signs/currents and the parallel body continuation remain
-`MODEL_FITTED`. Mirrored fields reverse yaw; lesioning A03o(A1) stops the body
-while the CPf-derived A2-A6 diagnostic branch remains visible. No direct
+motor-target channels, and 140 no-contact-count edges. A deterministic join
+terminates the observed and derived motor outputs in 146 uniquely named fibers
+of the 358-fiber A1-A6 atlas (16 published-target mappings plus 130 derived
+mappings); the other 212 fibers and A7 remain silent. These outputs are identity
+events only, with no activation dynamics, NMJ coordinates, force, or individual
+mechanics. All physiological signs/currents and the parallel body continuation
+remain `MODEL_FITTED`. Mirrored fields reverse yaw; individual MN, segment, and
+fiber lesions remain local to their mapped diagnostic events. No direct
 dorsal-versus-ventral visual sensor is claimed. See
 `docs/L1_VISUAL_CONNECTOME_LOOP_V0.md`; run `oraclarva-visual --duration 1.5`.
 
@@ -204,8 +208,8 @@ identified `PVL09/pOLP -> LHN -> CPf -> A03o(A1)` path, and 15 observed edges
 from A03o to 14 mapped A1 motor identities. At CPf, an explicitly
 `ANATOMY_DERIVED` branch adds A2-A6 A03o/motor-target proxies while blocking A7;
 the fitted A03o(A1)-to-body bridge remains separate. The third panel lesions
-A03o(A1), retaining upstream and derived A2-A6 diagnostic activity while body
-motion stops.
+one M23 named-fiber event while preserving its upstream MN, sibling target, and
+the parallel fitted body motion.
 
 ![L1 visual connectome body loop](docs/assets/oraclarva_l1_visual_connectome.gif)
 
@@ -214,6 +218,7 @@ python tools/compile_l1_visual_connectome.py --check
 python tools/compile_l1_visual_descending_path.py --check
 python tools/compile_l1_a03o_motor_path.py --check
 python tools/compile_l1_a03o_segmental_projection.py --check
+python tools/compile_l1_neural_muscle_identity.py --check
 python tools/export_visual_trajectory.py --check
 python tools/render_visual_gif.py
 ```

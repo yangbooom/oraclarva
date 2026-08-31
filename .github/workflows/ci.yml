@@ -25,6 +25,7 @@ jobs:
       - run: python tools/compile_l1_visual_descending_path.py --check
       - run: python tools/compile_l1_a03o_motor_path.py --check
       - run: python tools/compile_l1_a03o_segmental_projection.py --check
+      - run: python tools/compile_l1_neural_muscle_identity.py --check
       - run: python tools/export_visual_trajectory.py --check
       - run: python tools/export_native_closed_loop_fixture.py --check
       - run: python tools/export_native_bilateral_fixture.py --check

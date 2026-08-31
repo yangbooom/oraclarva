@@ -13,6 +13,7 @@
     "anatomy_derived_cpf_to_a03o_a2_a6_topology",
     "anatomy_derived_a03o_a2_a6_to_motor_target_topology",
     "fitted_effects_for_anatomy_derived_projection",
+    "motor_output_spikes_to_named_muscle_identity_events",
     "fitted_a03o_a1_to_segmental_core_bridge",
     "spatial_neural_dynamics",
     "motor_pools",
@@ -61,6 +62,22 @@
       "A7"
     ],
     "provenance": "ANATOMY_DERIVED"
+  },
+  "neural_muscle_identity_projection": {
+    "model_id": "dmel_l1_neural_muscle_identity_v0",
+    "expected_atlas_fibers": 358,
+    "expected_mapped_unique_fibers": 146,
+    "expected_observed_a1_mappings": 16,
+    "expected_derived_a2_a6_mappings": 130,
+    "event_rule_provenance": "ANATOMY_DERIVED",
+    "activation_dynamics_executed": false,
+    "individual_geometry_executed": false,
+    "limitations": [
+      "A named-fiber event is causal bookkeeping from a source-node spike, not muscle activation, force, or contraction.",
+      "The 16 A1 mappings preserve published motor-to-muscle target identities; no individual NMJ location is claimed.",
+      "The 130 A2-A6 mappings remain ANATOMY_DERIVED and do not identify segment-specific motor neurons.",
+      "The other 212 atlas fibers remain unmapped rather than receiving uniform recruitment."
+    ]
   },
   "phototransduction": {
     "field_unit": "W_m-2",

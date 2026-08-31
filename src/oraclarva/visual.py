@@ -12,6 +12,11 @@ from typing import Any, Iterable
 from .body3d import Vec3
 from .environment_inputs import LinearScalarField, ScalarField
 from .lif import SparseLIFNetwork, Synapse
+from .muscles import (
+    NeuralMuscleIdentityEventFrame,
+    NeuralMuscleIdentityProjection,
+    load_neural_muscle_identity_projection,
+)
 from .spatial import (
     SpatialClosedLoopLarva,
     SpatialClosedLoopResult,
@@ -99,6 +104,7 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         "anatomy_derived_cpf_to_a03o_a2_a6_topology",
         "anatomy_derived_a03o_a2_a6_to_motor_target_topology",
         "fitted_effects_for_anatomy_derived_projection",
+        "motor_output_spikes_to_named_muscle_identity_events",
         "fitted_a03o_a1_to_segmental_core_bridge",
         "spatial_neural_dynamics",
         "motor_pools",
@@ -166,6 +172,24 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         or segmental_projection.get("blocked_segments") != ["A7"]
     ):
         raise ValueError("A03o segmental projection count contract is invalid")
+
+    identity_projection = raw.get("neural_muscle_identity_projection", {})
+    if (
+        identity_projection.get("model_id")
+        != "dmel_l1_neural_muscle_identity_v0"
+        or identity_projection.get("event_rule_provenance")
+        != "ANATOMY_DERIVED"
+        or int(identity_projection.get("expected_atlas_fibers", 0)) != 358
+        or int(identity_projection.get("expected_mapped_unique_fibers", 0))
+        != 146
+        or int(identity_projection.get("expected_observed_a1_mappings", 0))
+        != 16
+        or int(identity_projection.get("expected_derived_a2_a6_mappings", 0))
+        != 130
+        or identity_projection.get("activation_dynamics_executed") is not False
+        or identity_projection.get("individual_geometry_executed") is not False
+    ):
+        raise ValueError("neural-muscle identity projection contract is invalid")
 
     transduction = raw.get("phototransduction", {})
     if transduction.get("field_unit") != "W_m-2":
@@ -736,6 +760,7 @@ class VisualCircuitFrame:
     a1_motor_spikes: dict[str, tuple[str, ...]]
     derived_a03o_spikes: dict[str, tuple[str, ...]]
     derived_motor_spikes: dict[str, tuple[str, ...]]
+    muscle_identity_events: NeuralMuscleIdentityEventFrame
     bridge_activity: dict[str, float]
     bridge_stimulus: SpatialStimulus
 
@@ -758,6 +783,21 @@ class VisualCircuitFrame:
                 channel: list(values)
                 for channel, values in self.derived_motor_spikes.items()
             },
+            "muscle_identity_events": {
+                "source_spikes": list(self.muscle_identity_events.source_spikes),
+                "fiber_events": list(self.muscle_identity_events.fiber_events),
+                "source_by_fiber": dict(
+                    self.muscle_identity_events.source_by_fiber
+                ),
+                "mapping_provenance_by_fiber": dict(
+                    self.muscle_identity_events.mapping_provenance_by_fiber
+                ),
+                "event_rule_provenance": (
+                    self.muscle_identity_events.event_rule_provenance
+                ),
+                "activation_dynamics_executed": False,
+                "individual_geometry_executed": False,
+            },
             "bridge_activity": self.bridge_activity,
             "bridge_stimulus": list(self.bridge_stimulus.values()),
         }
@@ -775,7 +815,9 @@ class L1VisualCircuitProtocol:
         descending_connectome: dict[str, Any] | None = None,
         motor_connectome: dict[str, Any] | None = None,
         segmental_projection: dict[str, Any] | None = None,
+        muscle_identity_projection: NeuralMuscleIdentityProjection | None = None,
         lesion_node_ids: Iterable[str] = (),
+        lesion_muscle_fiber_ids: Iterable[str] = (),
         record_frames: bool = False,
     ) -> None:
         self.config = config or load_visual_config()
@@ -786,6 +828,10 @@ class L1VisualCircuitProtocol:
         self.motor_connectome = motor_connectome or load_a03o_motor_connectome()
         self.segmental_projection = (
             segmental_projection or load_a03o_segmental_projection()
+        )
+        self.muscle_identity_projection = (
+            muscle_identity_projection
+            or load_neural_muscle_identity_projection()
         )
         self.transduction = BolwigLightTransduction(field, self.config)
         self.record_frames = record_frames
@@ -851,6 +897,14 @@ class L1VisualCircuitProtocol:
         }
         if len(self.neurons) != 220 or len(self.labels) != len(set(self.labels)):
             raise ValueError("visual runtime must contain 220 unique compartments")
+        missing_muscle_sources = (
+            self.muscle_identity_projection.source_node_ids - set(self.labels)
+        )
+        if missing_muscle_sources:
+            raise ValueError(
+                "neural-muscle mapping sources absent from visual runtime: "
+                f"{sorted(missing_muscle_sources)}"
+            )
 
         dynamics = self.config["lon_dynamics"]
         effects = dynamics["effect_by_presynaptic_class"]
@@ -969,6 +1023,11 @@ class L1VisualCircuitProtocol:
             raise ValueError(f"unknown visual lesion node ids: {sorted(unknown)}")
         self.lesion_node_ids = lesions
         self.network.lesion(self.index_by_id[item] for item in lesions)
+        muscle_lesions = tuple(lesion_muscle_fiber_ids)
+        self.muscle_identity_projection.emit(
+            (), lesioned_fiber_ids=muscle_lesions
+        )
+        self.lesion_muscle_fiber_ids = muscle_lesions
 
         bridge = self.config["a03o_segmental_bridge"]
         self.a03o_indices = {
@@ -1035,6 +1094,14 @@ class L1VisualCircuitProtocol:
         self.spike_counts = {label: 0 for label in self.labels}
         self.first_spike_s: dict[str, float | None] = {
             label: None for label in self.labels
+        }
+        self.muscle_identity_event_counts = {
+            fiber_id: 0
+            for fiber_id in self.muscle_identity_projection.mapped_fiber_ids
+        }
+        self.muscle_identity_first_event_s: dict[str, float | None] = {
+            fiber_id: None
+            for fiber_id in self.muscle_identity_projection.mapped_fiber_ids
         }
 
     def __call__(
@@ -1105,6 +1172,19 @@ class L1VisualCircuitProtocol:
             )
             for channel, indices in self.derived_motor_indices.items()
         }
+        muscle_source_spikes = tuple(
+            node_id
+            for node_id in spiked_labels
+            if node_id in self.muscle_identity_projection.source_node_ids
+        )
+        muscle_identity_events = self.muscle_identity_projection.emit(
+            muscle_source_spikes,
+            lesioned_fiber_ids=self.lesion_muscle_fiber_ids,
+        )
+        for fiber_id in muscle_identity_events.fiber_events:
+            self.muscle_identity_event_counts[fiber_id] += 1
+            if self.muscle_identity_first_event_s[fiber_id] is None:
+                self.muscle_identity_first_event_s[fiber_id] = time_s
 
         left_activity = self.bridge_activity["left"]
         right_activity = self.bridge_activity["right"]
@@ -1137,6 +1217,7 @@ class L1VisualCircuitProtocol:
                     a1_motor_spikes=a1_motor_spikes,
                     derived_a03o_spikes=derived_a03o_spikes,
                     derived_motor_spikes=derived_motor_spikes,
+                    muscle_identity_events=muscle_identity_events,
                     bridge_activity=dict(self.bridge_activity),
                     bridge_stimulus=stimulus,
                 )
@@ -1155,6 +1236,10 @@ class VisualClosedLoopResult:
     derived_a03o_homologs: int
     derived_motor_target_channels: int
     anatomy_derived_projection_edges: int
+    muscle_atlas_fibers: int
+    mapped_muscle_fibers: int
+    observed_a1_identity_mappings: int
+    derived_a2_a6_identity_mappings: int
     published_connection_pairs: int
     published_synaptic_contacts: int
     published_descending_connection_pairs: int
@@ -1165,7 +1250,10 @@ class VisualClosedLoopResult:
     executed_synaptic_contacts: int
     visual_spike_counts: dict[str, int]
     visual_first_spike_s: dict[str, float | None]
+    muscle_identity_event_counts: dict[str, int]
+    muscle_identity_first_event_s: dict[str, float | None]
     lesion_node_ids: tuple[str, ...]
+    lesion_muscle_fiber_ids: tuple[str, ...]
     visual_frames: tuple[VisualCircuitFrame, ...]
 
     def to_dict(self) -> dict[str, Any]:
@@ -1184,6 +1272,25 @@ class VisualClosedLoopResult:
             "anatomy_derived_projection_edges": (
                 self.anatomy_derived_projection_edges
             ),
+            "muscle_atlas_fibers": self.muscle_atlas_fibers,
+            "mapped_muscle_fibers": self.mapped_muscle_fibers,
+            "unmapped_muscle_fibers": (
+                self.muscle_atlas_fibers - self.mapped_muscle_fibers
+            ),
+            "observed_a1_identity_mappings": (
+                self.observed_a1_identity_mappings
+            ),
+            "derived_a2_a6_identity_mappings": (
+                self.derived_a2_a6_identity_mappings
+            ),
+            "muscle_identity_events": sum(
+                self.muscle_identity_event_counts.values()
+            ),
+            "recruited_muscle_fibers": sum(
+                count > 0 for count in self.muscle_identity_event_counts.values()
+            ),
+            "activation_dynamics_executed": False,
+            "individual_muscle_geometry_executed": False,
             "downstream_spatial_neurons": body.neuron_count,
             "total_neuron_compartments": (
                 self.visual_neuron_compartments + body.neuron_count
@@ -1213,14 +1320,17 @@ class VisualClosedLoopResult:
             "visual_spikes": sum(self.visual_spike_counts.values()),
             "downstream_spikes": sum(body.spike_counts.values()),
             "lesion_node_ids": list(self.lesion_node_ids),
+            "lesion_muscle_fiber_ids": list(self.lesion_muscle_fiber_ids),
             "release_validated": False,
             "claim_boundary": (
                 "published L1 LON, pOLP-to-LHN-to-CPf-to-A03o(A1), and "
                 "A03o-to-14-A1-motor-identity structural contacts; an "
                 "ANATOMY_DERIVED CPf-to-A03o-to-motor-target projection in "
-                "A2-A6 with A7 blocked; fitted effects, phototransduction, "
-                "and a parallel A03o-to-body bridge; not validated natural "
-                "phototaxis or a complete sensor-to-muscle connectome"
+                "A2-A6 with A7 blocked; 146 causal named-fiber identity "
+                "event mappings with no activation dynamics or geometry; "
+                "fitted effects, phototransduction, and a parallel "
+                "A03o-to-body bridge; not validated natural phototaxis or "
+                "a complete sensor-to-muscle connectome"
             ),
         }
 
@@ -1260,7 +1370,9 @@ class L1VisualClosedLoopLarva:
         descending_connectome: dict[str, Any] | None = None,
         motor_connectome: dict[str, Any] | None = None,
         segmental_projection: dict[str, Any] | None = None,
+        muscle_identity_projection: NeuralMuscleIdentityProjection | None = None,
         lesion_node_ids: Iterable[str] = (),
+        lesion_muscle_fiber_ids: Iterable[str] = (),
         ground_z_m: float | None = None,
         record_visual_frames: bool = False,
     ) -> None:
@@ -1273,6 +1385,10 @@ class L1VisualClosedLoopLarva:
         self.segmental_projection = (
             segmental_projection or load_a03o_segmental_projection()
         )
+        self.muscle_identity_projection = (
+            muscle_identity_projection
+            or load_neural_muscle_identity_projection()
+        )
         self.protocol = L1VisualCircuitProtocol(
             field or validation_light_field(self.config),
             config=self.config,
@@ -1280,7 +1396,9 @@ class L1VisualClosedLoopLarva:
             descending_connectome=self.descending_connectome,
             motor_connectome=self.motor_connectome,
             segmental_projection=self.segmental_projection,
+            muscle_identity_projection=self.muscle_identity_projection,
             lesion_node_ids=lesion_node_ids,
+            lesion_muscle_fiber_ids=lesion_muscle_fiber_ids,
             record_frames=record_visual_frames,
         )
         self.spatial = SpatialClosedLoopLarva(
@@ -1321,6 +1439,20 @@ class L1VisualClosedLoopLarva:
             ),
             anatomy_derived_projection_edges=(
                 self.protocol.executed_segmental_projection_edges
+            ),
+            muscle_atlas_fibers=len(
+                self.muscle_identity_projection.atlas_fiber_ids
+            ),
+            mapped_muscle_fibers=len(
+                self.muscle_identity_projection.mapped_fiber_ids
+            ),
+            observed_a1_identity_mappings=sum(
+                item.mapping_provenance == "MEASURED_PUBLISHED"
+                for item in self.muscle_identity_projection.mappings
+            ),
+            derived_a2_a6_identity_mappings=sum(
+                item.mapping_provenance == "ANATOMY_DERIVED"
+                for item in self.muscle_identity_projection.mappings
             ),
             published_connection_pairs=(
                 int(self.connectome["summary"]["nonzero_connection_pairs"])
@@ -1372,7 +1504,16 @@ class L1VisualClosedLoopLarva:
             executed_synaptic_contacts=self.protocol.executed_synaptic_contacts,
             visual_spike_counts=dict(self.protocol.spike_counts),
             visual_first_spike_s=dict(self.protocol.first_spike_s),
+            muscle_identity_event_counts=dict(
+                self.protocol.muscle_identity_event_counts
+            ),
+            muscle_identity_first_event_s=dict(
+                self.protocol.muscle_identity_first_event_s
+            ),
             lesion_node_ids=self.protocol.lesion_node_ids,
+            lesion_muscle_fiber_ids=(
+                self.protocol.lesion_muscle_fiber_ids
+            ),
             visual_frames=tuple(self.protocol.frames),
         )
 
@@ -1385,6 +1526,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--mirror", action="store_true")
     parser.add_argument("--lesion-class")
     parser.add_argument("--lesion-side", choices=LON_SIDES)
+    parser.add_argument("--lesion-muscle-fiber", action="append", default=[])
     args = parser.parse_args(argv)
     config = load_visual_config()
     connectome = load_visual_connectome()
@@ -1425,6 +1567,7 @@ def main(argv: list[str] | None = None) -> int:
         motor_connectome=motor_connectome,
         segmental_projection=segmental_projection,
         lesion_node_ids=lesions,
+        lesion_muscle_fiber_ids=tuple(args.lesion_muscle_fiber),
     ).run(duration_s=args.duration)
     print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
     return 0

@@ -1,6 +1,10 @@
 import pytest
 
-from oraclarva.muscles import AggregateMuscleIdentityProjection, load_muscle_atlas
+from oraclarva.muscles import (
+    AggregateMuscleIdentityProjection,
+    load_muscle_atlas,
+    load_neural_muscle_identity_projection,
+)
 
 
 def test_abdominal_atlas_has_exact_a1_to_a6_identity_counts():
@@ -178,3 +182,53 @@ def test_unilateral_muscle_lesion_zeroes_only_named_side_fibers():
         projection.project_bilateral(
             activation, lesioned_channels=(("T3", "left"),)
         )
+
+
+
+def test_neural_muscle_identity_mapping_reaches_only_supported_146_fibers():
+    projection = load_neural_muscle_identity_projection()
+
+    assert len(projection.atlas_fiber_ids) == 358
+    assert len(projection.mappings) == 146
+    assert len(set(projection.mapped_fiber_ids)) == 146
+    assert sum(
+        item.mapping_provenance == "MEASURED_PUBLISHED"
+        for item in projection.mappings
+    ) == 16
+    assert sum(
+        item.mapping_provenance == "ANATOMY_DERIVED"
+        for item in projection.mappings
+    ) == 130
+    assert not any(item.segment_id == "A7" for item in projection.mappings)
+
+
+def test_neural_spike_emits_named_fiber_events_without_activation_or_geometry():
+    projection = load_neural_muscle_identity_projection()
+    source = "motor_identity:4121534:right"
+
+    frame = projection.emit((source,))
+
+    assert frame.source_spikes == (source,)
+    assert frame.fiber_events == (
+        "A1:right:M23:LT3",
+        "A1:right:M24:LT4",
+    )
+    assert set(frame.mapping_provenance_by_fiber.values()) == {
+        "MEASURED_PUBLISHED"
+    }
+    assert not frame.activation_dynamics_executed
+    assert not frame.individual_geometry_executed
+
+
+def test_individual_fiber_lesion_blocks_event_but_not_source_spike():
+    projection = load_neural_muscle_identity_projection()
+    source = "motor_identity:4121534:right"
+
+    frame = projection.emit(
+        (source,), lesioned_fiber_ids=("A1:right:M23:LT3",)
+    )
+
+    assert frame.source_spikes == (source,)
+    assert frame.fiber_events == ("A1:right:M24:LT4",)
+    with pytest.raises(ValueError, match="outside A1-A6"):
+        projection.emit((source,), lesioned_fiber_ids=("A7:right:M23:LT3",))

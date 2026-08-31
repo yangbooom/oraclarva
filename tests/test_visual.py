@@ -423,3 +423,76 @@ def test_visual_path_exposes_no_movement_or_behavior_commands():
         "fsm",
     )
     assert all(token not in source for token in forbidden)
+
+
+
+def test_motor_spikes_emit_only_146_named_fiber_identity_events():
+    result = L1VisualClosedLoopLarva(record_visual_frames=True).run(
+        duration_s=0.3
+    )
+
+    assert result.muscle_atlas_fibers == 358
+    assert result.mapped_muscle_fibers == 146
+    assert result.observed_a1_identity_mappings == 16
+    assert result.derived_a2_a6_identity_mappings == 130
+    assert len(result.muscle_identity_event_counts) == 146
+    assert sum(result.muscle_identity_event_counts.values()) > 0
+    assert all(
+        not fiber_id.startswith("A7:")
+        for fiber_id in result.muscle_identity_event_counts
+    )
+    for frame in result.visual_frames:
+        events = frame.muscle_identity_events
+        assert not events.activation_dynamics_executed
+        assert not events.individual_geometry_executed
+        assert set(events.source_by_fiber.values()) <= set(events.source_spikes)
+
+
+def test_observed_mn_lesion_removes_only_its_named_fiber_events():
+    source = "motor_identity:4121534:right"
+    target_fibers = ("A1:right:M23:LT3", "A1:right:M24:LT4")
+    control = L1VisualClosedLoopLarva().run(duration_s=0.3)
+    lesioned = L1VisualClosedLoopLarva(lesion_node_ids=(source,)).run(
+        duration_s=0.3
+    )
+
+    assert control.visual_spike_counts[source] > 0
+    assert lesioned.visual_spike_counts[source] == 0
+    assert all(control.muscle_identity_event_counts[item] > 0 for item in target_fibers)
+    assert all(lesioned.muscle_identity_event_counts[item] == 0 for item in target_fibers)
+    assert lesioned.muscle_identity_event_counts["A1:right:M1:DA1"] > 0
+
+
+def test_derived_segment_lesion_removes_only_local_named_fiber_events():
+    lesioned = L1VisualClosedLoopLarva(
+        lesion_node_ids=("derived:right:A03o_A4",)
+    ).run(duration_s=0.3)
+
+    assert all(
+        count == 0
+        for fiber_id, count in lesioned.muscle_identity_event_counts.items()
+        if fiber_id.startswith("A4:right:")
+    )
+    for segment in ("A2", "A3", "A5", "A6"):
+        assert any(
+            count > 0
+            for fiber_id, count in lesioned.muscle_identity_event_counts.items()
+            if fiber_id.startswith(f"{segment}:right:")
+        )
+
+
+def test_individual_fiber_lesion_preserves_upstream_mn_and_sibling_event():
+    source = "motor_identity:4121534:right"
+    target = "A1:right:M23:LT3"
+    sibling = "A1:right:M24:LT4"
+    control = L1VisualClosedLoopLarva().run(duration_s=0.3)
+    lesioned = L1VisualClosedLoopLarva(
+        lesion_muscle_fiber_ids=(target,)
+    ).run(duration_s=0.3)
+
+    assert lesioned.visual_spike_counts[source] == control.visual_spike_counts[source]
+    assert lesioned.muscle_identity_event_counts[target] == 0
+    assert lesioned.muscle_identity_event_counts[sibling] == control.muscle_identity_event_counts[sibling]
+    assert lesioned.spatial_result.displacement_y_um == pytest.approx(
+        control.spatial_result.displacement_y_um
+    )

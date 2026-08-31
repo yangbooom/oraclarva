@@ -6,7 +6,7 @@ import argparse
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 
 from .neuromuscular import SPATIAL_GROUPS
 
@@ -30,6 +30,85 @@ class MuscleFiberIdentity:
     side: str
     muscle: MuscleIdentity
     provenance: str
+
+
+@dataclass(frozen=True, slots=True)
+class NeuralMuscleIdentityMapping:
+    source_node_id: str
+    fiber_id: str
+    segment_id: str
+    side: str
+    muscle_number: str
+    mapping_provenance: str
+
+
+@dataclass(frozen=True, slots=True)
+class NeuralMuscleIdentityEventFrame:
+    source_spikes: tuple[str, ...]
+    fiber_events: tuple[str, ...]
+    source_by_fiber: Mapping[str, str]
+    mapping_provenance_by_fiber: Mapping[str, str]
+    event_rule_provenance: str = "ANATOMY_DERIVED"
+    activation_dynamics_executed: bool = False
+    individual_geometry_executed: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class NeuralMuscleIdentityProjection:
+    """Emit named-fiber events from explicitly mapped neural outputs only."""
+
+    model_id: str
+    status: str
+    mappings: tuple[NeuralMuscleIdentityMapping, ...]
+    atlas_fiber_ids: frozenset[str]
+
+    @property
+    def mapped_fiber_ids(self) -> tuple[str, ...]:
+        return tuple(item.fiber_id for item in self.mappings)
+
+    @property
+    def source_node_ids(self) -> frozenset[str]:
+        return frozenset(item.source_node_id for item in self.mappings)
+
+    def emit(
+        self,
+        spiked_node_ids: Iterable[str],
+        *,
+        lesioned_fiber_ids: Iterable[str] = (),
+    ) -> NeuralMuscleIdentityEventFrame:
+        spikes = tuple(spiked_node_ids)
+        if len(spikes) != len(set(spikes)):
+            raise ValueError("source spike ids must be unique within one step")
+        unknown_sources = set(spikes) - self.source_node_ids
+        if unknown_sources:
+            raise ValueError(
+                f"unmapped neural-muscle source spikes: {sorted(unknown_sources)}"
+            )
+        lesions = tuple(lesioned_fiber_ids)
+        if len(lesions) != len(set(lesions)):
+            raise ValueError("muscle fiber lesion ids must be unique")
+        unknown_lesions = set(lesions) - self.atlas_fiber_ids
+        if unknown_lesions:
+            raise ValueError(
+                f"muscle fiber lesion outside A1-A6 atlas: {sorted(unknown_lesions)}"
+            )
+        spiked = set(spikes)
+        lesioned = set(lesions)
+        recruited = tuple(
+            item
+            for item in self.mappings
+            if item.source_node_id in spiked and item.fiber_id not in lesioned
+        )
+        return NeuralMuscleIdentityEventFrame(
+            source_spikes=spikes,
+            fiber_events=tuple(item.fiber_id for item in recruited),
+            source_by_fiber={
+                item.fiber_id: item.source_node_id for item in recruited
+            },
+            mapping_provenance_by_fiber={
+                item.fiber_id: item.mapping_provenance for item in recruited
+            },
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -435,6 +514,94 @@ def load_muscle_atlas(path: str | Path | None = None) -> AbdominalMuscleAtlas:
     )
     result.validate()
     return result
+
+
+def default_neural_muscle_identity_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "data"
+        / "neuromuscular"
+        / "l1_neural_muscle_identity_v0.json"
+    )
+
+
+def load_neural_muscle_identity_projection(
+    path: str | Path | None = None,
+    *,
+    atlas: AbdominalMuscleAtlas | None = None,
+) -> NeuralMuscleIdentityProjection:
+    source_path = Path(path) if path else default_neural_muscle_identity_path()
+    raw = json.loads(source_path.read_text(encoding="utf-8"))
+    if (
+        raw.get("model_id") != "dmel_l1_neural_muscle_identity_v0"
+        or raw.get("stage") != "L1"
+        or raw.get("status")
+        != "identity_event_mapping_only_not_activation_or_mechanics"
+    ):
+        raise ValueError("unexpected neural-muscle identity mapping")
+    semantics = raw.get("event_semantics", {})
+    if (
+        semantics.get("provenance") != "ANATOMY_DERIVED"
+        or semantics.get("activation_dynamics_executed") is not False
+        or semantics.get("individual_geometry_executed") is not False
+        or semantics.get("mechanical_force_executed") is not False
+        or semantics.get("nmj_location_claimed") is not False
+    ):
+        raise ValueError("neural-muscle event claim boundary is invalid")
+    muscle_atlas = atlas or load_muscle_atlas()
+    aggregate = AggregateMuscleIdentityProjection(muscle_atlas)
+    atlas_ids = frozenset(aggregate.identities)
+    mappings = tuple(
+        NeuralMuscleIdentityMapping(
+            source_node_id=str(item["source_node_id"]),
+            fiber_id=str(item["fiber_id"]),
+            segment_id=str(item["segment"]),
+            side=str(item["side"]),
+            muscle_number=str(item["muscle"]["number"]),
+            mapping_provenance=str(item["mapping_provenance"]),
+        )
+        for item in raw.get("mappings", ())
+    )
+    fiber_ids = tuple(item.fiber_id for item in mappings)
+    pairs = tuple((item.source_node_id, item.fiber_id) for item in mappings)
+    if (
+        len(mappings) != 146
+        or len(fiber_ids) != len(set(fiber_ids))
+        or len(pairs) != len(set(pairs))
+        or not set(fiber_ids) <= atlas_ids
+    ):
+        raise ValueError("neural-muscle mapping identity boundary is invalid")
+    for item in mappings:
+        expected_prefix = (
+            f"{item.segment_id}:{item.side}:M{item.muscle_number}:"
+        )
+        if not item.fiber_id.startswith(expected_prefix):
+            raise ValueError(f"fiber metadata mismatch for {item.fiber_id}")
+        expected_provenance = (
+            "MEASURED_PUBLISHED"
+            if item.segment_id == "A1"
+            else "ANATOMY_DERIVED"
+        )
+        if item.mapping_provenance != expected_provenance:
+            raise ValueError(f"mapping provenance mismatch for {item.fiber_id}")
+    summary = raw.get("summary", {})
+    if summary != {
+        "atlas_fibers": 358,
+        "mapped_unique_fibers": 146,
+        "unmapped_fibers": 212,
+        "observed_a1_motor_identities": 14,
+        "observed_a1_identity_mappings": 16,
+        "derived_a2_a6_identity_mappings": 130,
+        "total_identity_mappings": 146,
+        "blocked_segments": ["A7"],
+    }:
+        raise ValueError("neural-muscle mapping count contract is invalid")
+    return NeuralMuscleIdentityProjection(
+        model_id=str(raw["model_id"]),
+        status=str(raw["status"]),
+        mappings=mappings,
+        atlas_fiber_ids=atlas_ids,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

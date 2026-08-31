@@ -1,0 +1,1955 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_neural_muscle_identity_v0",
+  "status": "identity_event_mapping_only_not_activation_or_mechanics",
+  "stage": "L1",
+  "sources": [
+    {
+      "model_id": "dmel_l1_a03o_motor_path_v0",
+      "local_artifact": "data/connectome/l1_a03o_motor_path_v0.json",
+      "used_for": "observed A1 motor identities and published target-muscle crosswalk",
+      "provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "model_id": "dmel_l1_a03o_segmental_projection_v0",
+      "local_artifact": "data/connectome/l1_a03o_segmental_projection_v0.json",
+      "used_for": "A2-A6 motor-target proxies",
+      "provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "model_id": "dmel_l1_abdominal_muscle_template_v0",
+      "local_artifact": "data/muscles/l1_abdominal_muscle_template_v0.json",
+      "used_for": "358-fiber A1-A6 identity namespace",
+      "provenance": "MEASURED_PUBLISHED_AND_ANATOMY_DERIVED"
+    }
+  ],
+  "event_semantics": {
+    "rule": "one source-node spike emits one event to each explicitly mapped named fiber unless that fiber is lesioned",
+    "provenance": "ANATOMY_DERIVED",
+    "activation_dynamics_executed": false,
+    "individual_geometry_executed": false,
+    "mechanical_force_executed": false,
+    "nmj_location_claimed": false
+  },
+  "summary": {
+    "atlas_fibers": 358,
+    "mapped_unique_fibers": 146,
+    "unmapped_fibers": 212,
+    "observed_a1_motor_identities": 14,
+    "observed_a1_identity_mappings": 16,
+    "derived_a2_a6_identity_mappings": 130,
+    "total_identity_mappings": 146,
+    "blocked_segments": [
+      "A7"
+    ]
+  },
+  "mappings": [
+    {
+      "source_node_id": "motor_identity:4121534:right",
+      "fiber_id": "A1:right:M23:LT3",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:4121534:right",
+      "fiber_id": "A1:right:M24:LT4",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:4488976:right",
+      "fiber_id": "A1:right:M1:DA1",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:4535767:right",
+      "fiber_id": "A1:right:M5:LO1",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:4881629:right",
+      "fiber_id": "A1:right:M8:SBM",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:5085455:right",
+      "fiber_id": "A1:right:M20:DO5",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:8026224:left",
+      "fiber_id": "A1:left:M10:DO2",
+      "segment": "A1",
+      "side": "left",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:10649843:left",
+      "fiber_id": "A1:left:M1:DA1",
+      "segment": "A1",
+      "side": "left",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:14047760:right",
+      "fiber_id": "A1:right:M10:DO2",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:14085813:left",
+      "fiber_id": "A1:left:M9:DO1",
+      "segment": "A1",
+      "side": "left",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:14088451:left",
+      "fiber_id": "A1:left:M11:DO3",
+      "segment": "A1",
+      "side": "left",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:14199031:left",
+      "fiber_id": "A1:left:M18:DT1",
+      "segment": "A1",
+      "side": "left",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:16181494:right",
+      "fiber_id": "A1:right:M19:DO4",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:16433395:left",
+      "fiber_id": "A1:left:M20:DO5",
+      "segment": "A1",
+      "side": "left",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:16713121:right",
+      "fiber_id": "A1:right:M21:LT1",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "motor_identity:16713121:right",
+      "fiber_id": "A1:right:M22:LT2",
+      "segment": "A1",
+      "side": "right",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "observed_motor_identity_to_named_muscle",
+      "mapping_provenance": "MEASURED_PUBLISHED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M1:DA1",
+      "fiber_id": "A2:left:M1:DA1",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M5:LO1",
+      "fiber_id": "A2:left:M5:LO1",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M8:SBM",
+      "fiber_id": "A2:left:M8:SBM",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M9:DO1",
+      "fiber_id": "A2:left:M9:DO1",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M10:DO2",
+      "fiber_id": "A2:left:M10:DO2",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M11:DO3",
+      "fiber_id": "A2:left:M11:DO3",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M18:DT1",
+      "fiber_id": "A2:left:M18:DT1",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M19:DO4",
+      "fiber_id": "A2:left:M19:DO4",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M20:DO5",
+      "fiber_id": "A2:left:M20:DO5",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M21:LT1",
+      "fiber_id": "A2:left:M21:LT1",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M22:LT2",
+      "fiber_id": "A2:left:M22:LT2",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M23:LT3",
+      "fiber_id": "A2:left:M23:LT3",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:left:M24:LT4",
+      "fiber_id": "A2:left:M24:LT4",
+      "segment": "A2",
+      "side": "left",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M1:DA1",
+      "fiber_id": "A2:right:M1:DA1",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M5:LO1",
+      "fiber_id": "A2:right:M5:LO1",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M8:SBM",
+      "fiber_id": "A2:right:M8:SBM",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M9:DO1",
+      "fiber_id": "A2:right:M9:DO1",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M10:DO2",
+      "fiber_id": "A2:right:M10:DO2",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M11:DO3",
+      "fiber_id": "A2:right:M11:DO3",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M18:DT1",
+      "fiber_id": "A2:right:M18:DT1",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M19:DO4",
+      "fiber_id": "A2:right:M19:DO4",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M20:DO5",
+      "fiber_id": "A2:right:M20:DO5",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M21:LT1",
+      "fiber_id": "A2:right:M21:LT1",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M22:LT2",
+      "fiber_id": "A2:right:M22:LT2",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M23:LT3",
+      "fiber_id": "A2:right:M23:LT3",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A2:right:M24:LT4",
+      "fiber_id": "A2:right:M24:LT4",
+      "segment": "A2",
+      "side": "right",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M1:DA1",
+      "fiber_id": "A3:left:M1:DA1",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M5:LO1",
+      "fiber_id": "A3:left:M5:LO1",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M8:SBM",
+      "fiber_id": "A3:left:M8:SBM",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M9:DO1",
+      "fiber_id": "A3:left:M9:DO1",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M10:DO2",
+      "fiber_id": "A3:left:M10:DO2",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M11:DO3",
+      "fiber_id": "A3:left:M11:DO3",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M18:DT1",
+      "fiber_id": "A3:left:M18:DT1",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M19:DO4",
+      "fiber_id": "A3:left:M19:DO4",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M20:DO5",
+      "fiber_id": "A3:left:M20:DO5",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M21:LT1",
+      "fiber_id": "A3:left:M21:LT1",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M22:LT2",
+      "fiber_id": "A3:left:M22:LT2",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M23:LT3",
+      "fiber_id": "A3:left:M23:LT3",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:left:M24:LT4",
+      "fiber_id": "A3:left:M24:LT4",
+      "segment": "A3",
+      "side": "left",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M1:DA1",
+      "fiber_id": "A3:right:M1:DA1",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M5:LO1",
+      "fiber_id": "A3:right:M5:LO1",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M8:SBM",
+      "fiber_id": "A3:right:M8:SBM",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M9:DO1",
+      "fiber_id": "A3:right:M9:DO1",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M10:DO2",
+      "fiber_id": "A3:right:M10:DO2",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M11:DO3",
+      "fiber_id": "A3:right:M11:DO3",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M18:DT1",
+      "fiber_id": "A3:right:M18:DT1",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M19:DO4",
+      "fiber_id": "A3:right:M19:DO4",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M20:DO5",
+      "fiber_id": "A3:right:M20:DO5",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M21:LT1",
+      "fiber_id": "A3:right:M21:LT1",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M22:LT2",
+      "fiber_id": "A3:right:M22:LT2",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M23:LT3",
+      "fiber_id": "A3:right:M23:LT3",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A3:right:M24:LT4",
+      "fiber_id": "A3:right:M24:LT4",
+      "segment": "A3",
+      "side": "right",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M1:DA1",
+      "fiber_id": "A4:left:M1:DA1",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M5:LO1",
+      "fiber_id": "A4:left:M5:LO1",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M8:SBM",
+      "fiber_id": "A4:left:M8:SBM",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M9:DO1",
+      "fiber_id": "A4:left:M9:DO1",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M10:DO2",
+      "fiber_id": "A4:left:M10:DO2",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M11:DO3",
+      "fiber_id": "A4:left:M11:DO3",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M18:DT1",
+      "fiber_id": "A4:left:M18:DT1",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M19:DO4",
+      "fiber_id": "A4:left:M19:DO4",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M20:DO5",
+      "fiber_id": "A4:left:M20:DO5",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M21:LT1",
+      "fiber_id": "A4:left:M21:LT1",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M22:LT2",
+      "fiber_id": "A4:left:M22:LT2",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M23:LT3",
+      "fiber_id": "A4:left:M23:LT3",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:left:M24:LT4",
+      "fiber_id": "A4:left:M24:LT4",
+      "segment": "A4",
+      "side": "left",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M1:DA1",
+      "fiber_id": "A4:right:M1:DA1",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M5:LO1",
+      "fiber_id": "A4:right:M5:LO1",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M8:SBM",
+      "fiber_id": "A4:right:M8:SBM",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M9:DO1",
+      "fiber_id": "A4:right:M9:DO1",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M10:DO2",
+      "fiber_id": "A4:right:M10:DO2",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M11:DO3",
+      "fiber_id": "A4:right:M11:DO3",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M18:DT1",
+      "fiber_id": "A4:right:M18:DT1",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M19:DO4",
+      "fiber_id": "A4:right:M19:DO4",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M20:DO5",
+      "fiber_id": "A4:right:M20:DO5",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M21:LT1",
+      "fiber_id": "A4:right:M21:LT1",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M22:LT2",
+      "fiber_id": "A4:right:M22:LT2",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M23:LT3",
+      "fiber_id": "A4:right:M23:LT3",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A4:right:M24:LT4",
+      "fiber_id": "A4:right:M24:LT4",
+      "segment": "A4",
+      "side": "right",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M1:DA1",
+      "fiber_id": "A5:left:M1:DA1",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M5:LO1",
+      "fiber_id": "A5:left:M5:LO1",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M8:SBM",
+      "fiber_id": "A5:left:M8:SBM",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M9:DO1",
+      "fiber_id": "A5:left:M9:DO1",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M10:DO2",
+      "fiber_id": "A5:left:M10:DO2",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M11:DO3",
+      "fiber_id": "A5:left:M11:DO3",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M18:DT1",
+      "fiber_id": "A5:left:M18:DT1",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M19:DO4",
+      "fiber_id": "A5:left:M19:DO4",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M20:DO5",
+      "fiber_id": "A5:left:M20:DO5",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M21:LT1",
+      "fiber_id": "A5:left:M21:LT1",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M22:LT2",
+      "fiber_id": "A5:left:M22:LT2",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M23:LT3",
+      "fiber_id": "A5:left:M23:LT3",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:left:M24:LT4",
+      "fiber_id": "A5:left:M24:LT4",
+      "segment": "A5",
+      "side": "left",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M1:DA1",
+      "fiber_id": "A5:right:M1:DA1",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M5:LO1",
+      "fiber_id": "A5:right:M5:LO1",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M8:SBM",
+      "fiber_id": "A5:right:M8:SBM",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M9:DO1",
+      "fiber_id": "A5:right:M9:DO1",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M10:DO2",
+      "fiber_id": "A5:right:M10:DO2",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M11:DO3",
+      "fiber_id": "A5:right:M11:DO3",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M18:DT1",
+      "fiber_id": "A5:right:M18:DT1",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M19:DO4",
+      "fiber_id": "A5:right:M19:DO4",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M20:DO5",
+      "fiber_id": "A5:right:M20:DO5",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M21:LT1",
+      "fiber_id": "A5:right:M21:LT1",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M22:LT2",
+      "fiber_id": "A5:right:M22:LT2",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M23:LT3",
+      "fiber_id": "A5:right:M23:LT3",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A5:right:M24:LT4",
+      "fiber_id": "A5:right:M24:LT4",
+      "segment": "A5",
+      "side": "right",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M1:DA1",
+      "fiber_id": "A6:left:M1:DA1",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M5:LO1",
+      "fiber_id": "A6:left:M5:LO1",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M8:SBM",
+      "fiber_id": "A6:left:M8:SBM",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M9:DO1",
+      "fiber_id": "A6:left:M9:DO1",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M10:DO2",
+      "fiber_id": "A6:left:M10:DO2",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M11:DO3",
+      "fiber_id": "A6:left:M11:DO3",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M18:DT1",
+      "fiber_id": "A6:left:M18:DT1",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M19:DO4",
+      "fiber_id": "A6:left:M19:DO4",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M20:DO5",
+      "fiber_id": "A6:left:M20:DO5",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M21:LT1",
+      "fiber_id": "A6:left:M21:LT1",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M22:LT2",
+      "fiber_id": "A6:left:M22:LT2",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M23:LT3",
+      "fiber_id": "A6:left:M23:LT3",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:left:M24:LT4",
+      "fiber_id": "A6:left:M24:LT4",
+      "segment": "A6",
+      "side": "left",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M1:DA1",
+      "fiber_id": "A6:right:M1:DA1",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "1",
+        "synonym": "DA1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M5:LO1",
+      "fiber_id": "A6:right:M5:LO1",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "5",
+        "synonym": "LO1",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M8:SBM",
+      "fiber_id": "A6:right:M8:SBM",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "8",
+        "synonym": "SBM",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M9:DO1",
+      "fiber_id": "A6:right:M9:DO1",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "9",
+        "synonym": "DO1",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M10:DO2",
+      "fiber_id": "A6:right:M10:DO2",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "10",
+        "synonym": "DO2",
+        "spatial_group": "DL"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M11:DO3",
+      "fiber_id": "A6:right:M11:DO3",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "11",
+        "synonym": "DO3",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M18:DT1",
+      "fiber_id": "A6:right:M18:DT1",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "18",
+        "synonym": "DT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M19:DO4",
+      "fiber_id": "A6:right:M19:DO4",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "19",
+        "synonym": "DO4",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M20:DO5",
+      "fiber_id": "A6:right:M20:DO5",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "20",
+        "synonym": "DO5",
+        "spatial_group": "DO"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M21:LT1",
+      "fiber_id": "A6:right:M21:LT1",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "21",
+        "synonym": "LT1",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M22:LT2",
+      "fiber_id": "A6:right:M22:LT2",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "22",
+        "synonym": "LT2",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M23:LT3",
+      "fiber_id": "A6:right:M23:LT3",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "23",
+        "synonym": "LT3",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    },
+    {
+      "source_node_id": "derived_motor_target:A6:right:M24:LT4",
+      "fiber_id": "A6:right:M24:LT4",
+      "segment": "A6",
+      "side": "right",
+      "muscle": {
+        "number": "24",
+        "synonym": "LT4",
+        "spatial_group": "T"
+      },
+      "mapping_role": "derived_motor_target_to_named_muscle",
+      "mapping_provenance": "ANATOMY_DERIVED"
+    }
+  ],
+  "limitations": [
+    "A1 mappings preserve published motor-to-muscle identity targets but do not locate individual NMJs.",
+    "A2-A6 mappings terminate anatomy-derived target proxies and do not claim identified segmental motor neurons.",
+    "The remaining 212 atlas fibers receive no event; missing neural evidence is not filled by uniform recruitment.",
+    "Events are discrete causal bookkeeping only; spike-to-activation dynamics are deferred to the next model stage.",
+    "No attachment, rest length, CSA, force gain, material law, or muscle actuator is introduced.",
+    "A7 remains blocked."
+  ],
+  "release_validated": false
+}
