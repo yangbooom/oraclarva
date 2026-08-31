@@ -16,6 +16,7 @@ from oraclarva.visual import (
     load_visual_config,
     load_visual_connectome,
     load_visual_descending_connectome,
+    load_a03o_motor_connectome,
     validation_light_field,
     visual_node_ids_for_class,
 )
@@ -36,9 +37,11 @@ def test_visual_config_preserves_measured_and_fitted_boundaries():
     assert config["status"] == "research_approximation"
     assert config["connectome"]["provenance"] == "MEASURED_PUBLISHED"
     assert config["descending_connectome"]["provenance"] == "MEASURED_PUBLISHED"
+    assert config["a03o_motor_connectome"]["provenance"] == "MEASURED_PUBLISHED"
     assert config["phototransduction"]["provenance"] == "MODEL_FITTED"
     assert config["lon_dynamics"]["effect_provenance"] == "MODEL_FITTED"
     assert config["descending_path_dynamics"]["effect_provenance"] == "MODEL_FITTED"
+    assert config["a03o_motor_path_dynamics"]["effect_provenance"] == "MODEL_FITTED"
     bridge = config["a03o_segmental_bridge"]
     assert bridge["provenance"] == "MODEL_FITTED"
     assert bridge["readout_class"] == "A03o_A1"
@@ -110,9 +113,51 @@ def test_compiled_descending_path_preserves_vfb_identities_and_contacts():
     )
 
 
+def test_compiled_a03o_motor_path_preserves_sparse_asymmetric_contacts():
+    path = load_a03o_motor_connectome()
+    assert path["summary"] == {
+        "queried_a03o_neurons": 2,
+        "identified_a1_motor_neurons": 14,
+        "a1_motor_map_denominator": 56,
+        "axon_to_dendrite_connection_pairs": 15,
+        "axon_to_dendrite_synaptic_contacts": 26,
+        "unique_target_muscle_numbers": 13,
+        "motor_neurons_by_side": {"left": 6, "right": 8},
+        "motor_neurons_by_spatial_group": {"DL": 5, "DO": 5, "T": 4},
+    }
+    by_id = {item["node_id"]: item for item in path["neurons"]}
+    assert by_id["motor_identity:4488976:right"]["vfb_id"] == "VFB_00101465"
+    assert by_id["motor_identity:10649843:left"]["target_muscles"] == [
+        {"number": "1", "synonym": "DA1", "evidence": "listed"}
+    ]
+    contacts = {
+        (item["pre"], item["post"]): item["synaptic_contacts"]
+        for item in path["connections"]
+    }
+    assert contacts[
+        ("right:A03o_A1", "motor_identity:4488976:right")
+    ] == 4
+    assert contacts[
+        ("left:A03o_A1", "motor_identity:14085813:left")
+    ] == 2
+    assert contacts[
+        ("right:A03o_A1", "motor_identity:14085813:left")
+    ] == 1
+    assert all(
+        item["connection_compartment"] == "axon_to_dendrite"
+        and item["confidence"] == 5
+        and item["physiological_effect"] is None
+        for item in path["connections"]
+    )
+
+
 @pytest.mark.parametrize(
     "loader",
-    [load_visual_connectome, load_visual_descending_connectome],
+    [
+        load_visual_connectome,
+        load_visual_descending_connectome,
+        load_a03o_motor_connectome,
+    ],
 )
 def test_bundled_source_data_matches_audited_sha256(loader):
     graph = loader()
@@ -145,16 +190,18 @@ def test_bolwig_transduction_uses_only_two_bilateral_samples():
 
 def test_published_contacts_execute_without_relabeling_effects_as_measured():
     protocol = L1VisualCircuitProtocol(validation_light_field())
-    assert protocol.network.neuron_count == 66
+    assert protocol.network.neuron_count == 80
     assert protocol.executed_lon_connection_pairs == 368
     assert protocol.executed_lon_synaptic_contacts == 3035
     assert protocol.executed_descending_connection_pairs == 8
     assert protocol.executed_descending_synaptic_contacts == 98
-    assert protocol.executed_connection_pairs == 376
-    assert protocol.executed_synaptic_contacts == 3133
+    assert protocol.executed_motor_connection_pairs == 15
+    assert protocol.executed_motor_synaptic_contacts == 26
+    assert protocol.executed_connection_pairs == 391
+    assert protocol.executed_synaptic_contacts == 3159
 
 
-def test_causal_trace_runs_through_identified_a03o_before_fitted_bridge_and_motor():
+def test_causal_trace_forks_after_a03o_to_motor_identities_and_fitted_body():
     result = L1VisualClosedLoopLarva(record_visual_frames=True).run(
         duration_s=0.3
     )
@@ -176,6 +223,11 @@ def test_causal_trace_runs_through_identified_a03o_before_fitted_bridge_and_moto
     first_lhn = first["right:down_PVL09_PN-OLP"]
     first_dn = first["right:CPf_DN"]
     first_a03o = first["right:A03o_A1"]
+    first_a1_motor = min(
+        value
+        for label, value in first.items()
+        if label.startswith("motor_identity:") and value is not None
+    )
     body = result.spatial_result
     first_bridge = min(
         body.first_spike_s[item]
@@ -193,6 +245,7 @@ def test_causal_trace_runs_through_identified_a03o_before_fitted_bridge_and_moto
         if label.startswith("motor_pool:A7") and value is not None
     )
     assert first_pr < first_vpn < first_lhn < first_dn < first_a03o
+    assert first_a03o < first_a1_motor
     assert first_a03o < first_bridge < first_premotor < first_motor
     assert not any(
         label.startswith("environment_receptor") for label in body.spike_counts
@@ -234,6 +287,22 @@ def test_lesions_break_each_expected_downstream_stage_without_fallback_action():
         assert all(result.visual_spike_counts[item] == 0 for item in downstream)
         assert sum(result.spatial_result.spike_counts.values()) == 0
         assert result.spatial_result.displacement_y_um == pytest.approx(0.0)
+
+
+
+
+def test_a1_motor_identity_lesion_blocks_only_observed_diagnostic_branch():
+    motor_nodes = tuple(
+        item["node_id"] for item in load_a03o_motor_connectome()["neurons"]
+    )
+    result = L1VisualClosedLoopLarva(
+        lesion_node_ids=motor_nodes
+    ).run(duration_s=0.3)
+    assert all(result.visual_spike_counts[item] == 0 for item in motor_nodes)
+    assert result.visual_spike_counts["right:A03o_A1"] > 0
+    assert sum(result.spatial_result.spike_counts.values()) > 0
+    assert result.spatial_result.displacement_y_um != pytest.approx(0.0)
+
 
 
 def test_mirrored_bilateral_light_fields_reverse_steering_with_specimen_asymmetry():

@@ -63,6 +63,15 @@ def default_visual_descending_path() -> Path:
     )
 
 
+def default_a03o_motor_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "data"
+        / "connectome"
+        / "l1_a03o_motor_path_v0.json"
+    )
+
+
 def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
     source = Path(path) if path else default_visual_config_path()
     raw = json.loads(source.read_text(encoding="utf-8"))
@@ -77,6 +86,7 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         "published_l1_lon_synaptic_contacts",
         "fitted_effects_for_published_contacts",
         "published_polp_to_lhn_to_cpf_to_a03o_a1_contacts",
+        "published_a03o_a1_to_motor_identity_contacts",
         "fitted_a03o_a1_to_segmental_core_bridge",
         "spatial_neural_dynamics",
         "motor_pools",
@@ -110,6 +120,19 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         != 98
     ):
         raise ValueError("visual descending count contract is invalid")
+
+    motor_path = raw.get("a03o_motor_connectome", {})
+    if motor_path.get("provenance") != "MEASURED_PUBLISHED":
+        raise ValueError("A03o motor topology must remain measured-published")
+    if (
+        motor_path.get("model_id") != "dmel_l1_a03o_motor_path_v0"
+        or int(motor_path.get("expected_identified_a1_motor_neurons", 0)) != 14
+        or int(motor_path.get("expected_axon_to_dendrite_connection_pairs", 0))
+        != 15
+        or int(motor_path.get("expected_axon_to_dendrite_synaptic_contacts", 0))
+        != 26
+    ):
+        raise ValueError("A03o motor count contract is invalid")
 
     transduction = raw.get("phototransduction", {})
     if transduction.get("field_unit") != "W_m-2":
@@ -183,6 +206,19 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         for value in path_effects.values()
     ):
         raise ValueError("visual descending effect is invalid")
+
+    motor_dynamics = raw.get("a03o_motor_path_dynamics", {})
+    if motor_dynamics.get("effect_provenance") != "MODEL_FITTED":
+        raise ValueError("A03o motor effects must remain model-fitted")
+    if motor_dynamics.get("effect_by_presynaptic_class") != {
+        "A03o_A1": "excitatory"
+    }:
+        raise ValueError("A03o motor effect classes are invalid")
+    motor_current = float(
+        motor_dynamics.get("current_per_synaptic_contact_a", 0.0)
+    )
+    if not isfinite(motor_current) or motor_current <= 0.0:
+        raise ValueError("A03o motor contact current must be positive")
 
     bridge = raw.get("a03o_segmental_bridge", {})
     if bridge.get("provenance") != "MODEL_FITTED":
@@ -333,6 +369,77 @@ def load_visual_descending_connectome(
     return raw
 
 
+def load_a03o_motor_connectome(
+    path: str | Path | None = None,
+) -> dict[str, Any]:
+    source = Path(path) if path else default_a03o_motor_path()
+    raw = json.loads(source.read_text(encoding="utf-8"))
+    if raw.get("model_id") != "dmel_l1_a03o_motor_path_v0":
+        raise ValueError("unexpected A03o motor connectome model")
+    if raw.get("stage") != "L1":
+        raise ValueError("A03o motor connectome must remain L1")
+    source_record = raw.get("source", {})
+    if (
+        source_record.get("article_doi") != "10.1126/science.add9330"
+        or source_record.get("motor_map_doi") != "10.7554/eLife.51781"
+        or source_record.get("license") != "CC BY-SA 4.0"
+        or source_record.get("provenance") != "MEASURED_PUBLISHED"
+    ):
+        raise ValueError("A03o motor source contract is invalid")
+    summary = raw.get("summary", {})
+    if (
+        int(summary.get("queried_a03o_neurons", 0)) != 2
+        or int(summary.get("identified_a1_motor_neurons", 0)) != 14
+        or int(summary.get("a1_motor_map_denominator", 0)) != 56
+        or int(summary.get("axon_to_dendrite_connection_pairs", 0)) != 15
+        or int(summary.get("axon_to_dendrite_synaptic_contacts", 0)) != 26
+        or int(summary.get("unique_target_muscle_numbers", 0)) != 13
+    ):
+        raise ValueError("A03o motor summary is invalid")
+    upstream_ids = {
+        item.get("node_id") for item in raw.get("upstream_nodes", [])
+    }
+    if upstream_ids != {"left:A03o_A1", "right:A03o_A1"}:
+        raise ValueError("A03o motor upstream identities are invalid")
+    neurons = raw.get("neurons", [])
+    node_ids = [item.get("node_id") for item in neurons]
+    if (
+        len(neurons) != 14
+        or len(node_ids) != len(set(node_ids))
+        or any(
+            item.get("neuron_class") != "A1_motor_identity"
+            or item.get("segment") != "A1"
+            or item.get("side") not in LON_SIDES
+            or item.get("synaptic_effect") is not None
+            or item.get("synaptic_effect_provenance") != "unknown"
+            or item.get("provenance") != "MEASURED_PUBLISHED"
+            or not item.get("target_muscles")
+            for item in neurons
+        )
+    ):
+        raise ValueError("A03o motor identities are invalid")
+    known = upstream_ids | set(node_ids)
+    connections = raw.get("connections", [])
+    if len(connections) != 15 or any(
+        item.get("pre") not in upstream_ids
+        or item.get("post") not in known
+        or not isinstance(item.get("synaptic_contacts"), int)
+        or item["synaptic_contacts"] <= 0
+        or item.get("connection_compartment") != "axon_to_dendrite"
+        or item.get("confidence") != 5
+        or item.get("physiological_effect") is not None
+        or item.get("physiological_effect_provenance") != "unknown"
+        or item.get("provenance") != "MEASURED_PUBLISHED"
+        for item in connections
+    ):
+        raise ValueError("A03o motor connection is invalid")
+    if sum(item["synaptic_contacts"] for item in connections) != 26:
+        raise ValueError("A03o motor contact total is invalid")
+    if raw.get("release_validated") is not False:
+        raise ValueError("A03o motor path cannot be release-validated")
+    return raw
+
+
 def visual_node_ids_for_class(
     connectome: dict[str, Any],
     neuron_class: str,
@@ -457,6 +564,7 @@ class VisualCircuitFrame:
     transduction: BolwigTransductionFrame
     spiked_neurons: tuple[str, ...]
     a03o_spikes: dict[str, tuple[str, ...]]
+    a1_motor_spikes: dict[str, tuple[str, ...]]
     bridge_activity: dict[str, float]
     bridge_stimulus: SpatialStimulus
 
@@ -467,13 +575,17 @@ class VisualCircuitFrame:
             "a03o_spikes": {
                 side: list(values) for side, values in self.a03o_spikes.items()
             },
+            "a1_motor_spikes": {
+                side: list(values)
+                for side, values in self.a1_motor_spikes.items()
+            },
             "bridge_activity": self.bridge_activity,
             "bridge_stimulus": list(self.bridge_stimulus.values()),
         }
 
 
 class L1VisualCircuitProtocol:
-    """Step published LON-to-A03o contacts before a declared fitted bridge."""
+    """Step published LON-to-A03o and A1 motor contacts plus a fitted branch."""
 
     def __init__(
         self,
@@ -482,6 +594,7 @@ class L1VisualCircuitProtocol:
         config: dict[str, Any] | None = None,
         connectome: dict[str, Any] | None = None,
         descending_connectome: dict[str, Any] | None = None,
+        motor_connectome: dict[str, Any] | None = None,
         lesion_node_ids: Iterable[str] = (),
         record_frames: bool = False,
     ) -> None:
@@ -490,6 +603,7 @@ class L1VisualCircuitProtocol:
         self.descending_connectome = (
             descending_connectome or load_visual_descending_connectome()
         )
+        self.motor_connectome = motor_connectome or load_a03o_motor_connectome()
         self.transduction = BolwigLightTransduction(field, self.config)
         self.record_frames = record_frames
         self.frames: list[VisualCircuitFrame] = []
@@ -517,6 +631,18 @@ class L1VisualCircuitProtocol:
             merged_index[node_id] = len(merged_neurons)
             merged_neurons.append(neuron)
 
+        for motor_neuron in self.motor_connectome["neurons"]:
+            node_id = motor_neuron["node_id"]
+            if node_id in merged_index:
+                raise ValueError(f"duplicate A03o motor identity {node_id}")
+            neuron = dict(motor_neuron)
+            neuron["lon_side"] = neuron["side"]
+            neuron["identity"] = neuron["vfb_name"]
+            neuron["transmitter"] = "unknown"
+            neuron["transmitter_provenance"] = "unknown"
+            merged_index[node_id] = len(merged_neurons)
+            merged_neurons.append(neuron)
+
         self.neurons = tuple(merged_neurons)
         self.labels = tuple(item["node_id"] for item in self.neurons)
         self.index_by_id = {
@@ -525,8 +651,8 @@ class L1VisualCircuitProtocol:
         self.metadata_by_id = {
             item["node_id"]: item for item in self.neurons
         }
-        if len(self.neurons) != 66 or len(self.labels) != len(set(self.labels)):
-            raise ValueError("visual runtime must contain 66 unique compartments")
+        if len(self.neurons) != 80 or len(self.labels) != len(set(self.labels)):
+            raise ValueError("visual runtime must contain 80 unique compartments")
 
         dynamics = self.config["lon_dynamics"]
         effects = dynamics["effect_by_presynaptic_class"]
@@ -578,11 +704,37 @@ class L1VisualCircuitProtocol:
             item["synaptic_contacts"]
             for item in self.descending_connectome["connections"]
         )
+
+        motor_dynamics = self.config["a03o_motor_path_dynamics"]
+        motor_effects = motor_dynamics["effect_by_presynaptic_class"]
+        motor_current = float(
+            motor_dynamics["current_per_synaptic_contact_a"]
+        )
+        for item in self.motor_connectome["connections"]:
+            pre_class = self.metadata_by_id[item["pre"]]["neuron_class"]
+            if pre_class not in motor_effects:
+                raise ValueError(f"A03o motor effect absent for {pre_class}")
+            synapses.append(
+                Synapse(
+                    self.index_by_id[item["pre"]],
+                    self.index_by_id[item["post"]],
+                    motor_current * int(item["synaptic_contacts"]),
+                    kind=motor_effects[pre_class],
+                )
+            )
+        self.executed_motor_connection_pairs = len(
+            self.motor_connectome["connections"]
+        )
+        self.executed_motor_synaptic_contacts = sum(
+            item["synaptic_contacts"]
+            for item in self.motor_connectome["connections"]
+        )
         self.network = SparseLIFNetwork(len(self.neurons), synapses)
         self.executed_connection_pairs = len(synapses)
         self.executed_synaptic_contacts = (
             self.executed_lon_synaptic_contacts
             + self.executed_descending_synaptic_contacts
+            + self.executed_motor_synaptic_contacts
         )
 
         lesions = tuple(lesion_node_ids)
@@ -607,6 +759,21 @@ class L1VisualCircuitProtocol:
         }
         if any(len(values) != 1 for values in self.a03o_indices.values()):
             raise ValueError("visual bridge requires one A1 A03o neuron per side")
+        self.a1_motor_indices = {
+            side: tuple(
+                index
+                for index, item in enumerate(self.neurons)
+                if item["lon_side"] == side
+                and item["neuron_class"] == "A1_motor_identity"
+            )
+            for side in LON_SIDES
+        }
+        if tuple(
+            len(self.a1_motor_indices[side]) for side in LON_SIDES
+        ) != (6, 8):
+            raise ValueError(
+                "visual motor branch must preserve 6 left and 8 right MNs"
+            )
         self.bridge_activity = {side: 0.0 for side in LON_SIDES}
         self.spike_counts = {label: 0 for label in self.labels}
         self.first_spike_s: dict[str, float | None] = {
@@ -660,6 +827,14 @@ class L1VisualCircuitProtocol:
                 * float(bridge["spike_increment"])
                 * float(bridge["side_activity_gain"][side])
             )
+        a1_motor_spikes = {
+            side: tuple(
+                self.labels[index]
+                for index in self.a1_motor_indices[side]
+                if index in spiked
+            )
+            for side in LON_SIDES
+        }
 
         left_activity = self.bridge_activity["left"]
         right_activity = self.bridge_activity["right"]
@@ -689,6 +864,7 @@ class L1VisualCircuitProtocol:
                     transduction=transduction,
                     spiked_neurons=spiked_labels,
                     a03o_spikes=a03o_spikes,
+                    a1_motor_spikes=a1_motor_spikes,
                     bridge_activity=dict(self.bridge_activity),
                     bridge_stimulus=stimulus,
                 )
@@ -703,10 +879,13 @@ class VisualClosedLoopResult:
     spatial_result: SpatialClosedLoopResult
     visual_neuron_compartments: int
     identified_descending_neurons: int
+    identified_a1_motor_neurons: int
     published_connection_pairs: int
     published_synaptic_contacts: int
     published_descending_connection_pairs: int
     published_descending_synaptic_contacts: int
+    published_motor_connection_pairs: int
+    published_motor_synaptic_contacts: int
     executed_connection_pairs: int
     executed_synaptic_contacts: int
     visual_spike_counts: dict[str, int]
@@ -722,6 +901,7 @@ class VisualClosedLoopResult:
             "duration_s": body.duration_s,
             "visual_neuron_compartments": self.visual_neuron_compartments,
             "identified_descending_neurons": self.identified_descending_neurons,
+            "identified_a1_motor_neurons": self.identified_a1_motor_neurons,
             "downstream_spatial_neurons": body.neuron_count,
             "total_neuron_compartments": (
                 self.visual_neuron_compartments + body.neuron_count
@@ -733,6 +913,12 @@ class VisualClosedLoopResult:
             ),
             "published_descending_synaptic_contacts": (
                 self.published_descending_synaptic_contacts
+            ),
+            "published_motor_connection_pairs": (
+                self.published_motor_connection_pairs
+            ),
+            "published_motor_synaptic_contacts": (
+                self.published_motor_synaptic_contacts
             ),
             "executed_connection_pairs": self.executed_connection_pairs,
             "executed_synaptic_contacts": self.executed_synaptic_contacts,
@@ -747,9 +933,10 @@ class VisualClosedLoopResult:
             "lesion_node_ids": list(self.lesion_node_ids),
             "release_validated": False,
             "claim_boundary": (
-                "published L1 LON and pOLP-to-LHN-to-CPf-to-A03o(A1) "
-                "structural contacts plus fitted effects, phototransduction, "
-                "and A03o-to-segmental bridge; not validated natural "
+                "published L1 LON, pOLP-to-LHN-to-CPf-to-A03o(A1), and "
+                "A03o-to-14-A1-motor-identity structural contacts plus fitted "
+                "effects, phototransduction, and a parallel A03o-to-segmental "
+                "bridge; not validated natural "
                 "phototaxis or a complete sensor-to-muscle connectome"
             ),
         }
@@ -788,6 +975,7 @@ class L1VisualClosedLoopLarva:
         config: dict[str, Any] | None = None,
         connectome: dict[str, Any] | None = None,
         descending_connectome: dict[str, Any] | None = None,
+        motor_connectome: dict[str, Any] | None = None,
         lesion_node_ids: Iterable[str] = (),
         ground_z_m: float | None = None,
         record_visual_frames: bool = False,
@@ -797,11 +985,13 @@ class L1VisualClosedLoopLarva:
         self.descending_connectome = (
             descending_connectome or load_visual_descending_connectome()
         )
+        self.motor_connectome = motor_connectome or load_a03o_motor_connectome()
         self.protocol = L1VisualCircuitProtocol(
             field or validation_light_field(self.config),
             config=self.config,
             connectome=self.connectome,
             descending_connectome=self.descending_connectome,
+            motor_connectome=self.motor_connectome,
             lesion_node_ids=lesion_node_ids,
             record_frames=record_visual_frames,
         )
@@ -830,10 +1020,18 @@ class L1VisualClosedLoopLarva:
             identified_descending_neurons=int(
                 self.descending_connectome["summary"]["identified_neurons"]
             ),
+            identified_a1_motor_neurons=int(
+                self.motor_connectome["summary"]["identified_a1_motor_neurons"]
+            ),
             published_connection_pairs=(
                 int(self.connectome["summary"]["nonzero_connection_pairs"])
                 + int(
                     self.descending_connectome["summary"][
+                        "axon_to_dendrite_connection_pairs"
+                    ]
+                )
+                + int(
+                    self.motor_connectome["summary"][
                         "axon_to_dendrite_connection_pairs"
                     ]
                 )
@@ -845,6 +1043,11 @@ class L1VisualClosedLoopLarva:
                         "axon_to_dendrite_synaptic_contacts"
                     ]
                 )
+                + int(
+                    self.motor_connectome["summary"][
+                        "axon_to_dendrite_synaptic_contacts"
+                    ]
+                )
             ),
             published_descending_connection_pairs=int(
                 self.descending_connectome["summary"][
@@ -853,6 +1056,16 @@ class L1VisualClosedLoopLarva:
             ),
             published_descending_synaptic_contacts=int(
                 self.descending_connectome["summary"][
+                    "axon_to_dendrite_synaptic_contacts"
+                ]
+            ),
+            published_motor_connection_pairs=int(
+                self.motor_connectome["summary"][
+                    "axon_to_dendrite_connection_pairs"
+                ]
+            ),
+            published_motor_synaptic_contacts=int(
+                self.motor_connectome["summary"][
                     "axon_to_dendrite_synaptic_contacts"
                 ]
             ),
@@ -877,12 +1090,17 @@ def main(argv: list[str] | None = None) -> int:
     config = load_visual_config()
     connectome = load_visual_connectome()
     descending_connectome = load_visual_descending_connectome()
+    motor_connectome = load_a03o_motor_connectome()
     lesions: tuple[str, ...] = ()
     if args.lesion_class:
         lesions = tuple(
             dict.fromkeys(
                 item["node_id"]
-                for graph in (connectome, descending_connectome)
+                for graph in (
+                    connectome,
+                    descending_connectome,
+                    motor_connectome,
+                )
                 for item in graph["neurons"]
                 if item["neuron_class"] == args.lesion_class
                 and (
@@ -903,6 +1121,7 @@ def main(argv: list[str] | None = None) -> int:
         config=config,
         connectome=connectome,
         descending_connectome=descending_connectome,
+        motor_connectome=motor_connectome,
         lesion_node_ids=lesions,
     ).run(duration_s=args.duration)
     print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
