@@ -17,6 +17,14 @@ KINEMATIC_METRICS = (
     "onset_phase_cycle_fraction",
     "adjacent_onset_delay_cycle_fraction",
 )
+HELD_OUT_SEGMENT_METRICS = KINEMATIC_METRICS + ("duty_cycle_percent",)
+HELD_OUT_CYCLE_METRICS = (
+    "crawl_speed_um_s",
+    "stride_um",
+    "cycle_period_s",
+    "cycle_frequency_hz",
+    "wave_speed_segments_s",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,6 +134,47 @@ class KinematicTargetSet:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class HeldOutKinematicTargetSet:
+    calibration_animal_count: int
+    validation_animal_count: int
+    calibration_source_indices: tuple[int, ...]
+    validation_source_indices: tuple[int, ...]
+    calibration_segments: Mapping[str, Mapping[str, ObservedBand | None]]
+    validation_segments: Mapping[str, Mapping[str, ObservedBand | None]]
+    calibration_cycle_metrics: Mapping[str, ObservedBand | None]
+    validation_cycle_metrics: Mapping[str, ObservedBand | None]
+
+    def validate(self) -> None:
+        if self.calibration_animal_count != 12 or self.validation_animal_count != 6:
+            raise ValueError("Greaney split must remain 12 calibration / 6 validation")
+        calibration = set(self.calibration_source_indices)
+        validation = set(self.validation_source_indices)
+        if calibration & validation:
+            raise ValueError("an animal appears in both kinematic partitions")
+        if calibration | validation != set(range(18)):
+            raise ValueError("kinematic split does not cover the 18-animal cohort")
+        expected_segments = ("T3", "A1", "A2", "A3", "A4", "A5", "A6", "A7")
+        for partition in (self.calibration_segments, self.validation_segments):
+            if tuple(partition) != expected_segments:
+                raise ValueError("held-out segment coverage changed")
+            for metrics in partition.values():
+                if set(metrics) != set(HELD_OUT_SEGMENT_METRICS):
+                    raise ValueError("held-out segment metric schema is incomplete")
+                for band in metrics.values():
+                    if band is not None:
+                        band.validate()
+        for partition in (
+            self.calibration_cycle_metrics,
+            self.validation_cycle_metrics,
+        ):
+            if set(partition) != set(HELD_OUT_CYCLE_METRICS):
+                raise ValueError("held-out cycle metric schema is incomplete")
+            for band in partition.values():
+                if band is not None:
+                    band.validate()
+
+
 def default_kinematic_path() -> Path:
     return (
         Path(__file__).resolve().parents[2]
@@ -168,6 +217,65 @@ def load_kinematic_targets(path: str | Path | None = None) -> KinematicTargetSet
             coverage["free_surface_locomotion_observed"]
         ),
         targets=targets,
+    )
+    result.validate()
+    return result
+
+
+def load_held_out_kinematic_targets(
+    path: str | Path | None = None,
+) -> HeldOutKinematicTargetSet:
+    source_path = Path(path) if path else default_kinematic_path()
+    raw = json.loads(source_path.read_text(encoding="utf-8"))
+    if int(raw.get("schema_version", 0)) != 2:
+        raise ValueError("held-out kinematic targets require schema version 2")
+    split = raw["split"]
+    if (
+        split.get("unit") != "animal"
+        or split.get("selection_used_model_output") is not False
+        or split.get("selection_used_target_values") is not False
+    ):
+        raise ValueError("held-out split provenance is invalid")
+
+    def bands(source: Mapping[str, Any]) -> dict[str, ObservedBand | None]:
+        result: dict[str, ObservedBand | None] = {}
+        for metric, value in source.items():
+            if value is None:
+                result[metric] = None
+                continue
+            ci = value.get("median_bootstrap_95_ci")
+            if (
+                value.get("bootstrap_resamples") != 2000
+                or not isinstance(ci, list)
+                or len(ci) != 2
+                or not float(ci[0]) <= float(value["median"]) <= float(ci[1])
+            ):
+                raise ValueError(f"invalid bootstrap uncertainty for {metric}")
+            result[metric] = ObservedBand(
+                p10=float(value["p10"]),
+                median=float(value["median"]),
+                p90=float(value["p90"]),
+                animal_count=int(value["animal_count"]),
+            )
+        return result
+
+    calibration = raw["calibration_targets"]
+    validation = raw["held_out_validation_targets"]
+    result = HeldOutKinematicTargetSet(
+        calibration_animal_count=int(split["calibration_animal_count"]),
+        validation_animal_count=int(split["validation_animal_count"]),
+        calibration_source_indices=tuple(split["calibration_source_indices"]),
+        validation_source_indices=tuple(split["validation_source_indices"]),
+        calibration_segments={
+            segment: bands(metrics)
+            for segment, metrics in calibration["segments"].items()
+        },
+        validation_segments={
+            segment: bands(metrics)
+            for segment, metrics in validation["segments"].items()
+        },
+        calibration_cycle_metrics=bands(calibration["cycle_metrics"]),
+        validation_cycle_metrics=bands(validation["cycle_metrics"]),
     )
     result.validate()
     return result

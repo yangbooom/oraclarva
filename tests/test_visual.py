@@ -247,7 +247,7 @@ def test_bolwig_transduction_uses_only_two_bilateral_samples():
 
 def test_published_contacts_execute_without_relabeling_effects_as_measured():
     protocol = L1VisualCircuitProtocol(validation_light_field())
-    assert protocol.network.neuron_count == 220
+    assert protocol.network.neuron_count == 222
     assert protocol.executed_lon_connection_pairs == 368
     assert protocol.executed_lon_synaptic_contacts == 3035
     assert protocol.executed_descending_connection_pairs == 8
@@ -255,8 +255,10 @@ def test_published_contacts_execute_without_relabeling_effects_as_measured():
     assert protocol.executed_motor_connection_pairs == 15
     assert protocol.executed_motor_synaptic_contacts == 26
     assert protocol.executed_segmental_projection_edges == 140
-    assert protocol.executed_connection_pairs == 531
-    assert protocol.executed_synaptic_contacts == 3159
+    assert protocol.executed_connection_pairs == 534
+    assert protocol.executed_synaptic_contacts == 3162
+    assert protocol.executed_body_feedback_connection_pairs == 3
+    assert protocol.executed_body_feedback_synaptic_contacts == 3
 
 
 def test_causal_trace_reaches_named_fiber_force_without_parallel_body_bridge():

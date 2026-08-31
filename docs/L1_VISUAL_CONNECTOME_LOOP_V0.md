@@ -14,6 +14,13 @@ segmental body bridge and its downstream premotor/motor pools are disabled. No
 phototaxis command, target selector, finite-state machine, behavior tree,
 external policy, or renderer-authored movement is present.
 
+Stage 5 also attaches the shared body to two published A1 `dbd` sensory
+identities. The source table contains 7 direct dbd-to-MN pairs / 11 contacts;
+the runtime executes only the 3 one-contact MN targets already present in the
+146-fiber path. Full evidence, fitted transduction equations, perturbation and
+lesion gates, and the 12/6 Greaney held-out split are documented in
+`BODY_STATE_SENSORY_FEEDBACK_V0.md`.
+
 The executed causal chain is:
 
     local analytic irradiance at two moving Bolwig-organ proxy positions
@@ -31,6 +38,10 @@ The executed causal chain is:
       -> equal-and-opposite force projection onto shared body nodes
       -> 3D body physics
       -> next bilateral irradiance samples
+      -> A1-A6 body length/strain/contact samples
+      -> fitted dbd transduction
+      -> published A1 dbd identities and 3 executable direct MN contacts
+      -> the same MN -> named-fiber -> force path
 
 ## Published sources and reproducible imports
 

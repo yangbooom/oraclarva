@@ -63,6 +63,21 @@ per-step activation and model-unit node forces, preserve every upstream source
 trace, and reproduce sampled 13-node trajectories within a declared tolerance
 before the mobile product uses this path.
 
+## Stage 5 native-impact audit
+
+Body-state sensory feedback is also Python-only. It adds A1-A6 segment-state
+sampling, two executable A1 dbd compartments, three direct sparse contacts,
+and body-state/dbd/MN ancestry on feedback-associated fiber forces. The three
+existing native fixtures and their schemas are intentionally unchanged; local
+parity tests must remain bit-for-bit compatible with their checked outputs.
+
+This is not native support by implication. A new native fixture must match the
+Python reference on fitted transduction current, dbd and MN spike timing,
+one-step-delayed named-fiber events, trace ordering, node-force vectors, and
+13-node trajectories for zero input, stretch, and sensory/MN/fiber lesions.
+Contact and contraction channels remain non-executable and must not be silently
+wired by a mobile implementation.
+
 This is correctness parity for the current `research_approximation`, not
 biological validation or a performance result. The full brain/VNC, measured individual
 muscle attachments and force gains, visual named-fiber native parity, held-out

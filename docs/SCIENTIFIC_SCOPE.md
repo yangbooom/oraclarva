@@ -24,6 +24,17 @@ its 140 edges have no contact counts, and A7 is blocked. All executable effects
 and currents remain `MODEL_FITTED`; source graphs retain unknown effects rather
 than rewriting structural contacts or derived weights as measured physiology.
 
+The body-state extension preserves the same boundary. A published 6-hour L1
+EM analysis supplies two A1 dbd identities and 7 direct dbd-to-MN pairs / 11
+contacts. Only 3 contacts overlap the current mapped motor runtime and execute;
+the other 8 contacts remain recorded but unexecuted. A1-A6 strain and contact
+are computed from the physical body, but transduction thresholds, currents,
+effects, and gains are `MODEL_FITTED`. A2-A6 homolog channels are
+`ANATOMY_DERIVED`; contraction and contact channels have no executable neural
+edge. The reserved 6-animal kinematic partition is a future validation target,
+not evidence that the current non-cyclic fixture matches stride, duty cycle, or
+wave speed.
+
 ## Provenance labels
 
 Every imported node, edge, parameter, and mapping must carry one of these labels:

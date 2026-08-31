@@ -12,6 +12,7 @@ dependencies = []
 [project.optional-dependencies]
 test = ["pytest>=8,<9"]
 media = ["Pillow>=11,<12"]
+data = ["numpy>=2,<3", "scipy>=1.14,<2"]
 
 [project.scripts]
 oraclarva-audit = "oraclarva.audit:main"

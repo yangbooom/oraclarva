@@ -1,23 +1,57 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "dataset_id": "greaney_2026_l1_kinematics_v0",
   "stage": "first-instar L1 (~1 mm screening size)",
   "task": "forward crawling",
-  "generated_on": "2026-08-28",
+  "generated_on": "2026-08-31",
   "source": {
     "citation": "Greaney MR, Heckscher ES, Kaufman ML. J Neurosci. 2026. Multiple Scales of Coordination along the Body Axis during Drosophila Larval Locomotion.",
     "doi": "10.1523/JNEUROSCI.1623-25.2026",
     "repository": "https://github.com/kaufmanlab/larvariability-public",
     "repository_commit": "b9f3a82028b1223de1e5933151ad3a8ea1b10b91",
     "artifact_url": "https://raw.githubusercontent.com/kaufmanlab/larvariability-public/main/data/combined/comboResults.mat",
-    "artifact_sha256": "b3b7f2149d6dd247064968bbd5abaf5d94ef3b945b5a3b846d3ce9ee3287bf94"
+    "artifact_sha256": "b3b7f2149d6dd247064968bbd5abaf5d94ef3b945b5a3b846d3ce9ee3287bf94",
+    "upstream_data_repository": "https://figshare.com/articles/dataset/Cleaned_DLC_markers_and_results/31510339",
+    "upstream_data_doi": "10.6084/m9.figshare.31510339.v1",
+    "upstream_data_license": "CC BY 4.0",
+    "license_boundary": "The Figshare preprocessed animal data are CC BY 4.0. The checksum-pinned combined MAT is a generated consolidation in the public GitHub repository, whose code has no declared license at the audited commit; repository code is not bundled."
   },
   "cohort": {
     "animal_count": 18,
     "minimum_good_cycles_per_animal": 50,
     "age_context": "Source methods report first-instar jGC7f larvae selected at an average size of 1 mm after 24 hours; this is not established as age-matched to the L1 connectome specimen.",
     "environment": "water-saturated 2% agarose channels, 200 or 250 um wide and 200 um deep",
-    "pooling": "arithmetic mean across cycles within each animal, then NumPy linear p10/median/p90 across animals"
+    "pooling": "Arithmetic mean across cycles within each animal, then NumPy linear p10/median/p90 across animals; 95% median uncertainty uses 2,000 deterministic animal-level bootstrap resamples."
+  },
+  "split": {
+    "unit": "animal",
+    "predeclared_rule": "Preserve upstream source order and hold out every third selected animal beginning with selected index 2; no cycle from one animal appears in both partitions.",
+    "calibration_source_indices": [
+      0,
+      1,
+      3,
+      4,
+      6,
+      7,
+      9,
+      10,
+      12,
+      13,
+      15,
+      16
+    ],
+    "validation_source_indices": [
+      2,
+      5,
+      8,
+      11,
+      14,
+      17
+    ],
+    "calibration_animal_count": 12,
+    "validation_animal_count": 6,
+    "selection_used_model_output": false,
+    "selection_used_target_values": false
   },
   "coverage": {
     "observed_segments": [
@@ -47,31 +81,56 @@
         "p10": 109.237705,
         "median": 120.666078,
         "p90": 145.589107,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          113.838439,
+          133.832218
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_amplitude_percent": {
         "p10": 31.233278,
         "median": 35.057285,
         "p90": 42.37097,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          33.462091,
+          40.831282
+        ],
+        "bootstrap_resamples": 2000
       },
       "shortening_rate_um_s": {
         "p10": 42.29575,
         "median": 55.000402,
         "p90": 83.968812,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          46.614495,
+          67.45611
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_duration_s": {
         "p10": 1.299814,
         "median": 1.769137,
         "p90": 2.226399,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          1.591859,
+          2.028072
+        ],
+        "bootstrap_resamples": 2000
       },
       "onset_phase_cycle_fraction": {
         "p10": 0.73835,
         "median": 0.774917,
         "p90": 0.813404,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.757233,
+          0.783459
+        ],
+        "bootstrap_resamples": 2000
       },
       "adjacent_onset_delay_cycle_fraction": null
     },
@@ -80,37 +139,67 @@
         "p10": 109.56343,
         "median": 119.672489,
         "p90": 145.035702,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          115.037429,
+          138.335903
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_amplitude_percent": {
         "p10": 39.664605,
         "median": 48.12055,
         "p90": 52.425222,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          43.895854,
+          51.040615
+        ],
+        "bootstrap_resamples": 2000
       },
       "shortening_rate_um_s": {
         "p10": 55.804383,
         "median": 68.535667,
         "p90": 99.619876,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          64.651899,
+          86.359266
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_duration_s": {
         "p10": 1.325961,
         "median": 1.746649,
         "p90": 2.035694,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          1.528621,
+          1.939511
+        ],
+        "bootstrap_resamples": 2000
       },
       "onset_phase_cycle_fraction": {
         "p10": 0.677726,
         "median": 0.708464,
         "p90": 0.745183,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.694364,
+          0.731595
+        ],
+        "bootstrap_resamples": 2000
       },
       "adjacent_onset_delay_cycle_fraction": {
         "p10": 0.038266,
         "median": 0.072701,
         "p90": 0.092589,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.051392,
+          0.07992
+        ],
+        "bootstrap_resamples": 2000
       }
     },
     "A2": {
@@ -118,37 +207,67 @@
         "p10": 108.331312,
         "median": 117.528665,
         "p90": 145.252339,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          113.415341,
+          133.681157
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_amplitude_percent": {
         "p10": 45.332326,
         "median": 48.953133,
         "p90": 53.401015,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          46.758465,
+          52.117961
+        ],
+        "bootstrap_resamples": 2000
       },
       "shortening_rate_um_s": {
         "p10": 55.299717,
         "median": 67.403449,
         "p90": 86.718764,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          61.005596,
+          72.053527
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_duration_s": {
         "p10": 1.499187,
         "median": 1.837663,
         "p90": 2.274247,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          1.726992,
+          2.181625
+        ],
+        "bootstrap_resamples": 2000
       },
       "onset_phase_cycle_fraction": {
         "p10": 0.542441,
         "median": 0.588382,
         "p90": 0.628265,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.571723,
+          0.613566
+        ],
+        "bootstrap_resamples": 2000
       },
       "adjacent_onset_delay_cycle_fraction": {
         "p10": 0.110592,
         "median": 0.118499,
         "p90": 0.140737,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.11439,
+          0.124934
+        ],
+        "bootstrap_resamples": 2000
       }
     },
     "A3": {
@@ -156,37 +275,67 @@
         "p10": 104.131239,
         "median": 115.995128,
         "p90": 141.842197,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          111.619139,
+          129.889962
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_amplitude_percent": {
         "p10": 46.197581,
         "median": 51.386468,
         "p90": 56.179876,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          49.419896,
+          54.877583
+        ],
+        "bootstrap_resamples": 2000
       },
       "shortening_rate_um_s": {
         "p10": 50.227043,
         "median": 59.232728,
         "p90": 76.769913,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          54.173538,
+          69.554993
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_duration_s": {
         "p10": 1.608097,
         "median": 1.952009,
         "p90": 2.385789,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          1.77584,
+          2.265247
+        ],
+        "bootstrap_resamples": 2000
       },
       "onset_phase_cycle_fraction": {
         "p10": 0.407408,
         "median": 0.46285,
         "p90": 0.500823,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.429869,
+          0.476326
+        ],
+        "bootstrap_resamples": 2000
       },
       "adjacent_onset_delay_cycle_fraction": {
         "p10": 0.117557,
         "median": 0.134872,
         "p90": 0.152377,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.120531,
+          0.142814
+        ],
+        "bootstrap_resamples": 2000
       }
     },
     "A4": {
@@ -194,37 +343,67 @@
         "p10": 102.767823,
         "median": 115.02061,
         "p90": 140.057037,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          112.558701,
+          133.520698
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_amplitude_percent": {
         "p10": 48.767867,
         "median": 51.646236,
         "p90": 54.352993,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          49.341528,
+          52.904643
+        ],
+        "bootstrap_resamples": 2000
       },
       "shortening_rate_um_s": {
         "p10": 45.062238,
         "median": 53.356099,
         "p90": 62.048196,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          50.66607,
+          58.151753
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_duration_s": {
         "p10": 1.790432,
         "median": 2.239824,
         "p90": 2.634605,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          2.104748,
+          2.485335
+        ],
+        "bootstrap_resamples": 2000
       },
       "onset_phase_cycle_fraction": {
         "p10": 0.257726,
         "median": 0.301459,
         "p90": 0.337734,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.280554,
+          0.314843
+        ],
+        "bootstrap_resamples": 2000
       },
       "adjacent_onset_delay_cycle_fraction": {
         "p10": 0.129828,
         "median": 0.156207,
         "p90": 0.188112,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.145554,
+          0.170411
+        ],
+        "bootstrap_resamples": 2000
       }
     },
     "A5": {
@@ -232,37 +411,67 @@
         "p10": 100.51583,
         "median": 115.973804,
         "p90": 140.593895,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          110.302028,
+          134.201786
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_amplitude_percent": {
         "p10": 46.819135,
         "median": 50.260593,
         "p90": 52.909798,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          49.327084,
+          51.862226
+        ],
+        "bootstrap_resamples": 2000
       },
       "shortening_rate_um_s": {
         "p10": 45.633603,
         "median": 54.587581,
         "p90": 68.321085,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          52.59251,
+          63.702824
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_duration_s": {
         "p10": 1.94687,
         "median": 2.304459,
         "p90": 2.689751,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          2.205461,
+          2.624865
+        ],
+        "bootstrap_resamples": 2000
       },
       "onset_phase_cycle_fraction": {
         "p10": 0.162098,
         "median": 0.18607,
         "p90": 0.205054,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.172415,
+          0.193867
+        ],
+        "bootstrap_resamples": 2000
       },
       "adjacent_onset_delay_cycle_fraction": {
         "p10": 0.091031,
         "median": 0.113375,
         "p90": 0.133092,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.102216,
+          0.122738
+        ],
+        "bootstrap_resamples": 2000
       }
     },
     "A6": {
@@ -270,37 +479,67 @@
         "p10": 98.206105,
         "median": 112.663219,
         "p90": 137.950204,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          108.723036,
+          134.001587
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_amplitude_percent": {
         "p10": 47.550221,
         "median": 51.304524,
         "p90": 54.515559,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          48.988208,
+          53.374773
+        ],
+        "bootstrap_resamples": 2000
       },
       "shortening_rate_um_s": {
         "p10": 57.831834,
         "median": 64.719258,
         "p90": 85.272783,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          61.957086,
+          77.265666
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_duration_s": {
         "p10": 1.80136,
         "median": 2.130531,
         "p90": 2.431563,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          1.977757,
+          2.340418
+        ],
+        "bootstrap_resamples": 2000
       },
       "onset_phase_cycle_fraction": {
         "p10": 0.094083,
         "median": 0.114539,
         "p90": 0.132099,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.108042,
+          0.126637
+        ],
+        "bootstrap_resamples": 2000
       },
       "adjacent_onset_delay_cycle_fraction": {
         "p10": 0.047647,
         "median": 0.067087,
         "p90": 0.086185,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.060195,
+          0.077066
+        ],
+        "bootstrap_resamples": 2000
       }
     },
     "A7": {
@@ -308,38 +547,3009 @@
         "p10": 105.727172,
         "median": 117.093212,
         "p90": 138.265576,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          113.528867,
+          131.713403
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_amplitude_percent": {
         "p10": 47.283938,
         "median": 51.401679,
         "p90": 56.691218,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          49.948648,
+          54.871766
+        ],
+        "bootstrap_resamples": 2000
       },
       "shortening_rate_um_s": {
         "p10": 58.64737,
         "median": 73.275869,
         "p90": 93.46981,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          62.411324,
+          81.340796
+        ],
+        "bootstrap_resamples": 2000
       },
       "contraction_duration_s": {
         "p10": 1.636897,
         "median": 2.030283,
         "p90": 2.438256,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          1.846484,
+          2.23714
+        ],
+        "bootstrap_resamples": 2000
       },
       "onset_phase_cycle_fraction": {
         "p10": 0.028233,
         "median": 0.047418,
         "p90": 0.055885,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.037613,
+          0.055096
+        ],
+        "bootstrap_resamples": 2000
       },
       "adjacent_onset_delay_cycle_fraction": {
         "p10": 0.044349,
         "median": 0.069681,
         "p90": 0.097606,
-        "animal_count": 18
+        "animal_count": 18,
+        "median_bootstrap_95_ci": [
+          0.052273,
+          0.089725
+        ],
+        "bootstrap_resamples": 2000
       }
     }
+  },
+  "calibration_targets": {
+    "segments": {
+      "T3": {
+        "rest_length_um": {
+          "p10": 112.896907,
+          "median": 123.546491,
+          "p90": 145.611526,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            116.715072,
+            135.126031
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 31.099857,
+          "median": 37.805976,
+          "p90": 41.746827,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            33.80076,
+            41.39721
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 43.427028,
+          "median": 59.946632,
+          "p90": 87.632929,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            48.373535,
+            81.098124
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.197158,
+          "median": 1.702611,
+          "p90": 2.182476,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            1.456411,
+            2.062476
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.759915,
+          "median": 0.783184,
+          "p90": 0.829247,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.766462,
+            0.790122
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": null,
+        "duty_cycle_percent": {
+          "p10": 30.21598,
+          "median": 34.825942,
+          "p90": 40.195667,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            31.94537,
+            38.092806
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A1": {
+        "rest_length_um": {
+          "p10": 116.084675,
+          "median": 124.156701,
+          "p90": 147.826268,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            119.49907,
+            142.307741
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 41.193602,
+          "median": 49.017928,
+          "p90": 52.021047,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            44.176552,
+            51.040615
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 64.27633,
+          "median": 74.945787,
+          "p90": 97.989944,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            66.535597,
+            93.558307
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.304611,
+          "median": 1.646132,
+          "p90": 2.019265,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            1.430674,
+            1.906878
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.684237,
+          "median": 0.722046,
+          "p90": 0.75492,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.694364,
+            0.737443
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.044197,
+          "median": 0.072701,
+          "p90": 0.082692,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.057325,
+            0.077344
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 29.931515,
+          "median": 32.172585,
+          "p90": 38.463793,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            31.417645,
+            35.968042
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A2": {
+        "rest_length_um": {
+          "p10": 114.816075,
+          "median": 124.221967,
+          "p90": 146.446097,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            116.229639,
+            141.002538
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 46.306662,
+          "median": 48.953133,
+          "p90": 54.761841,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            46.758465,
+            52.718919
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 56.075207,
+          "median": 68.624087,
+          "p90": 85.234853,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            61.343686,
+            75.873246
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.470534,
+          "median": 1.788859,
+          "p90": 2.204813,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            1.636456,
+            2.181625
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.545609,
+          "median": 0.604968,
+          "p90": 0.642211,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.575216,
+            0.615287
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.111539,
+          "median": 0.119905,
+          "p90": 0.14244,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.114206,
+            0.139104
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 34.54961,
+          "median": 37.222758,
+          "p90": 43.060404,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            35.306642,
+            38.732083
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A3": {
+        "rest_length_um": {
+          "p10": 111.036079,
+          "median": 121.710873,
+          "p90": 141.468198,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            114.752374,
+            135.950157
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 49.225866,
+          "median": 52.386038,
+          "p90": 56.226349,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            49.62074,
+            55.793723
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 50.923567,
+          "median": 59.982517,
+          "p90": 76.86651,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            55.195778,
+            74.535316
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.543375,
+          "median": 1.952009,
+          "p90": 2.343118,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            1.721493,
+            2.223153
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.421571,
+          "median": 0.471167,
+          "p90": 0.511119,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.437404,
+            0.488041
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.113877,
+          "median": 0.131757,
+          "p90": 0.143946,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.119739,
+            0.140583
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 35.910444,
+          "median": 39.168371,
+          "p90": 44.228109,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            36.704998,
+            42.610096
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A4": {
+        "rest_length_um": {
+          "p10": 110.181315,
+          "median": 117.908633,
+          "p90": 141.081165,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            114.482899,
+            134.032217
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 49.279175,
+          "median": 51.854769,
+          "p90": 54.166228,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            49.913629,
+            53.005479
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 45.888309,
+          "median": 52.983028,
+          "p90": 62.595468,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            47.624597,
+            61.585165
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.82846,
+          "median": 2.239824,
+          "p90": 2.599856,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            2.124229,
+            2.458186
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.261535,
+          "median": 0.31239,
+          "p90": 0.339412,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.281031,
+            0.33044
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.13376,
+          "median": 0.161451,
+          "p90": 0.195518,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.142778,
+            0.179755
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 41.367616,
+          "median": 45.686161,
+          "p90": 48.966813,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            42.492712,
+            47.95966
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A5": {
+        "rest_length_um": {
+          "p10": 103.073755,
+          "median": 120.269354,
+          "p90": 140.974738,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            110.302028,
+            138.606532
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 48.090213,
+          "median": 50.260593,
+          "p90": 52.050819,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            49.22015,
+            51.612237
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 43.930628,
+          "median": 55.45814,
+          "p90": 68.256217,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            52.59251,
+            64.467975
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.99887,
+          "median": 2.290991,
+          "p90": 2.73627,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            2.203344,
+            2.629369
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.164711,
+          "median": 0.191625,
+          "p90": 0.209165,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.174764,
+            0.202556
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.096823,
+          "median": 0.111953,
+          "p90": 0.145185,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.101625,
+            0.125322
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 43.821195,
+          "median": 47.777204,
+          "p90": 53.704309,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            45.222238,
+            50.904252
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A6": {
+        "rest_length_um": {
+          "p10": 99.910687,
+          "median": 118.183846,
+          "p90": 138.397737,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            110.454028,
+            137.352448
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 47.595298,
+          "median": 52.117372,
+          "p90": 54.554931,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            48.366784,
+            53.605298
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 57.796853,
+          "median": 66.323428,
+          "p90": 85.72359,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            60.953158,
+            83.008167
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.862666,
+          "median": 2.127839,
+          "p90": 2.423015,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            1.963961,
+            2.375589
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.107297,
+          "median": 0.124665,
+          "p90": 0.135196,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.112198,
+            0.129879
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.049778,
+          "median": 0.069899,
+          "p90": 0.08538,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.056668,
+            0.081454
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 38.306409,
+          "median": 42.449695,
+          "p90": 50.123582,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            41.534142,
+            47.977232
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A7": {
+        "rest_length_um": {
+          "p10": 110.864351,
+          "median": 123.145734,
+          "p90": 140.306897,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            116.102208,
+            135.092831
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 47.487567,
+          "median": 52.136553,
+          "p90": 56.980501,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            49.39912,
+            55.928749
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 58.566439,
+          "median": 76.390669,
+          "p90": 96.833793,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            60.564417,
+            86.944749
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.690776,
+          "median": 2.030283,
+          "p90": 2.636614,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            1.846484,
+            2.272852
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.029512,
+          "median": 0.046345,
+          "p90": 0.055606,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.035921,
+            0.055096
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.051883,
+          "median": 0.072386,
+          "p90": 0.100856,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            0.061767,
+            0.092967
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 36.136101,
+          "median": 42.15637,
+          "p90": 46.554076,
+          "animal_count": 12,
+          "median_bootstrap_95_ci": [
+            39.437108,
+            45.760418
+          ],
+          "bootstrap_resamples": 2000
+        }
+      }
+    },
+    "cycle_metrics": {
+      "crawl_speed_um_s": {
+        "p10": 23.543647,
+        "median": 31.784312,
+        "p90": 48.630977,
+        "animal_count": 12,
+        "median_bootstrap_95_ci": [
+          27.099169,
+          37.417466
+        ],
+        "bootstrap_resamples": 2000
+      },
+      "stride_um": {
+        "p10": 140.327238,
+        "median": 153.1691,
+        "p90": 179.485254,
+        "animal_count": 12,
+        "median_bootstrap_95_ci": [
+          141.022644,
+          175.486205
+        ],
+        "bootstrap_resamples": 2000
+      },
+      "cycle_period_s": {
+        "p10": 3.751851,
+        "median": 5.044003,
+        "p90": 6.1246,
+        "animal_count": 12,
+        "median_bootstrap_95_ci": [
+          4.377027,
+          5.701399
+        ],
+        "bootstrap_resamples": 2000
+      },
+      "cycle_frequency_hz": {
+        "p10": 0.166397,
+        "median": 0.200622,
+        "p90": 0.269039,
+        "animal_count": 12,
+        "median_bootstrap_95_ci": [
+          0.178082,
+          0.229883
+        ],
+        "bootstrap_resamples": 2000
+      },
+      "wave_speed_segments_s": {
+        "p10": 1.628282,
+        "median": 1.922566,
+        "p90": 2.433937,
+        "animal_count": 12,
+        "median_bootstrap_95_ci": [
+          1.674671,
+          2.105115
+        ],
+        "bootstrap_resamples": 2000
+      }
+    }
+  },
+  "held_out_validation_targets": {
+    "segments": {
+      "T3": {
+        "rest_length_um": {
+          "p10": 107.782429,
+          "median": 114.185393,
+          "p90": 131.933785,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            107.782429,
+            131.933785
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 31.737603,
+          "median": 34.151865,
+          "p90": 39.5219,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            31.737603,
+            39.5219
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 39.798953,
+          "median": 50.25917,
+          "p90": 63.42002,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            39.798953,
+            63.42002
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.574799,
+          "median": 1.906754,
+          "p90": 2.162995,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            1.574799,
+            2.162995
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.701855,
+          "median": 0.747864,
+          "p90": 0.790303,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.701855,
+            0.790303
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": null,
+        "duty_cycle_percent": {
+          "p10": 34.143431,
+          "median": 40.173658,
+          "p90": 44.950923,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            34.143431,
+            44.950923
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A1": {
+        "rest_length_um": {
+          "p10": 108.026877,
+          "median": 113.845963,
+          "p90": 129.562338,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            108.026877,
+            129.562338
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 38.983933,
+          "median": 46.286338,
+          "p90": 52.688294,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            38.983933,
+            52.688294
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 53.091146,
+          "median": 61.595537,
+          "p90": 85.742804,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            53.091146,
+            85.742804
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.496439,
+          "median": 1.85335,
+          "p90": 2.053212,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            1.496439,
+            2.053212
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.625587,
+          "median": 0.701073,
+          "p90": 0.720451,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.625587,
+            0.720451
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.030294,
+          "median": 0.066726,
+          "p90": 0.095892,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.030294,
+            0.095892
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 32.546023,
+          "median": 37.099573,
+          "p90": 44.774428,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            32.546023,
+            44.774428
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A2": {
+        "rest_length_um": {
+          "p10": 106.414417,
+          "median": 111.324713,
+          "p90": 127.886464,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            106.414417,
+            127.886464
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 44.761929,
+          "median": 48.863233,
+          "p90": 52.117961,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            44.761929,
+            52.117961
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 54.138431,
+          "median": 62.536832,
+          "p90": 78.391186,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            54.138431,
+            78.391186
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.62467,
+          "median": 1.99978,
+          "p90": 2.292144,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            1.62467,
+            2.292144
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.525176,
+          "median": 0.580427,
+          "p90": 0.604663,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.525176,
+            0.604663
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.096944,
+          "median": 0.115614,
+          "p90": 0.124286,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.096944,
+            0.124286
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 35.320823,
+          "median": 41.054033,
+          "p90": 48.959418,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            35.320823,
+            48.959418
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A3": {
+        "rest_length_um": {
+          "p10": 103.213355,
+          "median": 110.280713,
+          "p90": 127.502049,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            103.213355,
+            127.502049
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 45.75669,
+          "median": 49.032858,
+          "p90": 53.757393,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            45.75669,
+            53.757393
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 48.430744,
+          "median": 55.079728,
+          "p90": 66.701862,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            48.430744,
+            66.701862
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.757127,
+          "median": 2.024304,
+          "p90": 2.389762,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            1.757127,
+            2.389762
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.380504,
+          "median": 0.438216,
+          "p90": 0.466679,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.380504,
+            0.466679
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.120747,
+          "median": 0.140615,
+          "p90": 0.163505,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.120778,
+            0.163505
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 38.200747,
+          "median": 42.72637,
+          "p90": 49.579573,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            38.200747,
+            49.579573
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A4": {
+        "rest_length_um": {
+          "p10": 102.336183,
+          "median": 112.558701,
+          "p90": 126.79061,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            102.336183,
+            126.79061
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 48.054715,
+          "median": 50.114183,
+          "p90": 54.028676,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            48.054715,
+            54.028676
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 47.944195,
+          "median": 53.651538,
+          "p90": 58.134439,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            47.944195,
+            58.134439
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.829474,
+          "median": 2.293721,
+          "p90": 2.589438,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            1.829474,
+            2.589438
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.2461,
+          "median": 0.285097,
+          "p90": 0.311021,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.2461,
+            0.311021
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.127353,
+          "median": 0.150199,
+          "p90": 0.165628,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.127353,
+            0.165628
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 43.24567,
+          "median": 46.04734,
+          "p90": 52.128491,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            43.24567,
+            52.128491
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A5": {
+        "rest_length_um": {
+          "p10": 100.175416,
+          "median": 112.611302,
+          "p90": 130.021017,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            100.175416,
+            130.021017
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 46.70728,
+          "median": 51.109866,
+          "p90": 53.191775,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            46.70728,
+            53.191775
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 48.642166,
+          "median": 53.737783,
+          "p90": 70.791604,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            48.642166,
+            70.791604
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.869605,
+          "median": 2.426083,
+          "p90": 2.647013,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            1.869605,
+            2.647013
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.146423,
+          "median": 0.177039,
+          "p90": 0.186905,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.146423,
+            0.186905
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.090287,
+          "median": 0.117448,
+          "p90": 0.124116,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.090287,
+            0.124116
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 45.824507,
+          "median": 47.237778,
+          "p90": 52.537783,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            45.824507,
+            52.537783
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A6": {
+        "rest_length_um": {
+          "p10": 98.003616,
+          "median": 108.947572,
+          "p90": 128.519997,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            98.003616,
+            128.519997
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 48.585417,
+          "median": 50.412102,
+          "p90": 53.859117,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            48.585417,
+            53.859117
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 58.811563,
+          "median": 63.120049,
+          "p90": 74.18274,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            58.811563,
+            74.18274
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.782658,
+          "median": 2.155595,
+          "p90": 2.364636,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            1.782658,
+            2.364636
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.09018,
+          "median": 0.101267,
+          "p90": 0.116861,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.09018,
+            0.116861
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.054661,
+          "median": 0.066527,
+          "p90": 0.080872,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.054661,
+            0.080872
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 41.628197,
+          "median": 43.845541,
+          "p90": 47.306006,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            41.628197,
+            47.306006
+          ],
+          "bootstrap_resamples": 2000
+        }
+      },
+      "A7": {
+        "rest_length_um": {
+          "p10": 101.645409,
+          "median": 113.51392,
+          "p90": 125.745814,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            101.645409,
+            125.745814
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_amplitude_percent": {
+          "p10": 48.157777,
+          "median": 51.282341,
+          "p90": 53.504476,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            48.157777,
+            53.504476
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "shortening_rate_um_s": {
+          "p10": 59.69122,
+          "median": 68.634103,
+          "p90": 79.559079,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            59.69122,
+            79.559079
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "contraction_duration_s": {
+          "p10": 1.655176,
+          "median": 2.02075,
+          "p90": 2.28185,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            1.655176,
+            2.28185
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "onset_phase_cycle_fraction": {
+          "p10": 0.029741,
+          "median": 0.047418,
+          "p90": 0.060716,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.029741,
+            0.060716
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "adjacent_onset_delay_cycle_fraction": {
+          "p10": 0.039059,
+          "median": 0.049584,
+          "p90": 0.081789,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            0.039059,
+            0.081789
+          ],
+          "bootstrap_resamples": 2000
+        },
+        "duty_cycle_percent": {
+          "p10": 37.308901,
+          "median": 42.209593,
+          "p90": 45.92341,
+          "animal_count": 6,
+          "median_bootstrap_95_ci": [
+            37.308901,
+            45.92341
+          ],
+          "bootstrap_resamples": 2000
+        }
+      }
+    },
+    "cycle_metrics": {
+      "crawl_speed_um_s": {
+        "p10": 25.70222,
+        "median": 31.195702,
+        "p90": 38.21379,
+        "animal_count": 6,
+        "median_bootstrap_95_ci": [
+          25.70222,
+          38.21379
+        ],
+        "bootstrap_resamples": 2000
+      },
+      "stride_um": {
+        "p10": 129.765479,
+        "median": 149.494665,
+        "p90": 159.674513,
+        "animal_count": 6,
+        "median_bootstrap_95_ci": [
+          129.765479,
+          159.674513
+        ],
+        "bootstrap_resamples": 2000
+      },
+      "cycle_period_s": {
+        "p10": 4.103751,
+        "median": 4.838044,
+        "p90": 5.38379,
+        "animal_count": 6,
+        "median_bootstrap_95_ci": [
+          4.103751,
+          5.38379
+        ],
+        "bootstrap_resamples": 2000
+      },
+      "cycle_frequency_hz": {
+        "p10": 0.189015,
+        "median": 0.209786,
+        "p90": 0.249091,
+        "animal_count": 6,
+        "median_bootstrap_95_ci": [
+          0.189015,
+          0.249091
+        ],
+        "bootstrap_resamples": 2000
+      },
+      "wave_speed_segments_s": {
+        "p10": 1.93055,
+        "median": 2.051751,
+        "p90": 2.598039,
+        "animal_count": 6,
+        "median_bootstrap_95_ci": [
+          1.93055,
+          2.598039
+        ],
+        "bootstrap_resamples": 2000
+      }
+    }
+  },
+  "animal_records": [
+    {
+      "animal_id": "behavior_l1_source_index_00",
+      "source_larva_index": 0,
+      "split": "calibration",
+      "good_cycle_count": 91,
+      "segments": {
+        "T3": {
+          "rest_length_um": 146.72217346141494,
+          "contraction_amplitude_percent": 40.57506960477894,
+          "shortening_rate_um_s": 94.63487408134715,
+          "contraction_duration_s": 1.1800482512942745,
+          "onset_phase_cycle_fraction": 0.8929285316701363,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 26.91272975536787
+        },
+        "A1": {
+          "rest_length_um": 149.4087915702071,
+          "contraction_amplitude_percent": 51.23905816801743,
+          "shortening_rate_um_s": 110.94178386509991,
+          "contraction_duration_s": 1.2184948460842369,
+          "onset_phase_cycle_fraction": 0.7994517222009774,
+          "adjacent_onset_delay_cycle_fraction": 0.09347680946915876,
+          "duty_cycle_percent": 27.773271092876794
+        },
+        "A2": {
+          "rest_length_um": 153.4589057848352,
+          "contraction_amplitude_percent": 54.98864571307523,
+          "shortening_rate_um_s": 88.05444748021867,
+          "contraction_duration_s": 1.5135140525307855,
+          "onset_phase_cycle_fraction": 0.6567277750008779,
+          "adjacent_onset_delay_cycle_fraction": 0.14272394720009957,
+          "duty_cycle_percent": 34.50076119326115
+        },
+        "A3": {
+          "rest_length_um": 141.84986714075774,
+          "contraction_amplitude_percent": 56.23409513475617,
+          "shortening_rate_um_s": 80.16251703788743,
+          "contraction_duration_s": 1.6404582280879192,
+          "onset_phase_cycle_fraction": 0.5364437840111682,
+          "adjacent_onset_delay_cycle_fraction": 0.12028399098970963,
+          "duty_cycle_percent": 37.43473529345984
+        },
+        "A4": {
+          "rest_length_um": 141.85210747102698,
+          "contraction_amplitude_percent": 54.294579101086846,
+          "shortening_rate_um_s": 61.43458538571619,
+          "contraction_duration_s": 2.1525467590123437,
+          "onset_phase_cycle_fraction": 0.3396916191618491,
+          "adjacent_onset_delay_cycle_fraction": 0.1967521648493192,
+          "duty_cycle_percent": 49.05641633136019
+        },
+        "A5": {
+          "rest_length_um": 141.60713746035285,
+          "contraction_amplitude_percent": 50.53434364507798,
+          "shortening_rate_um_s": 53.34629723185355,
+          "contraction_duration_s": 2.2644534587534544,
+          "onset_phase_cycle_fraction": 0.19249081653845618,
+          "adjacent_onset_delay_cycle_fraction": 0.147200802623393,
+          "duty_cycle_percent": 51.53665988674422
+        },
+        "A6": {
+          "rest_length_um": 136.6319504925409,
+          "contraction_amplitude_percent": 52.526669914641296,
+          "shortening_rate_um_s": 67.64832595458087,
+          "contraction_duration_s": 2.203015308888792,
+          "onset_phase_cycle_fraction": 0.10683740671065321,
+          "adjacent_onset_delay_cycle_fraction": 0.08565340982780291,
+          "duty_cycle_percent": 50.15683883575781
+        },
+        "A7": {
+          "rest_length_um": 137.2449148293236,
+          "contraction_amplitude_percent": 57.028715334893185,
+          "shortening_rate_um_s": 98.44680317631892,
+          "contraction_duration_s": 1.9051057629402008,
+          "onset_phase_cycle_fraction": 0.055753068553785555,
+          "adjacent_onset_delay_cycle_fraction": 0.051084338156867665,
+          "duty_cycle_percent": 43.33676938666343
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 41.159197752213096,
+        "stride_um": 179.61821391132656,
+        "cycle_period_s": 4.4,
+        "cycle_frequency_hz": 0.22880035263387258,
+        "wave_speed_segments_s": 1.914347047671988
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_01",
+      "source_larva_index": 1,
+      "split": "calibration",
+      "good_cycle_count": 83,
+      "segments": {
+        "T3": {
+          "rest_length_um": 135.615697418643,
+          "contraction_amplitude_percent": 41.08749384530273,
+          "shortening_rate_um_s": 88.24361536614798,
+          "contraction_duration_s": 1.1794623639738526,
+          "onset_phase_cycle_fraction": 0.8328548652071037,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 32.03614473741861
+        },
+        "A1": {
+          "rest_length_um": 143.34897207090532,
+          "contraction_amplitude_percent": 40.924739204282275,
+          "shortening_rate_um_s": 90.51193473355126,
+          "contraction_duration_s": 1.3366361164844653,
+          "onset_phase_cycle_fraction": 0.7565427371597986,
+          "adjacent_onset_delay_cycle_fraction": 0.07631212804730526,
+          "duty_cycle_percent": 36.26160167729018
+        },
+        "A2": {
+          "rest_length_um": 144.65546017519847,
+          "contraction_amplitude_percent": 46.5705481698601,
+          "shortening_rate_um_s": 86.14632830626525,
+          "contraction_duration_s": 1.4237300167755544,
+          "onset_phase_cycle_fraction": 0.6451789659092462,
+          "adjacent_onset_delay_cycle_fraction": 0.11136377125055236,
+          "duty_cycle_percent": 38.62732710470831
+        },
+        "A3": {
+          "rest_length_um": 133.86713348052143,
+          "contraction_amplitude_percent": 52.165099004757025,
+          "shortening_rate_um_s": 76.88260986783712,
+          "contraction_duration_s": 1.5325877242127135,
+          "onset_phase_cycle_fraction": 0.512835316554143,
+          "adjacent_onset_delay_cycle_fraction": 0.13234364935510326,
+          "duty_cycle_percent": 41.8052393604607
+        },
+        "A4": {
+          "rest_length_um": 133.5156210580642,
+          "contraction_amplitude_percent": 54.48929336486399,
+          "shortening_rate_um_s": 66.8496566525435,
+          "contraction_duration_s": 1.7521670862554775,
+          "onset_phase_cycle_fraction": 0.3584293962000154,
+          "adjacent_onset_delay_cycle_fraction": 0.15440592035412765,
+          "duty_cycle_percent": 47.758933530201745
+        },
+        "A5": {
+          "rest_length_um": 136.80958976686628,
+          "contraction_amplitude_percent": 51.59798778708183,
+          "shortening_rate_um_s": 68.29468741741053,
+          "contraction_duration_s": 1.98137401694087,
+          "onset_phase_cycle_fraction": 0.1969739681685193,
+          "adjacent_onset_delay_cycle_fraction": 0.16145542803149607,
+          "duty_cycle_percent": 53.94515934151229
+        },
+        "A6": {
+          "rest_length_um": 138.4723261036003,
+          "contraction_amplitude_percent": 54.64766336470903,
+          "shortening_rate_um_s": 96.9767281991491,
+          "contraction_duration_s": 1.8529438701543173,
+          "onset_phase_cycle_fraction": 0.11405964622976879,
+          "adjacent_onset_delay_cycle_fraction": 0.08291432193875052,
+          "duty_cycle_percent": 50.38760038500601
+        },
+        "A7": {
+          "rest_length_um": 130.4860597208467,
+          "contraction_amplitude_percent": 50.405766912359105,
+          "shortening_rate_um_s": 97.39445697559223,
+          "contraction_duration_s": 1.679988772730737,
+          "onset_phase_cycle_fraction": 0.04959963282949632,
+          "adjacent_onset_delay_cycle_fraction": 0.06446001340027248,
+          "duty_cycle_percent": 45.66621644202221
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 49.46117496917141,
+        "stride_um": 180.67386707335527,
+        "cycle_period_s": 3.6849397590361455,
+        "cycle_frequency_hz": 0.27326941744114663,
+        "wave_speed_segments_s": 2.4658475684039254
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_02",
+      "source_larva_index": 2,
+      "split": "validation",
+      "good_cycle_count": 118,
+      "segments": {
+        "T3": {
+          "rest_length_um": 145.10350744561103,
+          "contraction_amplitude_percent": 31.3995919138475,
+          "shortening_rate_um_s": 55.70759597566281,
+          "contraction_duration_s": 1.5577390225376935,
+          "onset_phase_cycle_fraction": 0.7755388530839558,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 32.34038419628648
+        },
+        "A1": {
+          "rest_length_um": 143.6265398073009,
+          "contraction_amplitude_percent": 52.70649998861073,
+          "shortening_rate_um_s": 103.06390883020296,
+          "contraction_duration_s": 1.3882599498985566,
+          "onset_phase_cycle_fraction": 0.7354099266852243,
+          "adjacent_onset_delay_cycle_fraction": 0.04012892639873145,
+          "duty_cycle_percent": 28.86793693684816
+        },
+        "A2": {
+          "rest_length_um": 138.76101949379807,
+          "contraction_amplitude_percent": 51.65837120826579,
+          "shortening_rate_um_s": 89.51059805525426,
+          "contraction_duration_s": 1.5547520896157008,
+          "onset_phase_cycle_fraction": 0.6210155907708849,
+          "adjacent_onset_delay_cycle_fraction": 0.11439433591433945,
+          "duty_cycle_percent": 32.322345605428865
+        },
+        "A3": {
+          "rest_length_um": 141.83890974792433,
+          "contraction_amplitude_percent": 50.60783611800613,
+          "shortening_rate_um_s": 67.0806093493053,
+          "contraction_duration_s": 1.7721629345858052,
+          "onset_phase_cycle_fraction": 0.4782018274310782,
+          "adjacent_onset_delay_cycle_fraction": 0.14281376333980658,
+          "duty_cycle_percent": 36.85749697251838
+        },
+        "A4": {
+          "rest_length_um": 139.28772075762123,
+          "contraction_amplitude_percent": 50.88351009345342,
+          "shortening_rate_um_s": 53.850373946260326,
+          "contraction_duration_s": 2.1047483124736885,
+          "onset_phase_cycle_fraction": 0.3071993316757104,
+          "adjacent_onset_delay_cycle_fraction": 0.1710024957553678,
+          "duty_cycle_percent": 43.745364335836065
+        },
+        "A5": {
+          "rest_length_um": 137.55120449768998,
+          "contraction_amplitude_percent": 49.84059853770579,
+          "shortening_rate_um_s": 54.13517085159751,
+          "contraction_duration_s": 2.2913903563289733,
+          "onset_phase_cycle_fraction": 0.18447252270913653,
+          "adjacent_onset_delay_cycle_fraction": 0.1227268089665739,
+          "duty_cycle_percent": 47.61491919149896
+        },
+        "A6": {
+          "rest_length_um": 134.00158671071395,
+          "contraction_amplitude_percent": 49.60348658689246,
+          "shortening_rate_um_s": 67.50738474600394,
+          "contraction_duration_s": 2.0580472208190415,
+          "onset_phase_cycle_fraction": 0.11870194830278098,
+          "adjacent_onset_delay_cycle_fraction": 0.0657705744063555,
+          "duty_cycle_percent": 42.76227135696467
+        },
+        "A7": {
+          "rest_length_um": 134.72533837902685,
+          "contraction_amplitude_percent": 52.159814957841924,
+          "shortening_rate_um_s": 84.72788359179044,
+          "contraction_duration_s": 1.7740033792891243,
+          "onset_phase_cycle_fraction": 0.0652397888298712,
+          "adjacent_onset_delay_cycle_fraction": 0.05346215947290978,
+          "duty_cycle_percent": 36.85390277888164
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 33.88165480196006,
+        "stride_um": 162.66164099420675,
+        "cycle_period_s": 4.821186440677967,
+        "cycle_frequency_hz": 0.20834061739089504,
+        "wave_speed_segments_s": 2.0600993217569665
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_03",
+      "source_larva_index": 3,
+      "split": "calibration",
+      "good_cycle_count": 115,
+      "segments": {
+        "T3": {
+          "rest_length_um": 123.52563953180618,
+          "contraction_amplitude_percent": 41.706925422028746,
+          "shortening_rate_um_s": 69.31216482114831,
+          "contraction_duration_s": 1.5616803425717956,
+          "onset_phase_cycle_fraction": 0.7710294173120964,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 31.867507942827206
+        },
+        "A1": {
+          "rest_length_um": 125.39391044577678,
+          "contraction_amplitude_percent": 49.911008771244695,
+          "shortening_rate_um_s": 77.04951268699759,
+          "contraction_duration_s": 1.5627466861139754,
+          "onset_phase_cycle_fraction": 0.6878220633093931,
+          "adjacent_onset_delay_cycle_fraction": 0.0832073540027032,
+          "duty_cycle_percent": 31.949637401751875
+        },
+        "A2": {
+          "rest_length_um": 130.24614668915012,
+          "contraction_amplitude_percent": 46.94638264579352,
+          "shortening_rate_um_s": 69.37565401122777,
+          "contraction_duration_s": 1.7593975226569936,
+          "onset_phase_cycle_fraction": 0.5675110155750173,
+          "adjacent_onset_delay_cycle_fraction": 0.12031104773437593,
+          "duty_cycle_percent": 35.818296921153134
+        },
+        "A3": {
+          "rest_length_um": 125.85308584536402,
+          "contraction_amplitude_percent": 49.18569729282443,
+          "shortening_rate_um_s": 59.599796482488266,
+          "contraction_duration_s": 2.0726900858450095,
+          "onset_phase_cycle_fraction": 0.41770805110384335,
+          "adjacent_onset_delay_cycle_fraction": 0.14980296447117392,
+          "duty_cycle_percent": 42.17500549221598
+        },
+        "A4": {
+          "rest_length_um": 117.36220638497285,
+          "contraction_amplitude_percent": 49.272617155660754,
+          "shortening_rate_um_s": 45.81927363786472,
+          "contraction_duration_s": 2.3150910408448384,
+          "onset_phase_cycle_fraction": 0.2669135856415186,
+          "adjacent_onset_delay_cycle_fraction": 0.15079446546232464,
+          "duty_cycle_percent": 47.18315641000124
+        },
+        "A5": {
+          "rest_length_um": 123.33763171499871,
+          "contraction_amplitude_percent": 48.00877987950925,
+          "shortening_rate_um_s": 55.0399907858107,
+          "contraction_duration_s": 2.3175277561946053,
+          "onset_phase_cycle_fraction": 0.16862304966607328,
+          "adjacent_onset_delay_cycle_fraction": 0.09829053597544542,
+          "duty_cycle_percent": 47.233151114638815
+        },
+        "A6": {
+          "rest_length_um": 123.24748773399449,
+          "contraction_amplitude_percent": 48.360636902024915,
+          "shortening_rate_um_s": 64.43998694761589,
+          "contraction_duration_s": 2.05266257953354,
+          "onset_phase_cycle_fraction": 0.10173225371513762,
+          "adjacent_onset_delay_cycle_fraction": 0.06689079595093561,
+          "duty_cycle_percent": 41.77992949179336
+        },
+        "A7": {
+          "rest_length_um": 124.40440691928491,
+          "contraction_amplitude_percent": 51.49361747276248,
+          "shortening_rate_um_s": 80.57991245200662,
+          "contraction_duration_s": 1.9761927296192607,
+          "onset_phase_cycle_fraction": 0.054741685807541775,
+          "adjacent_onset_delay_cycle_fraction": 0.04699056790759586,
+          "duty_cycle_percent": 40.17581489171108
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 31.371748379648007,
+        "stride_um": 151.49771712035184,
+        "cycle_period_s": 4.934347826086957,
+        "cycle_frequency_hz": 0.20640207095830165,
+        "wave_speed_segments_s": 2.043267736682728
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_04",
+      "source_larva_index": 4,
+      "split": "calibration",
+      "good_cycle_count": 93,
+      "segments": {
+        "T3": {
+          "rest_length_um": 134.63636432696387,
+          "contraction_amplitude_percent": 43.96424481232991,
+          "shortening_rate_um_s": 82.13675345262514,
+          "contraction_duration_s": 1.6689732992230009,
+          "onset_phase_cycle_fraction": 0.774295302880892,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 30.03247729272834
+        },
+        "A1": {
+          "rest_length_um": 141.26651009116628,
+          "contraction_amplitude_percent": 49.42079026744029,
+          "shortening_rate_um_s": 96.60467841135657,
+          "contraction_duration_s": 1.7295172367824962,
+          "onset_phase_cycle_fraction": 0.7009059068046102,
+          "adjacent_onset_delay_cycle_fraction": 0.07338939607628184,
+          "duty_cycle_percent": 31.21452366547151
+        },
+        "A2": {
+          "rest_length_um": 137.34961506265938,
+          "contraction_amplitude_percent": 52.71723745882788,
+          "shortening_rate_um_s": 77.0315749823067,
+          "contraction_duration_s": 1.7597976942933853,
+          "onset_phase_cycle_fraction": 0.5829217166760461,
+          "adjacent_onset_delay_cycle_fraction": 0.11798419012856384,
+          "duty_cycle_percent": 31.932771636959508
+        },
+        "A3": {
+          "rest_length_um": 138.03318066562187,
+          "contraction_amplitude_percent": 56.386732216519576,
+          "shortening_rate_um_s": 76.72161466776535,
+          "contraction_duration_s": 1.8496228477113625,
+          "onset_phase_cycle_fraction": 0.4804068728578323,
+          "adjacent_onset_delay_cycle_fraction": 0.10251484381821382,
+          "duty_cycle_percent": 33.58079300728964
+        },
+        "A4": {
+          "rest_length_um": 133.92175162165995,
+          "contraction_amplitude_percent": 52.999892054497856,
+          "shortening_rate_um_s": 61.73574416549594,
+          "contraction_duration_s": 2.2730251917899684,
+          "onset_phase_cycle_fraction": 0.3155048831176855,
+          "adjacent_onset_delay_cycle_fraction": 0.1649019897401468,
+          "duty_cycle_percent": 41.24260482768661
+        },
+        "A5": {
+          "rest_length_um": 134.20178566104602,
+          "contraction_amplitude_percent": 56.708675177738776,
+          "shortening_rate_um_s": 61.0259672589755,
+          "contraction_duration_s": 2.4299770087318633,
+          "onset_phase_cycle_fraction": 0.20299834323526786,
+          "adjacent_onset_delay_cycle_fraction": 0.11250653988241764,
+          "duty_cycle_percent": 44.05183851816873
+        },
+        "A6": {
+          "rest_length_um": 136.9784576431375,
+          "contraction_amplitude_percent": 56.46879983776572,
+          "shortening_rate_um_s": 85.0473801306572,
+          "contraction_duration_s": 2.339424897866033,
+          "onset_phase_cycle_fraction": 0.11143766894366297,
+          "adjacent_onset_delay_cycle_fraction": 0.09156067429160485,
+          "duty_cycle_percent": 42.33531312688815
+        },
+        "A7": {
+          "rest_length_um": 132.94074688112443,
+          "contraction_amplitude_percent": 57.180910321671995,
+          "shortening_rate_um_s": 82.10167969909236,
+          "contraction_duration_s": 2.149759981095778,
+          "onset_phase_cycle_fraction": 0.04308940013212357,
+          "adjacent_onset_delay_cycle_fraction": 0.06834826881153941,
+          "duty_cycle_percent": 38.86521719544481
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 32.427117173957114,
+        "stride_um": 178.28861870798707,
+        "cycle_period_s": 5.538709677419355,
+        "cycle_frequency_hz": 0.1820337496155258,
+        "wave_speed_segments_s": 1.746412057303859
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_05",
+      "source_larva_index": 5,
+      "split": "validation",
+      "good_cycle_count": 66,
+      "segments": {
+        "T3": {
+          "rest_length_um": 114.34103297038624,
+          "contraction_amplitude_percent": 43.81695794126053,
+          "shortening_rate_um_s": 62.64254198559763,
+          "contraction_duration_s": 1.8399313703025164,
+          "onset_phase_cycle_fraction": 0.678105026912238,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 48.85574829401849
+        },
+        "A1": {
+          "rest_length_um": 114.35807658491849,
+          "contraction_amplitude_percent": 47.62603277212781,
+          "shortening_rate_um_s": 68.42169861855578,
+          "contraction_duration_s": 1.7952691050506453,
+          "onset_phase_cycle_fraction": 0.5858971293062405,
+          "adjacent_onset_delay_cycle_fraction": 0.09220789760599737,
+          "duty_cycle_percent": 47.68693779329216
+        },
+        "A2": {
+          "rest_length_um": 112.12982507034478,
+          "contraction_amplitude_percent": 47.11704381852962,
+          "shortening_rate_um_s": 67.27177372261559,
+          "contraction_duration_s": 1.8753081547429906,
+          "onset_phase_cycle_fraction": 0.5040906356677544,
+          "adjacent_onset_delay_cycle_fraction": 0.08180649363848627,
+          "duty_cycle_percent": 50.053166052511656
+        },
+        "A3": {
+          "rest_length_um": 111.61913893078909,
+          "contraction_amplitude_percent": 47.457880138445105,
+          "shortening_rate_um_s": 66.32311447362343,
+          "contraction_duration_s": 1.77951699109682,
+          "onset_phase_cycle_fraction": 0.38337419871522943,
+          "adjacent_onset_delay_cycle_fraction": 0.12071643695252487,
+          "duty_cycle_percent": 47.657820332914014
+        },
+        "A4": {
+          "rest_length_um": 111.9032706416329,
+          "contraction_amplitude_percent": 48.94753083937061,
+          "shortening_rate_um_s": 61.77271197715675,
+          "contraction_duration_s": 1.7710398103508902,
+          "onset_phase_cycle_fraction": 0.26898187845685806,
+          "adjacent_onset_delay_cycle_fraction": 0.11439232025837129,
+          "duty_cycle_percent": 47.58980702807046
+        },
+        "A5": {
+          "rest_length_um": 122.49083038682582,
+          "contraction_amplitude_percent": 52.379132724037746,
+          "shortening_rate_um_s": 75.20352759444135,
+          "contraction_duration_s": 1.6918033031599036,
+          "onset_phase_cycle_fraction": 0.18055427514928507,
+          "adjacent_onset_delay_cycle_fraction": 0.08842760330757302,
+          "duty_cycle_percent": 45.302565557243824
+        },
+        "A6": {
+          "rest_length_um": 123.0384068866297,
+          "contraction_amplitude_percent": 53.2592911328425,
+          "shortening_rate_um_s": 80.85809511127704,
+          "contraction_duration_s": 1.6809992093662478,
+          "onset_phase_cycle_fraction": 0.09312847745102837,
+          "adjacent_onset_delay_cycle_fraction": 0.08742579769825674,
+          "duty_cycle_percent": 44.92881069901094
+        },
+        "A7": {
+          "rest_length_um": 116.76199831699827,
+          "contraction_amplitude_percent": 49.91282048022424,
+          "shortening_rate_um_s": 74.3902739773438,
+          "contraction_duration_s": 1.5363487892576608,
+          "onset_phase_cycle_fraction": 0.05619126602292368,
+          "adjacent_onset_delay_cycle_fraction": 0.03693721142810467,
+          "duty_cycle_percent": 41.0506470080931
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 42.54592580908634,
+        "stride_um": 156.6873845369429,
+        "cycle_period_s": 3.7795454545454548,
+        "cycle_frequency_hz": 0.2703968991588021,
+        "wave_speed_segments_s": 3.099319121086235
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_06",
+      "source_larva_index": 6,
+      "split": "calibration",
+      "good_cycle_count": 82,
+      "segments": {
+        "T3": {
+          "rest_length_um": 153.05229795721272,
+          "contraction_amplitude_percent": 40.44461241681126,
+          "shortening_rate_um_s": 80.05949359669823,
+          "contraction_duration_s": 1.6491313405317436,
+          "onset_phase_cycle_fraction": 0.7618941072102314,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 32.023231416506434
+        },
+        "A1": {
+          "rest_length_um": 148.32374573964398,
+          "contraction_amplitude_percent": 50.84217108497539,
+          "shortening_rate_um_s": 98.14386227404113,
+          "contraction_duration_s": 1.5325317821299376,
+          "onset_phase_cycle_fraction": 0.6838390404496142,
+          "adjacent_onset_delay_cycle_fraction": 0.07805506676061721,
+          "duty_cycle_percent": 29.788959022929546
+        },
+        "A2": {
+          "rest_length_um": 146.6450566194428,
+          "contraction_amplitude_percent": 51.6586040443787,
+          "shortening_rate_um_s": 74.7149166427321,
+          "contraction_duration_s": 1.8000187204893199,
+          "onset_phase_cycle_fraction": 0.5407250666126973,
+          "adjacent_onset_delay_cycle_fraction": 0.14311397383691699,
+          "duty_cycle_percent": 34.98924850582752
+        },
+        "A3": {
+          "rest_length_um": 144.74533410109171,
+          "contraction_amplitude_percent": 55.01525790949117,
+          "shortening_rate_um_s": 72.02937713061375,
+          "contraction_duration_s": 1.8497831657047772,
+          "onset_phase_cycle_fraction": 0.42064456776023973,
+          "adjacent_onset_delay_cycle_fraction": 0.12008049885245756,
+          "duty_cycle_percent": 35.975260940465695
+        },
+        "A4": {
+          "rest_length_um": 142.02456554767264,
+          "contraction_amplitude_percent": 51.909247650218646,
+          "shortening_rate_um_s": 62.69099313071782,
+          "contraction_duration_s": 2.206622791026166,
+          "onset_phase_cycle_fraction": 0.25023307393690586,
+          "adjacent_onset_delay_cycle_fraction": 0.17041149382333387,
+          "duty_cycle_percent": 42.91681071196379
+        },
+        "A5": {
+          "rest_length_um": 140.40347402067056,
+          "contraction_amplitude_percent": 50.40486236011054,
+          "shortening_rate_um_s": 68.38267832632104,
+          "contraction_duration_s": 2.250349711631626,
+          "onset_phase_cycle_fraction": 0.162237035637862,
+          "adjacent_onset_delay_cycle_fraction": 0.08799603829904389,
+          "duty_cycle_percent": 43.795568091993
+        },
+        "A6": {
+          "rest_length_um": 141.6900719634077,
+          "contraction_amplitude_percent": 48.37293010941208,
+          "shortening_rate_um_s": 80.96895388357383,
+          "contraction_duration_s": 1.9501655880985345,
+          "onset_phase_cycle_fraction": 0.11295826585637102,
+          "adjacent_onset_delay_cycle_fraction": 0.049278769781490976,
+          "duty_cycle_percent": 37.92319603984843
+        },
+        "A7": {
+          "rest_length_um": 144.86008048138595,
+          "contraction_amplitude_percent": 48.81376321573363,
+          "shortening_rate_um_s": 91.78781842281049,
+          "contraction_duration_s": 1.7878628640253222,
+          "onset_phase_cycle_fraction": 0.05388516196896279,
+          "adjacent_onset_delay_cycle_fraction": 0.059073103887408204,
+          "duty_cycle_percent": 34.790475776966304
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 33.67573477431853,
+        "stride_um": 172.68379219532736,
+        "cycle_period_s": 5.153658536585366,
+        "cycle_frequency_hz": 0.19484169966559894,
+        "wave_speed_segments_s": 1.9307844252206254
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_07",
+      "source_larva_index": 7,
+      "split": "calibration",
+      "good_cycle_count": 70,
+      "segments": {
+        "T3": {
+          "rest_length_um": 133.83221754481139,
+          "contraction_amplitude_percent": 29.44427458450575,
+          "shortening_rate_um_s": 65.60005510265228,
+          "contraction_duration_s": 1.3511417527578546,
+          "onset_phase_cycle_fraction": 0.7547704332221912,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 40.3713143503074
+        },
+        "A1": {
+          "rest_length_um": 135.4052968488192,
+          "contraction_amplitude_percent": 29.3366899946063,
+          "shortening_rate_um_s": 68.41803289423054,
+          "contraction_duration_s": 1.3010526625755028,
+          "onset_phase_cycle_fraction": 0.7208511999711535,
+          "adjacent_onset_delay_cycle_fraction": 0.03391923325103744,
+          "duty_cycle_percent": 38.708480717558196
+        },
+        "A2": {
+          "rest_length_um": 130.01269799658445,
+          "contraction_amplitude_percent": 38.65080770870755,
+          "shortening_rate_um_s": 69.39213785142303,
+          "contraction_duration_s": 1.465758533577983,
+          "onset_phase_cycle_fraction": 0.6120609169364517,
+          "adjacent_onset_delay_cycle_fraction": 0.10879028303470215,
+          "duty_cycle_percent": 43.529688664274005
+        },
+        "A3": {
+          "rest_length_um": 128.24123299111181,
+          "contraction_amplitude_percent": 45.67582613724295,
+          "shortening_rate_um_s": 72.34901691193716,
+          "contraction_duration_s": 1.475609965512671,
+          "onset_phase_cycle_fraction": 0.47445061517351134,
+          "adjacent_onset_delay_cycle_fraction": 0.13761030176294028,
+          "duty_cycle_percent": 44.319486439049534
+        },
+        "A4": {
+          "rest_length_um": 134.14268303062084,
+          "contraction_amplitude_percent": 49.33819981393947,
+          "shortening_rate_um_s": 52.70655963976192,
+          "contraction_duration_s": 1.7987429904399155,
+          "onset_phase_cycle_fraction": 0.26093689777622736,
+          "adjacent_onset_delay_cycle_fraction": 0.2135137173972838,
+          "duty_cycle_percent": 54.58252056900196
+        },
+        "A5": {
+          "rest_length_um": 141.03821167935277,
+          "contraction_amplitude_percent": 51.626486300175465,
+          "shortening_rate_um_s": 67.90998175587576,
+          "contraction_duration_s": 1.8663616377589847,
+          "onset_phase_cycle_fraction": 0.16427643049808466,
+          "adjacent_onset_delay_cycle_fraction": 0.09666046727814279,
+          "duty_cycle_percent": 56.499919759338994
+        },
+        "A6": {
+          "rest_length_um": 137.72643767086032,
+          "contraction_amplitude_percent": 46.50613801748406,
+          "shortening_rate_um_s": 85.79872429465942,
+          "contraction_duration_s": 1.6469142357059485,
+          "onset_phase_cycle_fraction": 0.12269373895992644,
+          "adjacent_onset_delay_cycle_fraction": 0.041582691538158224,
+          "duty_cycle_percent": 49.82426606869092
+        },
+        "A7": {
+          "rest_length_um": 140.64711722483824,
+          "contraction_amplitude_percent": 47.34021189882693,
+          "shortening_rate_um_s": 76.57241854068636,
+          "contraction_duration_s": 1.517539452154307,
+          "onset_phase_cycle_fraction": 0.03274073650503467,
+          "adjacent_onset_delay_cycle_fraction": 0.08995300245489175,
+          "duty_cycle_percent": 45.85461970672054
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 51.15199240869014,
+        "stride_um": 167.21213669549311,
+        "cycle_period_s": 3.3435714285714293,
+        "cycle_frequency_hz": 0.30505031176837266,
+        "wave_speed_segments_s": 2.9565187106905317
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_08",
+      "source_larva_index": 8,
+      "split": "validation",
+      "good_cycle_count": 93,
+      "segments": {
+        "T3": {
+          "rest_length_um": 114.02975349692707,
+          "contraction_amplitude_percent": 35.22684116289663,
+          "shortening_rate_um_s": 64.19749755854015,
+          "contraction_duration_s": 1.5918591959892745,
+          "onset_phase_cycle_fraction": 0.8050679186760294,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 35.94647709431496
+        },
+        "A1": {
+          "rest_length_um": 111.86825927525771,
+          "contraction_amplitude_percent": 37.282253225497094,
+          "shortening_rate_um_s": 66.6309587341057,
+          "contraction_duration_s": 1.6046186292911606,
+          "onset_phase_cycle_fraction": 0.7054916756586014,
+          "adjacent_onset_delay_cycle_fraction": 0.09957624301742815,
+          "duty_cycle_percent": 36.22410856057388
+        },
+        "A2": {
+          "rest_length_um": 117.01190948942286,
+          "contraction_amplitude_percent": 43.33593424945981,
+          "shortening_rate_um_s": 63.64558657830595,
+          "contraction_duration_s": 1.6945871305469469,
+          "onset_phase_cycle_fraction": 0.5759341385983341,
+          "adjacent_onset_delay_cycle_fraction": 0.12955753706026737,
+          "duty_cycle_percent": 38.31929975309559
+        },
+        "A3": {
+          "rest_length_um": 113.16518771658858,
+          "contraction_amplitude_percent": 45.092190153025584,
+          "shortening_rate_um_s": 53.4616096905087,
+          "contraction_duration_s": 1.7420903522498496,
+          "onset_phase_cycle_fraction": 0.4551557044823328,
+          "adjacent_onset_delay_cycle_fraction": 0.12077843411600131,
+          "duty_cycle_percent": 39.543997517398964
+        },
+        "A4": {
+          "rest_length_um": 114.29349926469,
+          "contraction_amplitude_percent": 47.161899841075034,
+          "shortening_rate_um_s": 52.59256811426712,
+          "contraction_duration_s": 1.8879078604382928,
+          "onset_phase_cycle_fraction": 0.31484256790698795,
+          "adjacent_onset_delay_cycle_fraction": 0.14031313657534483,
+          "duty_cycle_percent": 42.74597481530368
+        },
+        "A5": {
+          "rest_length_um": 114.74653153167586,
+          "contraction_amplitude_percent": 46.98691688811336,
+          "shortening_rate_um_s": 53.34039554953112,
+          "contraction_duration_s": 2.047405787914685,
+          "onset_phase_cycle_fraction": 0.1893371466496534,
+          "adjacent_onset_delay_cycle_fraction": 0.1255054212573345,
+          "duty_cycle_percent": 46.34644839298885
+        },
+        "A6": {
+          "rest_length_um": 107.91363419337611,
+          "contraction_amplitude_percent": 47.567346776098226,
+          "shortening_rate_um_s": 59.74634158601077,
+          "contraction_duration_s": 1.8843170741527346,
+          "onset_phase_cycle_fraction": 0.11501933057723349,
+          "adjacent_onset_delay_cycle_fraction": 0.07431781607241995,
+          "duty_cycle_percent": 42.67053303815714
+        },
+        "A7": {
+          "rest_length_um": 110.26584169065168,
+          "contraction_amplitude_percent": 51.2549411861965,
+          "shortening_rate_um_s": 60.69380891776328,
+          "contraction_duration_s": 1.916060483456385,
+          "onset_phase_cycle_fraction": 0.023971807838532283,
+          "adjacent_onset_delay_cycle_fraction": 0.09104752273870124,
+          "duty_cycle_percent": 43.368538089218994
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 29.975423714405366,
+        "stride_um": 131.29245579825488,
+        "cycle_period_s": 4.427956989247312,
+        "cycle_frequency_hz": 0.22778530344572506,
+        "wave_speed_segments_s": 2.0434020851574624
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_09",
+      "source_larva_index": 9,
+      "split": "calibration",
+      "good_cycle_count": 94,
+      "segments": {
+        "T3": {
+          "rest_length_um": 123.56734281003756,
+          "contraction_amplitude_percent": 34.20987027713214,
+          "shortening_rate_um_s": 50.132574903009186,
+          "contraction_duration_s": 2.035041560556571,
+          "onset_phase_cycle_fraction": 0.7833273361786606,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 35.8834149994794
+        },
+        "A1": {
+          "rest_length_um": 122.91949060148053,
+          "contraction_amplitude_percent": 52.10793431467113,
+          "shortening_rate_um_s": 82.20659791367375,
+          "contraction_duration_s": 1.8461655818210811,
+          "onset_phase_cycle_fraction": 0.7403141477561194,
+          "adjacent_onset_delay_cycle_fraction": 0.043013188422541156,
+          "duty_cycle_percent": 32.382851320304646
+        },
+        "A2": {
+          "rest_length_um": 118.43123502635305,
+          "contraction_amplitude_percent": 55.41084328197336,
+          "shortening_rate_um_s": 62.10425869709238,
+          "contraction_duration_s": 2.188263887679305,
+          "onset_phase_cycle_fraction": 0.6019916435464153,
+          "adjacent_onset_delay_cycle_fraction": 0.13832250420970413,
+          "duty_cycle_percent": 38.48076947838139
+        },
+        "A3": {
+          "rest_length_um": 114.05159614138007,
+          "contraction_amplitude_percent": 56.156638678734346,
+          "shortening_rate_um_s": 58.865659964786325,
+          "contraction_duration_s": 2.2652468042808733,
+          "onset_phase_cycle_fraction": 0.4708208443198091,
+          "adjacent_onset_delay_cycle_fraction": 0.13117079922660613,
+          "duty_cycle_percent": 40.18024460371552
+        },
+        "A4": {
+          "rest_length_um": 115.27272092063828,
+          "contraction_amplitude_percent": 51.8002897547765,
+          "shortening_rate_um_s": 48.73957167315415,
+          "contraction_duration_s": 2.610479788424761,
+          "onset_phase_cycle_fraction": 0.29571889533041723,
+          "adjacent_onset_delay_cycle_fraction": 0.1751019489893919,
+          "duty_cycle_percent": 46.04703558126964
+        },
+        "A5": {
+          "rest_length_um": 110.31367868463053,
+          "contraction_amplitude_percent": 49.831057096630204,
+          "shortening_rate_um_s": 56.41015948137661,
+          "contraction_duration_s": 2.7471998315154504,
+          "onset_phase_cycle_fraction": 0.19076003277357076,
+          "adjacent_onset_delay_cycle_fraction": 0.10495886255684643,
+          "duty_cycle_percent": 48.32125702960232
+        },
+        "A6": {
+          "rest_length_um": 109.53243846476849,
+          "contraction_amplitude_percent": 52.71085848609583,
+          "shortening_rate_um_s": 73.67323605394762,
+          "contraction_duration_s": 2.4097669474721277,
+          "onset_phase_cycle_fraction": 0.13055092820169797,
+          "adjacent_onset_delay_cycle_fraction": 0.06020910457187277,
+          "duty_cycle_percent": 42.16148637434697
+        },
+        "A7": {
+          "rest_length_um": 116.70805160508434,
+          "contraction_amplitude_percent": 54.89439395831743,
+          "shortening_rate_um_s": 67.60492706364774,
+          "contraction_duration_s": 2.669674062098318,
+          "onset_phase_cycle_fraction": 0.029152799688266468,
+          "adjacent_onset_delay_cycle_fraction": 0.10139812851343148,
+          "duty_cycle_percent": 46.63179330105044
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 26.773149644668127,
+        "stride_um": 149.92383101761988,
+        "cycle_period_s": 5.696276595744682,
+        "cycle_frequency_hz": 0.1790258332323972,
+        "wave_speed_segments_s": 1.6678556430331628
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_10",
+      "source_larva_index": 10,
+      "split": "calibration",
+      "good_cycle_count": 74,
+      "segments": {
+        "T3": {
+          "rest_length_um": 102.35376987574526,
+          "contraction_amplitude_percent": 34.947230125662244,
+          "shortening_rate_um_s": 51.61951700994028,
+          "contraction_duration_s": 1.8020262349759664,
+          "onset_phase_cycle_fraction": 0.7834497944393898,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 41.4498734216481
+        },
+        "A1": {
+          "rest_length_um": 99.77005651377769,
+          "contraction_amplitude_percent": 43.61336635741283,
+          "shortening_rate_um_s": 60.787327042266746,
+          "contraction_duration_s": 1.7637799477701983,
+          "onset_phase_cycle_fraction": 0.7114366703673864,
+          "adjacent_onset_delay_cycle_fraction": 0.07201312407200317,
+          "duty_cycle_percent": 40.628060562921654
+        },
+        "A2": {
+          "rest_length_um": 103.95030326147507,
+          "contraction_amplitude_percent": 47.882803417801995,
+          "shortening_rate_um_s": 55.57432891377684,
+          "contraction_duration_s": 2.045320310898659,
+          "onset_phase_cycle_fraction": 0.5884526942325312,
+          "adjacent_onset_delay_cycle_fraction": 0.12298397613485536,
+          "duty_cycle_percent": 47.09079228544852
+        },
+        "A3": {
+          "rest_length_um": 97.68391919190981,
+          "contraction_amplitude_percent": 49.587386655066204,
+          "shortening_rate_um_s": 49.617739183541616,
+          "contraction_duration_s": 2.054234308717843,
+          "onset_phase_cycle_fraction": 0.4448973602217718,
+          "adjacent_onset_delay_cycle_fraction": 0.14355533401075946,
+          "duty_cycle_percent": 47.253209749105714
+        },
+        "A4": {
+          "rest_length_um": 96.43709372679453,
+          "contraction_amplitude_percent": 52.90464348417537,
+          "shortening_rate_um_s": 51.31660396214223,
+          "contraction_duration_s": 2.0959116769738775,
+          "onset_phase_cycle_fraction": 0.32398522039772043,
+          "adjacent_onset_delay_cycle_fraction": 0.12091213982405125,
+          "duty_cycle_percent": 48.16038653086939
+        },
+        "A5": {
+          "rest_length_um": 92.48509991158866,
+          "contraction_amplitude_percent": 52.09796658184398,
+          "shortening_rate_um_s": 52.8266891646994,
+          "contraction_duration_s": 2.156337380988576,
+          "onset_phase_cycle_fraction": 0.21784361981460673,
+          "adjacent_onset_delay_cycle_fraction": 0.10614160058311377,
+          "duty_cycle_percent": 49.57292756584023
+        },
+        "A6": {
+          "rest_length_um": 95.1208657148842,
+          "contraction_amplitude_percent": 53.72033972573569,
+          "shortening_rate_um_s": 63.48033320170343,
+          "contraction_duration_s": 2.008760746007438,
+          "onset_phase_cycle_fraction": 0.1378490616647601,
+          "adjacent_onset_delay_cycle_fraction": 0.07999455814984661,
+          "duty_cycle_percent": 46.130198258365816
+        },
+        "A7": {
+          "rest_length_um": 102.83735183876136,
+          "contraction_amplitude_percent": 56.546576608233885,
+          "shortening_rate_um_s": 62.4242902806948,
+          "contraction_duration_s": 2.0843729123722086,
+          "onset_phase_cycle_fraction": 0.026086284634994635,
+          "adjacent_onset_delay_cycle_fraction": 0.11176277702976546,
+          "duty_cycle_percent": 47.765887127685595
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 32.19687464784791,
+        "stride_um": 139.25541462346968,
+        "cycle_period_s": 4.354054054054054,
+        "cycle_frequency_hz": 0.23096484467242345,
+        "wave_speed_segments_s": 2.1467413098947223
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_11",
+      "source_larva_index": 11,
+      "split": "validation",
+      "good_cycle_count": 79,
+      "segments": {
+        "T3": {
+          "rest_length_um": 118.76406315245504,
+          "contraction_amplitude_percent": 32.075614217845164,
+          "shortening_rate_um_s": 38.14137698348293,
+          "contraction_duration_s": 2.304888844978616,
+          "onset_phase_cycle_fraction": 0.7256041281345493,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 41.04609715795851
+        },
+        "A1": {
+          "rest_length_um": 115.49813598354294,
+          "contraction_amplitude_percent": 44.94664286942992,
+          "shortening_rate_um_s": 56.560115495604265,
+          "contraction_duration_s": 2.0759612137532173,
+          "onset_phase_cycle_fraction": 0.7051449444484644,
+          "adjacent_onset_delay_cycle_fraction": 0.020459183686084837,
+          "duty_cycle_percent": 36.704797485601524
+        },
+        "A2": {
+          "rest_length_um": 110.20888681835065,
+          "contraction_amplitude_percent": 50.60942273152907,
+          "shortening_rate_um_s": 61.42807819503728,
+          "contraction_duration_s": 2.264059786192727,
+          "onset_phase_cycle_fraction": 0.5883106645784808,
+          "adjacent_onset_delay_cycle_fraction": 0.11683427986998356,
+          "duty_cycle_percent": 40.32504946212159
+        },
+        "A3": {
+          "rest_length_um": 108.94228676189186,
+          "contraction_amplitude_percent": 52.774878591432994,
+          "shortening_rate_um_s": 56.697846114643305,
+          "contraction_duration_s": 2.276574028185827,
+          "onset_phase_cycle_fraction": 0.4498934879867984,
+          "adjacent_onset_delay_cycle_fraction": 0.13841717659168232,
+          "duty_cycle_percent": 40.62296709278391
+        },
+        "A4": {
+          "rest_length_um": 113.2141320141484,
+          "contraction_amplitude_percent": 55.639843843827,
+          "shortening_rate_um_s": 54.49616633700105,
+          "contraction_duration_s": 2.487977486193823,
+          "onset_phase_cycle_fraction": 0.2896407281552682,
+          "adjacent_onset_delay_cycle_fraction": 0.1602527598315304,
+          "duty_cycle_percent": 44.50487390555872
+        },
+        "A5": {
+          "rest_length_um": 110.47607149990347,
+          "contraction_amplitude_percent": 52.48683314119564,
+          "shortening_rate_um_s": 50.51956199036653,
+          "contraction_duration_s": 2.628895548753019,
+          "onset_phase_cycle_fraction": 0.17352329988928805,
+          "adjacent_onset_delay_cycle_fraction": 0.11611742826598011,
+          "duty_cycle_percent": 46.86063691495602
+        },
+        "A6": {
+          "rest_length_um": 109.9815105723518,
+          "contraction_amplitude_percent": 54.45894318913774,
+          "shortening_rate_um_s": 62.072267246789515,
+          "contraction_duration_s": 2.2811981857539205,
+          "onset_phase_cycle_fraction": 0.10804152992380424,
+          "adjacent_onset_delay_cycle_fraction": 0.0654817699654838,
+          "duty_cycle_percent": 40.58586167611404
+        },
+        "A7": {
+          "rest_length_um": 116.7662896932955,
+          "contraction_amplitude_percent": 51.30974096847202,
+          "shortening_rate_um_s": 65.10674132910397,
+          "contraction_duration_s": 2.1254385201928914,
+          "onset_phase_cycle_fraction": 0.035510642275710096,
+          "adjacent_onset_delay_cycle_fraction": 0.0725308876480942,
+          "duty_cycle_percent": 37.76390009270951
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 25.86433492379465,
+        "stride_um": 144.86519766555546,
+        "cycle_period_s": 5.6525316455696215,
+        "cycle_frequency_hz": 0.17888424686773646,
+        "wave_speed_segments_s": 1.82572541467926
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_12",
+      "source_larva_index": 12,
+      "split": "calibration",
+      "good_cycle_count": 52,
+      "segments": {
+        "T3": {
+          "rest_length_um": 112.81354979994225,
+          "contraction_amplitude_percent": 30.845213081537562,
+          "shortening_rate_um_s": 42.65541603599931,
+          "contraction_duration_s": 1.7362485065533013,
+          "onset_phase_cycle_fraction": 0.7834690260382694,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 35.72682022473215
+        },
+        "A1": {
+          "rest_length_um": 119.69210483758053,
+          "contraction_amplitude_percent": 48.6150663616752,
+          "shortening_rate_um_s": 72.84206088582764,
+          "contraction_duration_s": 1.5247109474265972,
+          "onset_phase_cycle_fraction": 0.7286179639568591,
+          "adjacent_onset_delay_cycle_fraction": 0.05485106208141037,
+          "duty_cycle_percent": 31.620765859499638
+        },
+        "A2": {
+          "rest_length_um": 114.70085693885902,
+          "contraction_amplitude_percent": 46.27734147497067,
+          "shortening_rate_um_s": 67.87251916176287,
+          "contraction_duration_s": 1.7776991623629728,
+          "onset_phase_cycle_fraction": 0.6155026775308818,
+          "adjacent_onset_delay_cycle_fraction": 0.11311528642597724,
+          "duty_cycle_percent": 37.164732967941475
+        },
+        "A3": {
+          "rest_length_um": 115.45315216500909,
+          "contraction_amplitude_percent": 49.65409399597955,
+          "shortening_rate_um_s": 60.36523802983001,
+          "contraction_duration_s": 1.8025285092456902,
+          "onset_phase_cycle_fraction": 0.47151356785692233,
+          "adjacent_onset_delay_cycle_fraction": 0.14398910967395961,
+          "duty_cycle_percent": 37.91785702779745
+        },
+        "A4": {
+          "rest_length_um": 114.19729850700455,
+          "contraction_amplitude_percent": 53.01106687617623,
+          "shortening_rate_um_s": 53.25949644780757,
+          "contraction_duration_s": 2.1785830027394173,
+          "onset_phase_cycle_fraction": 0.31351336338522834,
+          "adjacent_onset_delay_cycle_fraction": 0.1580002044716941,
+          "duty_cycle_percent": 45.32528660850843
+        },
+        "A5": {
+          "rest_length_um": 113.21845005494322,
+          "contraction_amplitude_percent": 49.61718862942511,
+          "shortening_rate_um_s": 55.87628974725845,
+          "contraction_duration_s": 2.2545851264906798,
+          "onset_phase_cycle_fraction": 0.2021140771697607,
+          "adjacent_onset_delay_cycle_fraction": 0.11139928621546759,
+          "duty_cycle_percent": 46.64994707304262
+        },
+        "A6": {
+          "rest_length_um": 111.37561707322602,
+          "contraction_amplitude_percent": 49.31755170611193,
+          "shortening_rate_um_s": 64.99852947438143,
+          "contraction_duration_s": 1.9777568136634753,
+          "onset_phase_cycle_fraction": 0.12920704294683408,
+          "adjacent_onset_delay_cycle_fraction": 0.07290703422292663,
+          "duty_cycle_percent": 41.288355147425406
+        },
+        "A7": {
+          "rest_length_um": 115.49636449936506,
+          "contraction_amplitude_percent": 52.77948940730538,
+          "shortening_rate_um_s": 76.20891994727184,
+          "contraction_duration_s": 1.928645753581415,
+          "onset_phase_cycle_fraction": 0.05544945137667127,
+          "adjacent_onset_delay_cycle_fraction": 0.07375759157016279,
+          "duty_cycle_percent": 40.00899897733742
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 30.11423184108891,
+        "stride_um": 140.84771239716707,
+        "cycle_period_s": 4.835576923076924,
+        "cycle_frequency_hz": 0.21533755870595134,
+        "wave_speed_segments_s": 2.063489143704703
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_13",
+      "source_larva_index": 13,
+      "split": "calibration",
+      "good_cycle_count": 69,
+      "segments": {
+        "T3": {
+          "rest_length_um": 119.78301879595081,
+          "contraction_amplitude_percent": 33.391648894522824,
+          "shortening_rate_um_s": 46.61449486385741,
+          "contraction_duration_s": 2.1927607541048184,
+          "onset_phase_cycle_fraction": 0.7830400691149565,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 38.614837155079954
+        },
+        "A1": {
+          "rest_length_um": 119.34526687731838,
+          "contraction_amplitude_percent": 44.17834217786039,
+          "shortening_rate_um_s": 64.23445957891651,
+          "contraction_duration_s": 2.025006317699379,
+          "onset_phase_cycle_fraction": 0.7232405074827338,
+          "adjacent_onset_delay_cycle_fraction": 0.05979956163222249,
+          "duty_cycle_percent": 35.67448169950595
+        },
+        "A2": {
+          "rest_length_um": 118.04542003037398,
+          "contraction_amplitude_percent": 52.72060141546749,
+          "shortening_rate_um_s": 67.53512336423535,
+          "contraction_duration_s": 2.20665135654136,
+          "onset_phase_cycle_fraction": 0.6079440063879006,
+          "adjacent_onset_delay_cycle_fraction": 0.1152965010948335,
+          "duty_cycle_percent": 38.836838351432704
+        },
+        "A3": {
+          "rest_length_um": 117.56866066672364,
+          "contraction_amplitude_percent": 55.43080756622517,
+          "shortening_rate_um_s": 55.549449784164715,
+          "contraction_duration_s": 2.4651648444045327,
+          "onset_phase_cycle_fraction": 0.470544375197974,
+          "adjacent_onset_delay_cycle_fraction": 0.13739963118992646,
+          "duty_cycle_percent": 43.405708394083604
+        },
+        "A4": {
+          "rest_length_um": 118.45505940100121,
+          "contraction_amplitude_percent": 51.49218133791754,
+          "shortening_rate_um_s": 56.21937037153375,
+          "contraction_duration_s": 2.4121319987433907,
+          "onset_phase_cycle_fraction": 0.3368954051299715,
+          "adjacent_onset_delay_cycle_fraction": 0.13364897006800244,
+          "duty_cycle_percent": 42.49271168107448
+        },
+        "A5": {
+          "rest_length_um": 117.20107723711041,
+          "contraction_amplitude_percent": 50.11632276983548,
+          "shortening_rate_um_s": 52.35833162766397,
+          "contraction_duration_s": 2.637904125887334,
+          "onset_phase_cycle_fraction": 0.20985026386915623,
+          "adjacent_onset_delay_cycle_fraction": 0.12704514126081523,
+          "duty_cycle_percent": 46.392636583222796
+        },
+        "A6": {
+          "rest_length_um": 113.12020461672611,
+          "contraction_amplitude_percent": 51.70807402402432,
+          "shortening_rate_um_s": 58.42598371703051,
+          "contraction_duration_s": 2.4244871842987963,
+          "onset_phase_cycle_fraction": 0.1357122873002957,
+          "adjacent_onset_delay_cycle_fraction": 0.07413797656886055,
+          "duty_cycle_percent": 42.56407607265607
+        },
+        "A7": {
+          "rest_length_um": 121.8870612142083,
+          "contraction_amplitude_percent": 49.98447607506822,
+          "shortening_rate_um_s": 58.29508473509145,
+          "contraction_duration_s": 2.3390770786767434,
+          "onset_phase_cycle_fraction": 0.03973123621084974,
+          "adjacent_onset_delay_cycle_fraction": 0.09598105108944595,
+          "duty_cycle_percent": 40.975971577343856
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 27.425188160232842,
+        "stride_um": 154.8404820160009,
+        "cycle_period_s": 5.706521739130433,
+        "cycle_frequency_hz": 0.17713772219404242,
+        "wave_speed_segments_s": 1.6814856166992371
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_14",
+      "source_larva_index": 14,
+      "split": "validation",
+      "good_cycle_count": 103,
+      "segments": {
+        "T3": {
+          "rest_length_um": 111.42061866802096,
+          "contraction_amplitude_percent": 34.77119810503114,
+          "shortening_rate_um_s": 44.81074305079447,
+          "contraction_duration_s": 2.02110150202033,
+          "onset_phase_cycle_fraction": 0.7438120794046175,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 39.7154288680804
+        },
+        "A1": {
+          "rest_length_um": 113.3338498325177,
+          "contraction_amplitude_percent": 40.68561237854444,
+          "shortening_rate_um_s": 52.1412863551844,
+          "contraction_duration_s": 1.9114315725750843,
+          "onset_phase_cycle_fraction": 0.6970015118142129,
+          "adjacent_onset_delay_cycle_fraction": 0.04681056759040438,
+          "duty_cycle_percent": 37.49434902830738
+        },
+        "A2": {
+          "rest_length_um": 110.5196012052553,
+          "contraction_amplitude_percent": 46.18792315910664,
+          "shortening_rate_um_s": 52.45357283264205,
+          "contraction_duration_s": 2.1242520553726143,
+          "onset_phase_cycle_fraction": 0.5849206789583794,
+          "adjacent_onset_delay_cycle_fraction": 0.11208083285583356,
+          "duty_cycle_percent": 41.78301747682308
+        },
+        "A3": {
+          "rest_length_um": 105.50806453311225,
+          "contraction_amplitude_percent": 46.421189747907555,
+          "shortening_rate_um_s": 44.062749826879525,
+          "contraction_duration_s": 2.2690909826783225,
+          "onset_phase_cycle_fraction": 0.4265383383952422,
+          "adjacent_onset_delay_cycle_fraction": 0.15838234056313705,
+          "duty_cycle_percent": 44.82977332713734
+        },
+        "A4": {
+          "rest_length_um": 103.41528288943506,
+          "contraction_amplitude_percent": 49.34485541592586,
+          "shortening_rate_um_s": 43.295821338960984,
+          "contraction_duration_s": 2.4826927856139487,
+          "onset_phase_cycle_fraction": 0.2805540179775007,
+          "adjacent_onset_delay_cycle_fraction": 0.14598432041774156,
+          "duty_cycle_percent": 48.81398129359312
+        },
+        "A5": {
+          "rest_length_um": 99.32438383530275,
+          "contraction_amplitude_percent": 46.42764324777781,
+          "shortening_rate_um_s": 46.76476932141328,
+          "contraction_duration_s": 2.665130073355697,
+          "onset_phase_cycle_fraction": 0.16177489070998402,
+          "adjacent_onset_delay_cycle_fraction": 0.11877912726751667,
+          "duty_cycle_percent": 52.26725953894939
+        },
+        "A6": {
+          "rest_length_um": 98.509837355916,
+          "contraction_amplitude_percent": 49.92322958971135,
+          "shortening_rate_um_s": 57.876784832824384,
+          "contraction_duration_s": 2.4480741662063736,
+          "onset_phase_cycle_fraction": 0.09449153206383168,
+          "adjacent_onset_delay_cycle_fraction": 0.06728335864615227,
+          "duty_cycle_percent": 48.05542735047834
+        },
+        "A7": {
+          "rest_length_um": 106.96566571165894,
+          "contraction_amplitude_percent": 54.849137509195394,
+          "shortening_rate_um_s": 72.16146371970602,
+          "contraction_duration_s": 2.2960474425001425,
+          "onset_phase_cycle_fraction": 0.04878524415987503,
+          "adjacent_onset_delay_cycle_fraction": 0.04570628790395667,
+          "duty_cycle_percent": 45.01252654301668
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 25.54010449254222,
+        "stride_um": 128.23850265017313,
+        "cycle_period_s": 5.115048543689321,
+        "cycle_frequency_hz": 0.1991463222253172,
+        "wave_speed_segments_s": 2.035374334347462
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_15",
+      "source_larva_index": 15,
+      "split": "calibration",
+      "good_cycle_count": 91,
+      "segments": {
+        "T3": {
+          "rest_length_um": 121.54913747996474,
+          "contraction_amplitude_percent": 35.1673395002197,
+          "shortening_rate_um_s": 43.07286460201266,
+          "contraction_duration_s": 2.3177130999099473,
+          "onset_phase_cycle_fraction": 0.7596947002613759,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 37.570774841655634
+        },
+        "A1": {
+          "rest_length_um": 119.65287222947376,
+          "contraction_amplitude_percent": 52.320278634808034,
+          "shortening_rate_um_s": 68.64963465676836,
+          "contraction_duration_s": 2.0478974280505615,
+          "onset_phase_cycle_fraction": 0.6830611071973139,
+          "adjacent_onset_delay_cycle_fraction": 0.07663359306406206,
+          "duty_cycle_percent": 33.22912120002527
+        },
+        "A2": {
+          "rest_length_um": 116.60624356189234,
+          "contraction_amplitude_percent": 49.15344852425324,
+          "shortening_rate_um_s": 54.658956217790305,
+          "contraction_duration_s": 2.298016109597083,
+          "onset_phase_cycle_fraction": 0.5431757512952112,
+          "adjacent_onset_delay_cycle_fraction": 0.1398853559021026,
+          "duty_cycle_percent": 37.2807831020024
+        },
+        "A3": {
+          "rest_length_um": 116.5371028473457,
+          "contraction_amplitude_percent": 52.606976050928544,
+          "shortening_rate_um_s": 54.84210561101959,
+          "contraction_duration_s": 2.3517706364500226,
+          "onset_phase_cycle_fraction": 0.4299116341358953,
+          "adjacent_onset_delay_cycle_fraction": 0.113264117159316,
+          "duty_cycle_percent": 38.156497983702046
+        },
+        "A4": {
+          "rest_length_um": 114.7684993901552,
+          "contraction_amplitude_percent": 48.34864977543672,
+          "shortening_rate_um_s": 46.509622947589,
+          "contraction_duration_s": 2.504239537803999,
+          "onset_phase_cycle_fraction": 0.295149324956564,
+          "adjacent_onset_delay_cycle_fraction": 0.1347623091793312,
+          "duty_cycle_percent": 40.619605761698935
+        },
+        "A5": {
+          "rest_length_um": 110.2903779924906,
+          "contraction_amplitude_percent": 45.3040002706871,
+          "shortening_rate_um_s": 42.994216180161644,
+          "contraction_duration_s": 2.6208347290680845,
+          "onset_phase_cycle_fraction": 0.1809051135183254,
+          "adjacent_onset_delay_cycle_fraction": 0.11424421143823857,
+          "duty_cycle_percent": 42.50561175278883
+        },
+        "A6": {
+          "rest_length_um": 112.20623247528435,
+          "contraction_amplitude_percent": 47.5102603173619,
+          "shortening_rate_um_s": 57.72694903862307,
+          "contraction_duration_s": 2.341410157402447,
+          "onset_phase_cycle_fraction": 0.12663676312696792,
+          "adjacent_onset_delay_cycle_fraction": 0.05426835039135747,
+          "duty_cycle_percent": 37.97508186830918
+        },
+        "A7": {
+          "rest_length_um": 117.42013526754809,
+          "contraction_amplitude_percent": 47.15263360749133,
+          "shortening_rate_um_s": 58.70454448632038,
+          "contraction_duration_s": 2.20662786017385,
+          "onset_phase_cycle_fraction": 0.05562309692471648,
+          "adjacent_onset_delay_cycle_fraction": 0.07101366620225144,
+          "duty_cycle_percent": 35.83286573283056
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 22.81716205359453,
+        "stride_um": 140.26940778713478,
+        "cycle_period_s": 6.184065934065934,
+        "cycle_frequency_hz": 0.16287149675369278,
+        "wave_speed_segments_s": 1.6238851239572671
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_16",
+      "source_larva_index": 16,
+      "split": "calibration",
+      "good_cycle_count": 76,
+      "segments": {
+        "T3": {
+          "rest_length_um": 113.64712541461812,
+          "contraction_amplitude_percent": 41.75126094892184,
+          "shortening_rate_um_s": 54.29320847893414,
+          "contraction_duration_s": 2.0899108125981822,
+          "onset_phase_cycle_fraction": 0.7967749438171924,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 33.92506278885464
+        },
+        "A1": {
+          "rest_length_um": 115.7223868382288,
+          "contraction_amplitude_percent": 47.288737410892615,
+          "shortening_rate_um_s": 64.65316097729728,
+          "contraction_duration_s": 1.9675900738369798,
+          "onset_phase_cycle_fraction": 0.7345716083859906,
+          "adjacent_onset_delay_cycle_fraction": 0.06220333543120178,
+          "duty_cycle_percent": 31.962319020455688
+        },
+        "A2": {
+          "rest_length_um": 115.85303427677943,
+          "contraction_amplitude_percent": 48.75281667182629,
+          "shortening_rate_um_s": 60.58311302311633,
+          "contraction_duration_s": 2.17498706296997,
+          "onset_phase_cycle_fraction": 0.6150716881533529,
+          "adjacent_onset_delay_cycle_fraction": 0.11949992023263782,
+          "duty_cycle_percent": 35.62403620341395
+        },
+        "A3": {
+          "rest_length_um": 110.70102143528419,
+          "contraction_amplitude_percent": 50.3584171232055,
+          "shortening_rate_um_s": 50.48817331843848,
+          "contraction_duration_s": 2.1810592436306155,
+          "onset_phase_cycle_fraction": 0.49567460986872885,
+          "adjacent_onset_delay_cycle_fraction": 0.11939707828462398,
+          "duty_cycle_percent": 35.903242328749464
+        },
+        "A4": {
+          "rest_length_um": 109.73509453025488,
+          "contraction_amplitude_percent": 50.489058014822064,
+          "shortening_rate_um_s": 37.801498909596354,
+          "contraction_duration_s": 2.7424126372886817,
+          "onset_phase_cycle_fraction": 0.3112657935109791,
+          "adjacent_onset_delay_cycle_fraction": 0.1844088163577498,
+          "duty_cycle_percent": 44.68362030593389
+        },
+        "A5": {
+          "rest_length_um": 102.27190768791671,
+          "contraction_amplitude_percent": 48.823111120354625,
+          "shortening_rate_um_s": 36.07775114706425,
+          "contraction_duration_s": 3.0900015884266687,
+          "onset_phase_cycle_fraction": 0.18766712650894823,
+          "adjacent_onset_delay_cycle_fraction": 0.12359866700203088,
+          "duty_cycle_percent": 50.2718435297174
+        },
+        "A6": {
+          "rest_length_um": 98.8416036081602,
+          "contraction_amplitude_percent": 53.49025537711093,
+          "shortening_rate_um_s": 48.91377177326716,
+          "contraction_duration_s": 2.7795612774297607,
+          "onset_phase_cycle_fraction": 0.12859961390139865,
+          "adjacent_onset_delay_cycle_fraction": 0.05906751260754952,
+          "duty_cycle_percent": 45.07492470276981
+        },
+        "A7": {
+          "rest_length_um": 110.34968322470851,
+          "contraction_amplitude_percent": 55.31092236217222,
+          "shortening_rate_um_s": 58.55109410437973,
+          "contraction_duration_s": 2.729409002102757,
+          "onset_phase_cycle_fraction": 0.03910205620570398,
+          "adjacent_onset_delay_cycle_fraction": 0.0894975576956947,
+          "duty_cycle_percent": 44.191980336528836
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 23.184813302685058,
+        "stride_um": 141.19757636506398,
+        "cycle_period_s": 6.171052631578948,
+        "cycle_frequency_hz": 0.16520377435737627,
+        "wave_speed_segments_s": 1.5318796361369984
+      }
+    },
+    {
+      "animal_id": "behavior_l1_source_index_17",
+      "source_larva_index": 17,
+      "split": "validation",
+      "good_cycle_count": 102,
+      "segments": {
+        "T3": {
+          "rest_length_um": 104.14423880202523,
+          "contraction_amplitude_percent": 33.53253223032916,
+          "shortening_rate_um_s": 41.456528051572676,
+          "contraction_duration_s": 1.9735772143246368,
+          "onset_phase_cycle_fraction": 0.7519166932789115,
+          "adjacent_onset_delay_cycle_fraction": null,
+          "duty_cycle_percent": 40.63188659967964
+        },
+        "A1": {
+          "rest_length_um": 104.18549461554268,
+          "contraction_amplitude_percent": 52.67008865212928,
+          "shortening_rate_um_s": 54.04100571063158,
+          "contraction_duration_s": 2.030463753271657,
+          "onset_phase_cycle_fraction": 0.6652760285660821,
+          "adjacent_onset_delay_cycle_fraction": 0.08664066471282933,
+          "duty_cycle_percent": 41.86191856036291
+        },
+        "A2": {
+          "rest_length_um": 102.61994724319766,
+          "contraction_amplitude_percent": 52.57755024819702,
+          "shortening_rate_um_s": 55.823289110549304,
+          "contraction_duration_s": 2.3202290331409743,
+          "onset_phase_cycle_fraction": 0.5462615190905745,
+          "adjacent_onset_delay_cycle_fraction": 0.1190145094755077,
+          "duty_cycle_percent": 47.865669725674884
+        },
+        "A3": {
+          "rest_length_um": 100.9186464086189,
+          "contraction_amplitude_percent": 54.73990779471182,
+          "shortening_rate_um_s": 52.79873763812789,
+          "contraction_duration_s": 2.5029499072781136,
+          "onset_phase_cycle_fraction": 0.3776336174052839,
+          "adjacent_onset_delay_cycle_fraction": 0.16862790168529063,
+          "duty_cycle_percent": 51.501325871002294
+        },
+        "A4": {
+          "rest_length_um": 101.25708270851902,
+          "contraction_amplitude_percent": 52.41750738310125,
+          "shortening_rate_um_s": 53.45270234422113,
+          "contraction_duration_s": 2.690898582436428,
+          "onset_phase_cycle_fraction": 0.22321900352840057,
+          "adjacent_onset_delay_cycle_fraction": 0.15441461387688332,
+          "duty_cycle_percent": 55.44299994784378
+        },
+        "A5": {
+          "rest_length_um": 101.02644909823968,
+          "contraction_amplitude_percent": 53.89671660872783,
+          "shortening_rate_um_s": 66.37968038540487,
+          "contraction_duration_s": 2.56077548389239,
+          "onset_phase_cycle_fraction": 0.1310717737725003,
+          "adjacent_onset_delay_cycle_fraction": 0.09214722975590035,
+          "duty_cycle_percent": 52.80830683935539
+        },
+        "A6": {
+          "rest_length_um": 97.49739482638486,
+          "contraction_amplitude_percent": 50.90097459563207,
+          "shortening_rate_um_s": 64.16782975423045,
+          "contraction_duration_s": 2.2531437700407118,
+          "onset_phase_cycle_fraction": 0.087231404345616,
+          "adjacent_onset_delay_cycle_fraction": 0.043840369426884254,
+          "duty_cycle_percent": 46.556583701380475
+        },
+        "A7": {
+          "rest_length_um": 96.3251517780085,
+          "contraction_amplitude_percent": 46.40273425057982,
+          "shortening_rate_um_s": 58.68863038782492,
+          "contraction_duration_s": 2.26765302527305,
+          "onset_phase_cycle_fraction": 0.046050466796044166,
+          "adjacent_onset_delay_cycle_fraction": 0.04118093754957184,
+          "duty_cycle_percent": 46.834292668148876
+        }
+      },
+      "cycle_metrics": {
+        "crawl_speed_um_s": 32.41598120491136,
+        "stride_um": 154.12413160772448,
+        "cycle_period_s": 4.854901960784314,
+        "cycle_frequency_hz": 0.21123154913118622,
+        "wave_speed_segments_s": 2.096758059044484
+      }
+    }
+  ],
+  "derived_metric_definitions": {
+    "duty_cycle_percent": "Author analysis field cnDurNorm = contraction duration / cycle period * 100.",
+    "wave_speed_segments_s": "Seven segment intervals (T3 to A7) divided by the sum of the seven adjacent onset phase delays times each cycle period, then averaged within animal. Unit is segment intervals per second, not micrometers per second.",
+    "stride_um": "Author analysis field cycleStride.",
+    "contraction_amplitude_percent": "Author analysis field cnAmpNorm; used as segment length change.",
+    "provenance": "PUBLIC_IMAGE_DERIVED"
   }
 }

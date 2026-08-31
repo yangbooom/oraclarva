@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_dbd_motor_feedback_v0",
+  "status": "audited_structural_subset",
+  "stage": "L1",
+  "source": {
+    "source_id": "greaney_2023_l1_proprioceptor_connectome",
+    "citation": "Greaney MR, Wreden CC, Heckscher ES. Front Neural Circuits. 2023.",
+    "doi": "10.3389/fncir.2023.1223334",
+    "figure": "Figure 7D",
+    "license": "CC BY 4.0",
+    "specimen": "6-hour-old first-instar larval CNS",
+    "provenance": "MEASURED_PUBLISHED"
+  },
+  "sensory_neurons": [
+    {"node_id": "proprioceptor:dbd:A1:left", "identity": "dbd A1L", "side": "left", "segment": "A1"},
+    {"node_id": "proprioceptor:dbd:A1:right", "identity": "dbd A1R", "side": "right", "segment": "A1"}
+  ],
+  "connections": [
+    {"pre": "proprioceptor:dbd:A1:left", "post": "motor_identity:10649843:left", "motor_identity": "MN-1 L", "synaptic_contacts": 1, "executable": true},
+    {"pre": "proprioceptor:dbd:A1:left", "post": "motor_identity:14199031:left", "motor_identity": "MN-18 L", "synaptic_contacts": 1, "executable": true},
+    {"pre": "proprioceptor:dbd:A1:right", "post": "motor_identity:16713121:right", "motor_identity": "MN-21/22 R", "synaptic_contacts": 1, "executable": true},
+    {"pre": "proprioceptor:dbd:A1:left", "post": "unmapped_motor_identity:RP2:A1:left", "motor_identity": "1s RP2 L", "synaptic_contacts": 1, "executable": false},
+    {"pre": "proprioceptor:dbd:A1:right", "post": "unmapped_motor_identity:RP2:A1:right", "motor_identity": "1s RP2 R", "synaptic_contacts": 2, "executable": false},
+    {"pre": "proprioceptor:dbd:A1:left", "post": "unmapped_motor_identity:MN4:A1:left", "motor_identity": "MN-4 L", "synaptic_contacts": 3, "executable": false},
+    {"pre": "proprioceptor:dbd:A1:right", "post": "unmapped_motor_identity:MN4:A1:right", "motor_identity": "MN-4 R", "synaptic_contacts": 2, "executable": false}
+  ],
+  "summary": {
+    "identified_dbd_neurons": 2,
+    "motor_targets": 7,
+    "connection_pairs": 7,
+    "synaptic_contacts": 11,
+    "executable_overlap_pairs": 3,
+    "executable_overlap_contacts": 3,
+    "unexecuted_pairs": 4,
+    "unexecuted_contacts": 8
+  },
+  "limitations": [
+    "Figure 7D reports structural synapse counts; it does not establish current, conductance, release probability, delay, or functional sign.",
+    "Only three motor identities overlap the existing 146-fiber runtime and execute; RP2 and MN-4 contacts remain preserved but unexecuted.",
+    "The A1 contacts are not repeated as A2-A6 measured contacts.",
+    "The paper reports that dbd is the stretch receptor among the six proprioceptors; numeric mechanotransduction parameters are not supplied."
+  ],
+  "release_validated": false
+}

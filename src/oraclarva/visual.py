@@ -9,7 +9,8 @@ from math import exp, isfinite
 from pathlib import Path
 from typing import Any, Iterable
 
-from .body3d import Vec3
+from .body3d import ContactSurface, Vec3
+from .body_sensing import BodyStateSensoryFrame
 from .environment_inputs import LinearScalarField, ScalarField
 from .fiber_body import NamedFiberBodyForceFrame, NamedFiberVisualBodyRunner
 from .lif import SparseLIFNetwork, Synapse
@@ -73,6 +74,15 @@ def default_a03o_segmental_projection_path() -> Path:
     )
 
 
+def default_l1_dbd_motor_feedback_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "data"
+        / "connectome"
+        / "l1_dbd_motor_feedback_v0.json"
+    )
+
+
 def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
     source = Path(path) if path else default_visual_config_path()
     raw = json.loads(source.read_text(encoding="utf-8"))
@@ -98,6 +108,10 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         "model_fitted_named_fiber_attachment_mechanics",
         "shared_body_node_force_projection",
         "3d_body_physics",
+        "shared_body_segment_state_and_contact",
+        "model_fitted_body_state_sensory_transduction",
+        "published_l1_dbd_a1_direct_motor_contacts",
+        "fitted_effects_for_published_dbd_contacts",
         "analytic_light_field",
     ):
         raise ValueError("visual causal contract is invalid")
@@ -356,10 +370,96 @@ def load_visual_config(path: str | Path | None = None) -> dict[str, Any]:
         value = float(coupling.get(key, 0.0))
         if len(bounds) != 2 or not float(bounds[0]) <= value <= float(bounds[1]):
             raise ValueError(f"named-fiber coupling {key} is outside its range")
+    feedback = raw.get("body_state_sensory_feedback", {})
+    if (
+        feedback.get("model_id")
+        != "dmel_l1_body_state_sensory_feedback_v0"
+        or feedback.get("connectome_model_id")
+        != "dmel_l1_dbd_motor_feedback_v0"
+        or feedback.get("sensed_segments")
+        != ["A1", "A2", "A3", "A4", "A5", "A6"]
+        or feedback.get("identity_provenance") != "MEASURED_PUBLISHED"
+        or feedback.get("transduction_provenance") != "MODEL_FITTED"
+        or feedback.get("provenance") != "MODEL_FITTED"
+        or int(feedback.get("expected_published_connection_pairs", 0)) != 7
+        or int(feedback.get("expected_published_synaptic_contacts", 0)) != 11
+        or int(feedback.get("expected_executable_overlap_pairs", 0)) != 3
+        or int(feedback.get("expected_executable_overlap_contacts", 0)) != 3
+        or feedback.get("contact_neural_path_executed") is not False
+        or feedback.get("contraction_receptor_neural_path_executed") is not False
+    ):
+        raise ValueError("body-state sensory feedback claim boundary is invalid")
+    feedback_ranges = feedback.get("calibration_ranges", {})
+    expected_feedback_parameters = {
+        "stretch_strain_threshold",
+        "stretch_rate_threshold_s_1",
+        "stretch_strain_gain",
+        "stretch_rate_gain_s",
+        "shortening_strain_threshold",
+        "shortening_rate_threshold_s_1",
+        "shortening_strain_gain",
+        "shortening_rate_gain_s",
+        "maximum_external_current_a",
+        "current_per_synaptic_contact_a",
+        "contact_sensing_range_m",
+        "contact_touch_drive",
+        "feedback_trace_window_s",
+    }
+    if set(feedback_ranges) != expected_feedback_parameters:
+        raise ValueError("body-state sensory feedback calibration ranges are invalid")
+    for key, bounds in feedback_ranges.items():
+        value = float(feedback.get(key, -1.0))
+        if len(bounds) != 2 or not float(bounds[0]) <= value <= float(bounds[1]):
+            raise ValueError(f"body-state feedback {key} is outside its range")
+    if float(feedback.get("dt_s", 0.0)) != float(coupling["dt_s"]):
+        raise ValueError("body-state feedback dt must match body coupling dt")
+
     if raw.get("parameter_provenance", {}).get("provenance") != "MODEL_FITTED":
         raise ValueError("visual numerical parameters must remain model-fitted")
     if raw.get("release_validated") is not False:
         raise ValueError("visual research approximation cannot be release-validated")
+    return raw
+
+
+def load_l1_dbd_motor_feedback(
+    path: str | Path | None = None,
+) -> dict[str, Any]:
+    source = Path(path) if path else default_l1_dbd_motor_feedback_path()
+    raw = json.loads(source.read_text(encoding="utf-8"))
+    summary = raw.get("summary", {})
+    if (
+        raw.get("model_id") != "dmel_l1_dbd_motor_feedback_v0"
+        or raw.get("stage") != "L1"
+        or raw.get("source", {}).get("doi") != "10.3389/fncir.2023.1223334"
+        or raw.get("source", {}).get("figure") != "Figure 7D"
+        or raw.get("source", {}).get("provenance") != "MEASURED_PUBLISHED"
+        or int(summary.get("identified_dbd_neurons", 0)) != 2
+        or int(summary.get("motor_targets", 0)) != 7
+        or int(summary.get("connection_pairs", 0)) != 7
+        or int(summary.get("synaptic_contacts", 0)) != 11
+        or int(summary.get("executable_overlap_pairs", 0)) != 3
+        or int(summary.get("executable_overlap_contacts", 0)) != 3
+    ):
+        raise ValueError("L1 dbd motor feedback source contract is invalid")
+    connections = raw.get("connections", ())
+    if len(connections) != 7 or sum(
+        int(item["synaptic_contacts"]) for item in connections
+    ) != 11:
+        raise ValueError("L1 dbd motor feedback counts are invalid")
+    executable = [item for item in connections if item.get("executable") is True]
+    expected = [
+        ("proprioceptor:dbd:A1:left", "motor_identity:10649843:left", 1),
+        ("proprioceptor:dbd:A1:left", "motor_identity:14199031:left", 1),
+        ("proprioceptor:dbd:A1:right", "motor_identity:16713121:right", 1),
+    ]
+    actual = [
+        (item["pre"], item["post"], int(item["synaptic_contacts"]))
+        for item in executable
+    ]
+    if actual != expected:
+        raise ValueError("executable dbd overlap changed")
+    if raw.get("release_validated") is not False:
+        raise ValueError("dbd feedback subset cannot be release-validated")
     return raw
 
 
@@ -786,6 +886,7 @@ class BolwigLightTransduction:
 @dataclass(frozen=True, slots=True)
 class VisualCircuitFrame:
     transduction: BolwigTransductionFrame
+    body_state_sensory: BodyStateSensoryFrame | None
     spiked_neurons: tuple[str, ...]
     a03o_spikes: dict[str, tuple[str, ...]]
     a1_motor_spikes: dict[str, tuple[str, ...]]
@@ -798,6 +899,17 @@ class VisualCircuitFrame:
     def to_dict(self) -> dict[str, Any]:
         return {
             "transduction": self.transduction.to_dict(),
+            "body_state_sensory": (
+                None
+                if self.body_state_sensory is None
+                else {
+                    "time_s": self.body_state_sensory.time_s,
+                    "maximum_dbd_drive": self.body_state_sensory.maximum_dbd_drive,
+                    "contact_neural_path_executed": (
+                        self.body_state_sensory.contact_neural_path_executed
+                    ),
+                }
+            ),
             "spiked_neurons": list(self.spiked_neurons),
             "a03o_spikes": {
                 side: list(values) for side, values in self.a03o_spikes.items()
@@ -866,6 +978,7 @@ class L1VisualCircuitProtocol:
         descending_connectome: dict[str, Any] | None = None,
         motor_connectome: dict[str, Any] | None = None,
         segmental_projection: dict[str, Any] | None = None,
+        body_feedback_connectome: dict[str, Any] | None = None,
         muscle_identity_projection: NeuralMuscleIdentityProjection | None = None,
         lesion_node_ids: Iterable[str] = (),
         lesion_muscle_fiber_ids: Iterable[str] = (),
@@ -879,6 +992,9 @@ class L1VisualCircuitProtocol:
         self.motor_connectome = motor_connectome or load_a03o_motor_connectome()
         self.segmental_projection = (
             segmental_projection or load_a03o_segmental_projection()
+        )
+        self.body_feedback_connectome = (
+            body_feedback_connectome or load_l1_dbd_motor_feedback()
         )
         self.muscle_identity_projection = (
             muscle_identity_projection
@@ -938,6 +1054,29 @@ class L1VisualCircuitProtocol:
             merged_index[node_id] = len(merged_neurons)
             merged_neurons.append(neuron)
 
+        feedback = self.config["body_state_sensory_feedback"]
+        for sensory_neuron in self.body_feedback_connectome["sensory_neurons"]:
+            side = sensory_neuron["side"]
+            node_id = sensory_neuron["node_id"]
+            if node_id in merged_index:
+                raise ValueError(f"duplicate body-state sensory identity {node_id}")
+            merged_index[node_id] = len(merged_neurons)
+            merged_neurons.append(
+                {
+                    "node_id": node_id,
+                    "neuron_class": "dbd_A1",
+                    "lon_side": side,
+                    "side": side,
+                    "segment": "A1",
+                    "identity": f"dbd_a1{side[0]}",
+                    "vfb_name": f"dbd_a1{side[0]}",
+                    "identity_provenance": "MEASURED_PUBLISHED",
+                    "transduction_provenance": "MODEL_FITTED",
+                    "transmitter": "unknown",
+                    "transmitter_provenance": "unknown",
+                }
+            )
+
         self.neurons = tuple(merged_neurons)
         self.labels = tuple(item["node_id"] for item in self.neurons)
         self.index_by_id = {
@@ -946,8 +1085,8 @@ class L1VisualCircuitProtocol:
         self.metadata_by_id = {
             item["node_id"]: item for item in self.neurons
         }
-        if len(self.neurons) != 220 or len(self.labels) != len(set(self.labels)):
-            raise ValueError("visual runtime must contain 220 unique compartments")
+        if len(self.neurons) != 222 or len(self.labels) != len(set(self.labels)):
+            raise ValueError("visual runtime must contain 222 unique compartments")
         missing_muscle_sources = (
             self.muscle_identity_projection.source_node_ids - set(self.labels)
         )
@@ -1058,12 +1197,37 @@ class L1VisualCircuitProtocol:
             self.segmental_projection["connections"]
         )
 
+        feedback_connections = tuple(
+            item
+            for item in self.body_feedback_connectome["connections"]
+            if item["executable"]
+        )
+        for item in feedback_connections:
+            if item["pre"] not in self.index_by_id or item["post"] not in self.index_by_id:
+                raise ValueError("body-state feedback endpoint is absent")
+            contacts = int(item["synaptic_contacts"])
+            if contacts != 1:
+                raise ValueError("audited executable dbd contacts must remain one each")
+            synapses.append(
+                Synapse(
+                    self.index_by_id[item["pre"]],
+                    self.index_by_id[item["post"]],
+                    float(feedback["current_per_synaptic_contact_a"]) * contacts,
+                    kind="excitatory",
+                )
+            )
+        self.executed_body_feedback_connection_pairs = len(feedback_connections)
+        self.executed_body_feedback_synaptic_contacts = sum(
+            int(item["synaptic_contacts"]) for item in feedback_connections
+        )
+
         self.network = SparseLIFNetwork(len(self.neurons), synapses)
         self.executed_connection_pairs = len(synapses)
         self.executed_synaptic_contacts = (
             self.executed_lon_synaptic_contacts
             + self.executed_descending_synaptic_contacts
             + self.executed_motor_synaptic_contacts
+            + self.executed_body_feedback_synaptic_contacts
         )
 
         lesions = tuple(lesion_node_ids)
@@ -1079,6 +1243,24 @@ class L1VisualCircuitProtocol:
             (), lesioned_fiber_ids=muscle_lesions
         )
         self.lesion_muscle_fiber_ids = muscle_lesions
+
+        self.dbd_indices = {
+            side: self.index_by_id[f"proprioceptor:dbd:A1:{side}"]
+            for side in LON_SIDES
+        }
+        self.last_body_sensory_frame: BodyStateSensoryFrame | None = None
+        self.last_dbd_spike_s = {side: None for side in LON_SIDES}
+        self.last_dbd_body_state_time_s = {side: None for side in LON_SIDES}
+        self.body_feedback_motor_targets = {
+            item["post"]: item["pre"] for item in feedback_connections
+        }
+        self.last_body_feedback_trace_by_source: dict[str, dict[str, object]] = {}
+        self.pending_body_feedback_trace_by_source_spike: dict[
+            tuple[str, float], dict[str, object]
+        ] = {}
+        self.body_feedback_trace_window_s = float(
+            feedback["feedback_trace_window_s"]
+        )
 
         self.a03o_indices = {
             side: tuple(
@@ -1170,7 +1352,10 @@ class L1VisualCircuitProtocol:
         }
 
     def __call__(
-        self, time_s: float, state: SpatialSensoryState
+        self,
+        time_s: float,
+        state: SpatialSensoryState,
+        body_state_sensory: BodyStateSensoryFrame | None = None,
     ) -> NeuralMuscleActivationFrame:
         expected_time = self.network.step_index * self.network.config.dt_s
         if not isfinite(time_s) or abs(time_s - expected_time) > 1e-9:
@@ -1192,6 +1377,13 @@ class L1VisualCircuitProtocol:
                     ]
                 )
             )
+        if body_state_sensory is not None:
+            if abs(body_state_sensory.time_s - time_s) > 1e-9:
+                raise ValueError("body-state sensory frame time does not match neural step")
+            for side in LON_SIDES:
+                channel = body_state_sensory.dbd_channels[f"A1:{side}"]
+                external[self.dbd_indices[side]] = channel.external_current_a
+            self.last_body_sensory_frame = body_state_sensory
         spikes = self.network.step(external)
         spiked_labels = tuple(self.labels[index] for index in spikes)
         for label in spiked_labels:
@@ -1200,6 +1392,32 @@ class L1VisualCircuitProtocol:
                 self.first_spike_s[label] = time_s
 
         spiked = set(spikes)
+        for side, index in self.dbd_indices.items():
+            if index in spiked:
+                self.last_dbd_spike_s[side] = time_s
+                self.last_dbd_body_state_time_s[side] = (
+                    None
+                    if body_state_sensory is None
+                    else body_state_sensory.time_s
+                )
+        for motor_id, sensor_id in self.body_feedback_motor_targets.items():
+            if motor_id not in spiked_labels:
+                continue
+            side = sensor_id.rsplit(":", 1)[-1]
+            sensory_spike = self.last_dbd_spike_s[side]
+            if (
+                sensory_spike is not None
+                and 0.0 < time_s - sensory_spike
+                <= self.body_feedback_trace_window_s
+            ):
+                self.pending_body_feedback_trace_by_source_spike[(motor_id, time_s)] = {
+                    "sensor_node_id": sensor_id,
+                    "sensor_spike_time_s": sensory_spike,
+                    "motor_spike_time_s": time_s,
+                    "body_state_time_s": self.last_dbd_body_state_time_s[side],
+                    "segment_id": "A1",
+                    "path_provenance": "MEASURED_PUBLISHED",
+                }
         a03o_spikes = {
             side: tuple(
                 self.labels[index]
@@ -1246,6 +1464,24 @@ class L1VisualCircuitProtocol:
             time_s, muscle_identity_events
         )
         for fiber_id in muscle_activation.applied_event_fibers:
+            source = muscle_activation.applied_source_by_fiber[fiber_id]
+            source_spike = muscle_activation.applied_spike_time_s_by_fiber[fiber_id]
+            if source is None or source_spike is None:
+                continue
+            trace = self.pending_body_feedback_trace_by_source_spike.get(
+                (source, source_spike)
+            )
+            if trace is not None:
+                self.last_body_feedback_trace_by_source[source] = trace
+            else:
+                self.last_body_feedback_trace_by_source.pop(source, None)
+        expired_before = time_s - self.body_feedback_trace_window_s
+        self.pending_body_feedback_trace_by_source_spike = {
+            key: trace
+            for key, trace in self.pending_body_feedback_trace_by_source_spike.items()
+            if key[1] >= expired_before
+        }
+        for fiber_id in muscle_activation.applied_event_fibers:
             self.muscle_activation_input_counts[fiber_id] += 1
         for fiber_id, value in muscle_activation.activations.items():
             self.muscle_peak_activations[fiber_id] = max(
@@ -1256,6 +1492,7 @@ class L1VisualCircuitProtocol:
             self.frames.append(
                 VisualCircuitFrame(
                     transduction=transduction,
+                    body_state_sensory=body_state_sensory,
                     spiked_neurons=spiked_labels,
                     a03o_spikes=a03o_spikes,
                     a1_motor_spikes=a1_motor_spikes,
@@ -1305,6 +1542,11 @@ class VisualClosedLoopResult:
     lesion_muscle_fiber_ids: tuple[str, ...]
     visual_frames: tuple[VisualCircuitFrame, ...]
     body_force_frames: tuple[NamedFiberBodyForceFrame, ...]
+    body_sensory_frames: tuple[BodyStateSensoryFrame, ...]
+    published_body_feedback_connection_pairs: int
+    published_body_feedback_synaptic_contacts: int
+    executed_body_feedback_connection_pairs: int
+    executed_body_feedback_synaptic_contacts: int
 
     def to_dict(self) -> dict[str, Any]:
         body = self.spatial_result
@@ -1356,12 +1598,39 @@ class VisualClosedLoopResult:
             "mechanical_force_executed": True,
             "parallel_fitted_bridge_executed": False,
             "body_force_frames": len(self.body_force_frames),
+            "body_sensory_frames": len(self.body_sensory_frames),
+            "published_body_feedback_connection_pairs": (
+                self.published_body_feedback_connection_pairs
+            ),
+            "published_body_feedback_synaptic_contacts": (
+                self.published_body_feedback_synaptic_contacts
+            ),
+            "executed_body_feedback_connection_pairs": (
+                self.executed_body_feedback_connection_pairs
+            ),
+            "executed_body_feedback_synaptic_contacts": (
+                self.executed_body_feedback_synaptic_contacts
+            ),
+            "peak_dbd_drive": max(
+                (frame.maximum_dbd_drive for frame in self.body_sensory_frames),
+                default=0.0,
+            ),
+            "contact_neural_path_executed": False,
+            "contraction_receptor_neural_path_executed": False,
             "peak_active_body_force_fibers": max(
                 (frame.active_fiber_count for frame in self.body_force_frames),
                 default=0,
             ),
             "all_active_body_forces_traced": all(
                 frame.active_fiber_count == frame.traced_active_fiber_count
+                for frame in self.body_force_frames
+            ),
+            "feedback_driven_force_frames": sum(
+                frame.feedback_driven_fiber_count > 0
+                for frame in self.body_force_frames
+            ),
+            "all_feedback_forces_traced": all(
+                frame.feedback_driven_fiber_count == frame.feedback_traced_fiber_count
                 for frame in self.body_force_frames
             ),
             "body_force_unit": "model_unit_not_newton",
@@ -1403,8 +1672,11 @@ class VisualClosedLoopResult:
                 "A2-A6 with A7 blocked; 146 causal named-fiber identity "
                 "mappings, one-step-delayed MODEL_FITTED activation, "
                 "ANATOMY_DERIVED attachment hypotheses, and MODEL_FITTED "
-                "model-unit tension projected to shared body nodes; the "
-                "historical parallel A03o-to-body bridge is disabled; not "
+                "model-unit tension projected to shared body nodes; A1 body "
+                "stretch reaches two dbd sensory compartments and three mapped "
+                "motor identities through published direct contacts with fitted "
+                "transduction/effects; the historical parallel A03o-to-body "
+                "bridge is disabled; not "
                 "validated natural phototaxis or a complete sensor-to-muscle "
                 "connectome"
             ),
@@ -1446,10 +1718,12 @@ class L1VisualClosedLoopLarva:
         descending_connectome: dict[str, Any] | None = None,
         motor_connectome: dict[str, Any] | None = None,
         segmental_projection: dict[str, Any] | None = None,
+        body_feedback_connectome: dict[str, Any] | None = None,
         muscle_identity_projection: NeuralMuscleIdentityProjection | None = None,
         lesion_node_ids: Iterable[str] = (),
         lesion_muscle_fiber_ids: Iterable[str] = (),
         ground_z_m: float | None = None,
+        contact_surface: ContactSurface | None = None,
         record_visual_frames: bool = False,
     ) -> None:
         self.config = config or load_visual_config()
@@ -1460,6 +1734,9 @@ class L1VisualClosedLoopLarva:
         self.motor_connectome = motor_connectome or load_a03o_motor_connectome()
         self.segmental_projection = (
             segmental_projection or load_a03o_segmental_projection()
+        )
+        self.body_feedback_connectome = (
+            body_feedback_connectome or load_l1_dbd_motor_feedback()
         )
         self.muscle_identity_projection = (
             muscle_identity_projection
@@ -1472,6 +1749,7 @@ class L1VisualClosedLoopLarva:
             descending_connectome=self.descending_connectome,
             motor_connectome=self.motor_connectome,
             segmental_projection=self.segmental_projection,
+            body_feedback_connectome=self.body_feedback_connectome,
             muscle_identity_projection=self.muscle_identity_projection,
             lesion_node_ids=lesion_node_ids,
             lesion_muscle_fiber_ids=lesion_muscle_fiber_ids,
@@ -1481,6 +1759,7 @@ class L1VisualClosedLoopLarva:
             self.protocol,
             self.config["named_fiber_body_coupling"],
             ground_z_m=ground_z_m,
+            contact_surface=contact_surface,
         )
 
     def run(
@@ -1541,6 +1820,9 @@ class L1VisualClosedLoopLarva:
                         "axon_to_dendrite_connection_pairs"
                     ]
                 )
+                + int(
+                    self.body_feedback_connectome["summary"]["connection_pairs"]
+                )
             ),
             published_synaptic_contacts=(
                 int(self.connectome["summary"]["within_lon_synaptic_contacts"])
@@ -1553,6 +1835,9 @@ class L1VisualClosedLoopLarva:
                     self.motor_connectome["summary"][
                         "axon_to_dendrite_synaptic_contacts"
                     ]
+                )
+                + int(
+                    self.body_feedback_connectome["summary"]["synaptic_contacts"]
                 )
             ),
             published_descending_connection_pairs=int(
@@ -1606,6 +1891,19 @@ class L1VisualClosedLoopLarva:
             ),
             visual_frames=tuple(self.protocol.frames),
             body_force_frames=tuple(self.spatial.force_frames),
+            body_sensory_frames=tuple(self.spatial.sensory_frames),
+            published_body_feedback_connection_pairs=int(
+                self.body_feedback_connectome["summary"]["connection_pairs"]
+            ),
+            published_body_feedback_synaptic_contacts=int(
+                self.body_feedback_connectome["summary"]["synaptic_contacts"]
+            ),
+            executed_body_feedback_connection_pairs=(
+                self.protocol.executed_body_feedback_connection_pairs
+            ),
+            executed_body_feedback_synaptic_contacts=(
+                self.protocol.executed_body_feedback_synaptic_contacts
+            ),
         )
 
 

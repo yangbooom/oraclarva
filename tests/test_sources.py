@@ -6,7 +6,7 @@ def source(**kw):
 def manifest(tmp_path,records):
     p=tmp_path/"sources.yaml"; p.write_text(json.dumps(records)); return p
 def test_repository_manifest():
-    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==17
+    r=audit_source_manifest("data/sources/source_manifest_v0.yaml"); assert r.ok,r.errors; assert r.source_count==19
 
 def test_environment_source_stages_are_explicit():
     records={item["source_id"]:item for item in load_source_manifest("data/sources/source_manifest_v0.yaml")}
@@ -35,6 +35,10 @@ def test_environment_source_stages_are_explicit():
     attachment = records["carayon_2020_attachment_topology"]
     assert attachment["stage"] == "unknown"
     assert attachment["allowed_uses"] == ["reference"]
+    kinematics = records["greaney_2026_l1_kinematics"]
+    assert kinematics["doi_or_url"] == "https://doi.org/10.6084/m9.figshare.31510339.v1"
+    assert kinematics["commercial_derivatives_confirmed"]
+    assert "CC BY 4.0" in kinematics["license"]
 
 def test_unknown_stage_is_reference_only(tmp_path):
     r=audit_source_manifest(manifest(tmp_path,[source(stage="unknown",allowed_uses=["reference","calibration"])])); assert any("reference-only" in e for e in r.errors)
