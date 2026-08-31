@@ -127,6 +127,44 @@ def test_active_force_is_traced_and_equal_opposite_across_shared_nodes():
     assert total.norm() == pytest.approx(0.0, abs=1e-12)
 
 
+def test_stale_feedback_trace_is_not_attributed_to_a_newer_motor_spike():
+    model = coupling()
+    projection = model.projection
+    mapping = next(
+        item
+        for item in projection.mappings
+        if item.fiber_id == "A1:left:M1:DA1"
+    )
+    activation = activation_model(projection)
+    first = activation.step(0.0, projection.emit((mapping.source_node_id,)))
+    model.step(
+        first,
+        last_source_by_fiber=activation.last_applied_source,
+        last_spike_time_s_by_fiber=activation.last_applied_spike_s,
+    )
+    frame = activation.step(0.001, projection.emit(()))
+    force = model.step(
+        frame,
+        last_source_by_fiber=activation.last_applied_source,
+        last_spike_time_s_by_fiber=activation.last_applied_spike_s,
+        feedback_trace_by_source={
+            mapping.source_node_id: {
+                "sensor_node_id": "proprioceptor:dbd:A1:left",
+                "sensor_spike_time_s": -0.003,
+                "motor_spike_time_s": -0.002,
+                "body_state_time_s": -0.004,
+                "path_provenance": "MEASURED_PUBLISHED",
+            }
+        },
+    )
+    target = force.fibers[mapping.fiber_id]
+    assert target.activation > 0.0
+    assert target.source_spike_time_s == 0.0
+    assert target.feedback_sensor_node_id is None
+    assert force.feedback_driven_fiber_count == 0
+    assert force.feedback_traced_fiber_count == 0
+
+
 def test_body_accepts_finite_node_acceleration_and_rejects_unknown_node():
     body = ScientificBody3D(load_body_spec())
     before = body.particles[1].position

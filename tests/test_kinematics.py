@@ -2,7 +2,11 @@ import json
 
 import pytest
 
-from oraclarva.kinematics import KINEMATIC_METRICS, load_kinematic_targets
+from oraclarva.kinematics import (
+    KINEMATIC_METRICS,
+    load_held_out_kinematic_targets,
+    load_kinematic_targets,
+)
 
 
 def test_repository_targets_preserve_l1_cohort_and_stage_boundary():
@@ -16,6 +20,14 @@ def test_repository_targets_preserve_l1_cohort_and_stage_boundary():
     assert not targets.age_matched_to_connectome
     assert not targets.free_surface_locomotion_observed
     assert not targets.is_full_body_validation
+
+
+def test_repository_artifact_records_figshare_license_boundary():
+    raw = json.loads(source_path().read_text(encoding="utf-8"))
+    source = raw["source"]
+    assert source["upstream_data_doi"] == "10.6084/m9.figshare.31510339.v1"
+    assert source["upstream_data_license"] == "CC BY 4.0"
+    assert "no declared license" in source["license_boundary"]
 
 
 def test_repository_targets_match_known_derived_medians():
@@ -80,6 +92,40 @@ def test_loader_rejects_stage_or_schema_drift(tmp_path):
     path.write_text(json.dumps(raw), encoding="utf-8")
     with pytest.raises(ValueError, match="incomplete metric schema"):
         load_kinematic_targets(path)
+
+
+def test_held_out_split_is_animal_disjoint_and_exposes_required_metrics():
+    targets = load_held_out_kinematic_targets()
+    assert targets.calibration_animal_count == 12
+    assert targets.validation_animal_count == 6
+    assert set(targets.calibration_source_indices).isdisjoint(
+        targets.validation_source_indices
+    )
+    assert targets.validation_segments["A1"]["duty_cycle_percent"].median == pytest.approx(37.099573)
+    assert targets.validation_cycle_metrics["stride_um"].median == pytest.approx(149.494665)
+    assert targets.validation_cycle_metrics["wave_speed_segments_s"].median == pytest.approx(2.051751)
+
+
+def test_held_out_loader_rejects_partition_leakage(tmp_path):
+    raw = json.loads(source_path().read_text(encoding="utf-8"))
+    raw["split"]["validation_source_indices"][0] = raw["split"][
+        "calibration_source_indices"
+    ][0]
+    path = tmp_path / "leaked.json"
+    path.write_text(json.dumps(raw), encoding="utf-8")
+    with pytest.raises(ValueError, match="both kinematic partitions"):
+        load_held_out_kinematic_targets(path)
+
+
+def test_stage5_held_out_status_fails_closed_without_repeat_cycles():
+    report_path = source_path().with_name("body_feedback_held_out_status_v0.json")
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["status"] == "not_evaluable_no_repeat_crawl_cycles"
+    assert not report["comparison"]["evaluated"]
+    assert not report["comparison"]["passed"]
+    assert not report["release_validated"]
+    assert set(report["model_metrics"].values()) == {None}
+    assert report["causal_fixture"]["all_feedback_forces_traced"]
 
 
 def source_path():

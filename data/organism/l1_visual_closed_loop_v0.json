@@ -20,6 +20,10 @@
     "model_fitted_named_fiber_attachment_mechanics",
     "shared_body_node_force_projection",
     "3d_body_physics",
+    "shared_body_segment_state_and_contact",
+    "model_fitted_body_state_sensory_transduction",
+    "published_l1_dbd_a1_direct_motor_contacts",
+    "fitted_effects_for_published_dbd_contacts",
     "analytic_light_field"
   ],
   "connectome": {
@@ -243,7 +247,7 @@
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
-    "objective": "Exercise the published bilateral L1 LON-to-A03o(A1) and sparse A1 motor branch, the explicit ANATOMY_DERIVED A2-A6 projection, strict one-step-delayed activation, and attachment-force projection on 146 mapped fibers without a parallel body bridge.",
+    "objective": "Exercise the published bilateral L1 LON-to-A03o(A1) and sparse A1 motor branch, the explicit ANATOMY_DERIVED A2-A6 projection, strict one-step-delayed activation, and attachment-force projection on 146 mapped fibers without a parallel body bridge. Add an A1 dbd body-state feedback branch using three published direct contacts and fitted transduction.",
     "uncertainty": "All phototransduction values, LIF effects/currents, derived-projection dynamics, activation kinetics, attachment coordinates, tension parameters, and model-force-to-acceleration conversion remain fitted or anatomy-derived rather than measured L1 constants."
   },
   "limitations": [
@@ -255,7 +259,8 @@
     "Body motion is driven only by named-fiber attachment forces projected onto shared physical nodes; the historical fitted A03o-to-segmental body bridge is disabled.",
     "The 2-versus-11 CPf-to-A03o and sparse A03o-to-MN asymmetries are one-specimen observations, not population hemispheric constants.",
     "The validation light field and virtual bilateral sample locations are model fixtures, not reconstructed natural illumination or measured Bolwig-organ coordinates.",
-    "The executed topology contains no action command, target selector, finite-state machine, behavior tree, or policy network."
+    "The executed topology contains no action command, target selector, finite-state machine, behavior tree, or policy network.",
+    "Body-state feedback executes only the three published A1 dbd contacts that overlap mapped motor identities; contraction/contact channels and A2-A6 homologs remain non-executable diagnostics."
   ],
   "release_validated": false,
   "named_fiber_body_coupling": {
@@ -302,5 +307,121 @@
       "Tension and acceleration are model units; no CSA, Fmax, specific stress, or newton-valued force is asserted.",
       "The remaining 212 atlas fibers stay silent because they lack a supported motor-identity mapping."
     ]
+  },
+  "body_state_sensory_feedback": {
+    "model_id": "dmel_l1_body_state_sensory_feedback_v0",
+    "sensed_segments": [
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5",
+      "A6"
+    ],
+    "executed_neural_scope": [
+      "A1_left_dbd",
+      "A1_right_dbd"
+    ],
+    "sensory_identity_source_id": "greaney_2023_l1_proprioceptor_connectome",
+    "article_doi": "10.3389/fncir.2023.1223334",
+    "identity_provenance": "MEASURED_PUBLISHED",
+    "transduction_provenance": "MODEL_FITTED",
+    "provenance": "MODEL_FITTED",
+    "dt_s": 0.001,
+    "stretch_strain_threshold": 0.005,
+    "stretch_rate_threshold_s_1": 0.1,
+    "stretch_strain_gain": 20.0,
+    "stretch_rate_gain_s": 0.05,
+    "shortening_strain_threshold": 0.005,
+    "shortening_rate_threshold_s_1": 0.1,
+    "shortening_strain_gain": 20.0,
+    "shortening_rate_gain_s": 0.05,
+    "maximum_external_current_a": 4e-09,
+    "current_per_synaptic_contact_a": 3e-09,
+    "contact_sensing_range_m": 2e-06,
+    "structural_observation_boundary": {
+      "published_a1_dbd_to_motor_contacts_total": 11,
+      "published_a1_motor_targets_total": 7,
+      "executable_overlapping_contacts": 3,
+      "executable_overlapping_motor_targets": 3,
+      "unexecuted_targets": [
+        "RP2_a1l",
+        "RP2_a1r",
+        "MN4_a1l",
+        "MN4_a1r"
+      ],
+      "note": "Only contacts whose motor identities already feed the 146-fiber path execute; omitted contacts are not redirected."
+    },
+    "contact_neural_path_executed": false,
+    "contraction_receptor_neural_path_executed": false,
+    "calibration_ranges": {
+      "stretch_strain_threshold": [
+        0.0,
+        0.2
+      ],
+      "stretch_rate_threshold_s_1": [
+        0.0,
+        20.0
+      ],
+      "stretch_strain_gain": [
+        1.0,
+        100.0
+      ],
+      "stretch_rate_gain_s": [
+        0.001,
+        1.0
+      ],
+      "shortening_strain_threshold": [
+        0.0,
+        0.2
+      ],
+      "shortening_rate_threshold_s_1": [
+        0.0,
+        20.0
+      ],
+      "shortening_strain_gain": [
+        1.0,
+        100.0
+      ],
+      "shortening_rate_gain_s": [
+        0.001,
+        1.0
+      ],
+      "maximum_external_current_a": [
+        1e-10,
+        1e-08
+      ],
+      "current_per_synaptic_contact_a": [
+        1e-10,
+        1e-08
+      ],
+      "contact_sensing_range_m": [
+        1e-07,
+        2e-05
+      ],
+      "contact_touch_drive": [
+        0.0,
+        1.0
+      ],
+      "feedback_trace_window_s": [
+        0.001,
+        0.2
+      ]
+    },
+    "calibration_objective": "Exercise a stable closed body-state\u2192dbd LIF\u2192published direct A1 motor-contact\u2192named-fiber path while preserving zero-input silence and perturbation directionality; no value is a measured L1 current, gain, threshold, or mechanotransduction constant.",
+    "limitations": [
+      "The six L1 proprioceptor identities and A1 structural contacts are published; mechanotransduction thresholds, currents, effects, and gains are fitted.",
+      "Only the three published one-contact dbd edges overlapping the existing 146-fiber motor path execute.",
+      "A2-A6 body state and homologous sensory identities are anatomy-derived diagnostics; A1 contacts are not repeated as segmental contact counts.",
+      "The contraction-sensing ensemble and contact state are recorded but have no executable neural edge in v0.",
+      "Left and right channels currently share the axial segment length of the 13-node body; this is not a measured bilateral strain field."
+    ],
+    "connectome_model_id": "dmel_l1_dbd_motor_feedback_v0",
+    "expected_published_connection_pairs": 7,
+    "expected_published_synaptic_contacts": 11,
+    "expected_executable_overlap_pairs": 3,
+    "expected_executable_overlap_contacts": 3,
+    "contact_touch_drive": 0.25,
+    "feedback_trace_window_s": 0.05
   }
 }

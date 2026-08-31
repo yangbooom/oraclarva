@@ -123,6 +123,23 @@ supported mappings. No measured NMJ coordinate, CSA, Fmax, SI-valued muscle
 force, or dorsal-versus-ventral visual sensor is claimed. See
 docs/L1_VISUAL_CONNECTOME_LOOP_V0.md; run oraclarva-visual --duration 1.5.
 
+Stage 5 now samples A1-A6 length, strain, strain rate, shortening, and contact
+directly from that shared body. Two published A1 `dbd` identities enter the
+sparse LIF network. Greaney et al. report 7 direct dbd-to-MN pairs / 11
+contacts; the independent artifact preserves all of them, while only the 3
+one-contact MN targets already present in the 146-fiber runtime execute. Under
+zero light, an A1 stretch reaches four named fibers through dbd and those MNs;
+sensory, MN, and fiber lesions break only their later causal stages. A2-A6
+homologs, contraction sensing, and contact remain non-executable diagnostics.
+See `docs/BODY_STATE_SENSORY_FEEDBACK_V0.md`.
+
+The 18-animal Greaney kinematic target is now split before fitting into 12
+calibration and 6 held-out animals, with no cycle leakage. Segment length
+change, duty cycle, stride, and T3-A7 wave speed retain p10/median/p90 and
+animal-bootstrap uncertainty. The current fixture does not generate validated
+repeat crawl cycles, so unavailable held-out metrics remain failures rather
+than being reported as a biological match.
+
 The isolated A1 mechanics fixture gives all 29 A1-left fibers normalized
 origins, insertions, rest lengths, lines of action, passive elasticity, damping,
 and activation-driven tension. Stage 4 now reuses the supported subset in the
@@ -215,10 +232,10 @@ python tools/render_environment_input_gif.py
 The L1 visual-connectome artifact executes the published LON and selected
 descending/motor contacts, then the explicitly ANATOMY_DERIVED A2-A6 branch.
 Both routes terminate in named fibers whose attachment forces move the shared
-body without a parallel generic motor core. The third panel lesions
-A1:right:M10:DO2 while preserving its upstream MN; the changed trajectory is a
-physical causal test. The overlay shows continuous ACT* and FORCE* values
-derived only from earlier neural events.
+body without a parallel generic motor core. The third panel switches light off
+and applies a declared A1 stretch, then displays the isolated
+body-state -> dbd -> mapped MN -> named-fiber force path. The overlay shows
+continuous ACT* and FORCE* values derived only from earlier neural events.
 
 ![L1 visual connectome body loop](docs/assets/oraclarva_l1_visual_connectome.gif)
 

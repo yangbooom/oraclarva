@@ -51,6 +51,15 @@ def draw_light_field(draw, panel_left: int, sign: float) -> None:
     bounds = (panel_left + 8, 125, panel_left + PANEL_WIDTH - 8, 406)
     dark = (15, 18, 38)
     bright = (111, 91, 43)
+    if sign == 0:
+        draw.rounded_rectangle(
+            tuple(round(value * SUPERSAMPLE) for value in bounds),
+            radius=8 * SUPERSAMPLE,
+            fill=(10, 12, 18),
+            outline=(75, 66, 79),
+            width=1 * SUPERSAMPLE,
+        )
+        return
     strips = 48
     for index in range(strips):
         fraction = index / (strips - 1)
@@ -179,20 +188,32 @@ def draw_pair(draw, panel_left, y, label, left, right, small, scale=1.0):
 def draw_causal_trace(draw, scenario, frame, panel_left, small):
     time_s = frame["visual_input"]["sample_time_s"]
     trace = scenario["first_spike_trace_s"]
-    stages = (
-        ("PR", trace["photoreceptor"]),
-        ("VPN", trace["visual_projection"]),
-        ("LHN", trace["lateral_horn_neuron"]),
-        ("DN", trace["cpf_descending_neuron"]),
-        ("A03o", trace["a03o_a1_premotor"]),
-        ("MN*", trace["a1_motor_identity"]),
-        ("FIB*", trace["named_muscle_identity_event"]),
-        ("ACT*", trace["named_muscle_activation"]),
-        ("FORCE*", trace["named_attachment_force"]),
-        ("3D", trace["named_attachment_force"]),
-    )
+    if scenario["id"] == "zero_light_a1_stretch_feedback":
+        stages = (
+            ("BODY", trace["body_state_dbd"]),
+            ("dbd", trace["dbd_spike"]),
+            ("MN", trace["a1_motor_identity"]),
+            ("FIB", trace["named_muscle_identity_event"]),
+            ("ACT", trace["named_muscle_activation"]),
+            ("FORCE", trace["named_attachment_force"]),
+            ("3D", trace["named_attachment_force"]),
+        )
+        spacing = 43
+    else:
+        stages = (
+            ("PR", trace["photoreceptor"]),
+            ("VPN", trace["visual_projection"]),
+            ("LHN", trace["lateral_horn_neuron"]),
+            ("DN", trace["cpf_descending_neuron"]),
+            ("A03o", trace["a03o_a1_premotor"]),
+            ("MN*", trace["a1_motor_identity"]),
+            ("FIB*", trace["named_muscle_identity_event"]),
+            ("ACT*", trace["named_muscle_activation"]),
+            ("FORCE*", trace["named_attachment_force"]),
+            ("3D", trace["named_attachment_force"]),
+        )
+        spacing = 31
     x = panel_left + 18
-    spacing = 31
     for index, (label, onset) in enumerate(stages):
         active = onset is not None and time_s >= onset
         color = (105, 220, 143) if active else (68, 62, 75)
@@ -219,6 +240,7 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
     visual = frame["visual_input"]
     irradiance = visual["irradiance_w_m2"]
     rh5 = visual["receptor_drive"]["Rh5-PR"]
+    dbd = visual["body_state_feedback"]["dbd_drive"]
     spike_counts = visual["spike_counts_in_window"]
     force = visual["attachment_force"]
     fiber_events = visual["muscle_identity_events_in_window"]
@@ -234,50 +256,51 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
         0.125,
     )
     draw_pair(draw, panel_left, 486, "Rh5", rh5["left"], rh5["right"], small)
+    draw_pair(draw, panel_left, 502, "dbd", dbd["left"], dbd["right"], small)
     draw_pair(
-        draw, panel_left, 502, "VPN",
+        draw, panel_left, 518, "VPN",
         spike_counts["left:projection"], spike_counts["right:projection"],
         small, 0.05,
     )
     draw_pair(
-        draw, panel_left, 518, "LHN",
+        draw, panel_left, 534, "LHN",
         spike_counts["left:lhn"], spike_counts["right:lhn"], small, 0.05,
     )
     draw_pair(
-        draw, panel_left, 534, "CPf DN",
+        draw, panel_left, 550, "CPf DN",
         spike_counts["left:dn"], spike_counts["right:dn"], small, 0.05,
     )
     draw_pair(
-        draw, panel_left, 550, "A03o",
+        draw, panel_left, 566, "A03o",
         spike_counts["left:a03o"], spike_counts["right:a03o"], small, 0.025,
     )
     draw_pair(
-        draw, panel_left, 566, "A1 MN",
+        draw, panel_left, 582, "A1 MN",
         spike_counts["left:a1_mn"], spike_counts["right:a1_mn"],
         small, 0.025,
     )
     draw_pair(
-        draw, panel_left, 582, "A2-6*",
+        draw, panel_left, 598, "A2-6*",
         spike_counts["left:derived_a03o"],
         spike_counts["right:derived_a03o"], small, 0.01,
     )
     draw_pair(
-        draw, panel_left, 598, "SEG MN*",
+        draw, panel_left, 614, "SEG MN*",
         spike_counts["left:derived_mn"],
         spike_counts["right:derived_mn"], small, 0.0015,
     )
     draw_pair(
-        draw, panel_left, 614, "FIB*",
+        draw, panel_left, 630, "FIB*",
         fiber_events["left"], fiber_events["right"], small, 0.002,
     )
     draw_pair(
-        draw, panel_left, 630, "ACT*",
+        draw, panel_left, 646, "ACT*",
         activation["left"]["mean"], activation["right"]["mean"], small,
     )
     draw_pair(
         draw,
         panel_left,
-        646,
+        662,
         "FORCE*",
         force["tension_model_units_by_side"]["left"],
         force["tension_model_units_by_side"]["right"],
@@ -287,7 +310,7 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
     summary = scenario["summary"]
     draw_text(
         draw,
-        (panel_left + 16, 668),
+        (panel_left + 16, 682),
         f"dy {summary['displacement_y_um']:+.2f} um   "
         f"yaw {summary['yaw_change_deg']:+.2f} deg",
         (204, 190, 208),
@@ -302,12 +325,12 @@ def draw_circuit_panel(draw, scenario, frame, panel_left, small, mono):
             mono,
             anchor="ra",
         )
-    if scenario["lesion_muscle_fiber_ids"]:
+    if scenario.get("initial_a1_stretch_perturbation_um", 0.0):
         draw_text(
             draw,
             (panel_left + PANEL_WIDTH - 18, 459),
-            "M10 NAMED-FIBER LESION",
-            (240, 91, 91),
+            "10 um A1 STRETCH / ZERO LIGHT",
+            (105, 220, 143),
             mono,
             anchor="ra",
         )
@@ -334,15 +357,15 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
     draw_text(
         draw,
         (25, 53),
-        "LIGHT > Rh5/Rh6 > LON > LHN > CPf DN > "
-        "[A03o(A1)>A1 MN | A03o(A2-6)*>MN*] > FIBER* > ACT* > FORCE* > 3D",
+        "ENV INPUT > [LIGHT>Rh5/Rh6>LON>LHN>DN>A03o>MN | "
+        "BODY STRAIN>dbd>A1 MN] > FIBER* > ACT* > FORCE* > 3D",
         (165, 148, 172),
         mono,
     )
     panel_titles = (
         "BRIGHTER RIGHT / INTACT",
         "BRIGHTER LEFT / INTACT",
-        "BRIGHTER RIGHT / M10 FIBER LESION",
+        "ZERO LIGHT / A1 STRETCH > dbd",
     )
     scenarios = artifact["scenarios"]
     for panel_left, title, scenario in zip(
@@ -365,7 +388,7 @@ def render_frame(index: int, artifact: dict[str, object]) -> Image.Image:
     draw_text(
         draw,
         (24, 705),
-        "MEASURED: LON 422/3297 + DESC 8/98 + A1 MN 15/26   "
+        "MEASURED: LON 422/3297 + DESC 8/98 + A1 MN 15/26 + dbd>MN 7/11 (EXEC 3/3)   "
         "IDENTITY MAP: 16 OBS + 130 DERIVED = 146/358; A7 BLOCKED   "
         "ATTACH*: ANATOMY_DERIVED   ACT/FORCE*: MODEL_FITTED UNITS   PARALLEL BODY BRIDGE: OFF",
         (137, 126, 145),

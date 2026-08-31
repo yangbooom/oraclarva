@@ -336,6 +336,12 @@ class ScientificBody3D:
     def current_height_m(self, index: int) -> float:
         return self.geometry[index].height_m * self.cross_section_scale(index)
 
+    def node_clearance_m(self, index: int) -> float:
+        """Return the current radial clearance used by contact projection."""
+        if not 0 <= index < len(self.particles):
+            raise IndexError("node index out of range")
+        return self._node_clearance(index)
+
     def step(
         self,
         dt_s: float,

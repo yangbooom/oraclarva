@@ -9,7 +9,8 @@ from dataclasses import dataclass, field
 from math import cos, isfinite, sin
 from typing import Mapping
 
-from .body3d import ScientificBody3D, Vec3
+from .body3d import ContactSurface, ScientificBody3D, Vec3
+from .body_sensing import BodyStateSensoryFrame, BodyStateSensoryTransducer
 from .hemisegment import (
     BodyFixedCoordinate,
     derive_a1_left_attachment_geometry,
@@ -53,6 +54,10 @@ class FiberForceOutput:
     mapping_provenance: str
     coordinate_provenance: str = "ANATOMY_DERIVED"
     mechanics_provenance: str = "MODEL_FITTED"
+    feedback_sensor_node_id: str | None = None
+    feedback_sensor_spike_time_s: float | None = None
+    feedback_body_state_time_s: float | None = None
+    feedback_path_provenance: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,6 +68,8 @@ class NamedFiberBodyForceFrame:
     node_accelerations_m_s2: Mapping[int, Vec3]
     active_fiber_count: int
     traced_active_fiber_count: int
+    feedback_driven_fiber_count: int = 0
+    feedback_traced_fiber_count: int = 0
     mapped_fiber_count: int = 146
     unmapped_fiber_count: int = 212
     blocked_segments: tuple[str, ...] = ("A7",)
@@ -218,6 +225,7 @@ class NamedFiberBodyCoupling:
         *,
         last_source_by_fiber: Mapping[str, str | None],
         last_spike_time_s_by_fiber: Mapping[str, float | None],
+        feedback_trace_by_source: Mapping[str, Mapping[str, object]] | None = None,
     ) -> NamedFiberBodyForceFrame:
         expected_time = self._step_index * self.dt_s
         if abs(frame.time_s - expected_time) > 1e-9:
@@ -228,6 +236,9 @@ class NamedFiberBodyCoupling:
         }
         outputs: dict[str, FiberForceOutput] = {}
         traced = 0
+        feedback_driven = 0
+        feedback_traced = 0
+        feedback_traces = feedback_trace_by_source or {}
         for geometry in self.geometries:
             origin, insertion = self._attachment_points(geometry)
             delta = insertion - origin
@@ -246,10 +257,31 @@ class NamedFiberBodyCoupling:
             activation = float(frame.activations[geometry.fiber_id])
             source = last_source_by_fiber.get(geometry.fiber_id)
             spike_time = last_spike_time_s_by_fiber.get(geometry.fiber_id)
+            feedback_trace = None if source is None else feedback_traces.get(source)
+            if (
+                feedback_trace is not None
+                and spike_time is not None
+                and feedback_trace.get("motor_spike_time_s") != spike_time
+            ):
+                feedback_trace = None
             if activation > 0.0:
                 if source is None or spike_time is None or not spike_time < frame.time_s:
                     raise ValueError("active body force lacks an earlier source spike")
                 traced += 1
+                if feedback_trace is not None:
+                    feedback_driven += 1
+                    sensory_spike = feedback_trace.get("sensor_spike_time_s")
+                    body_state_time = feedback_trace.get("body_state_time_s")
+                    motor_spike = feedback_trace.get("motor_spike_time_s")
+                    if (
+                        isinstance(sensory_spike, (int, float))
+                        and isinstance(body_state_time, (int, float))
+                        and isinstance(motor_spike, (int, float))
+                        and body_state_time <= sensory_spike < motor_spike <= spike_time < frame.time_s
+                    ):
+                        feedback_traced += 1
+                    else:
+                        raise ValueError("feedback-driven force lacks ordered body/sensory/MN trace")
             active = self.active_tension_gain * activation
             extension = max(0.0, (length - rest) / segment_length)
             passive = self.passive_stiffness * extension
@@ -287,6 +319,18 @@ class NamedFiberBodyCoupling:
                 source_node_id=source,
                 source_spike_time_s=spike_time,
                 mapping_provenance=geometry.mapping_provenance,
+                feedback_sensor_node_id=(
+                    None if feedback_trace is None else str(feedback_trace["sensor_node_id"])
+                ),
+                feedback_sensor_spike_time_s=(
+                    None if feedback_trace is None else float(feedback_trace["sensor_spike_time_s"])
+                ),
+                feedback_body_state_time_s=(
+                    None if feedback_trace is None else float(feedback_trace["body_state_time_s"])
+                ),
+                feedback_path_provenance=(
+                    None if feedback_trace is None else str(feedback_trace["path_provenance"])
+                ),
             )
         accelerations = {
             node: force * self.acceleration_scale_m_s2_per_model_force
@@ -303,6 +347,8 @@ class NamedFiberBodyCoupling:
             node_accelerations_m_s2=accelerations,
             active_fiber_count=active_count,
             traced_active_fiber_count=traced,
+            feedback_driven_fiber_count=feedback_driven,
+            feedback_traced_fiber_count=feedback_traced,
         )
 
 
@@ -315,12 +361,16 @@ class NamedFiberVisualBodyRunner:
         parameters: Mapping[str, object],
         *,
         ground_z_m: float | None = None,
+        contact_surface: ContactSurface | None = None,
     ) -> None:
         from .body import load_body_spec
 
         self.protocol = protocol
         self.parameters = parameters
         self.ground_z_m = ground_z_m
+        self.contact_surface = contact_surface
+        if ground_z_m is not None and contact_surface is not None:
+            raise ValueError("provide either ground_z or a contact surface")
         self.body = ScientificBody3D(load_body_spec())
         self.coupling = NamedFiberBodyCoupling(
             body=self.body,
@@ -334,7 +384,14 @@ class NamedFiberVisualBodyRunner:
             ),
         )
         self.force_frames: list[NamedFiberBodyForceFrame] = []
+        self.sensory_frames: list[BodyStateSensoryFrame] = []
         self._equilibrate()
+        self.body_state_transducer = BodyStateSensoryTransducer(
+            self.body,
+            protocol.config["body_state_sensory_feedback"],
+            ground_z_m=ground_z_m,
+            contact_surface=contact_surface,
+        )
 
     @staticmethod
     def _center(body: ScientificBody3D) -> tuple[float, float, float]:
@@ -359,7 +416,7 @@ class NamedFiberVisualBodyRunner:
         dt = float(self.parameters["dt_s"])
         gravity = (
             Vec3(0.0, 0.0, -9.81)
-            if self.ground_z_m is not None
+            if self.ground_z_m is not None or self.contact_surface is not None
             else Vec3(0.0, 0.0, 0.0)
         )
         for _ in range(50):
@@ -367,6 +424,7 @@ class NamedFiberVisualBodyRunner:
                 dt,
                 gravity=gravity,
                 ground_z=self.ground_z_m,
+                contact_surface=self.contact_surface,
                 velocity_retention=float(self.parameters["body_velocity_retention"]),
                 ground_velocity_retention_x=(
                     float(self.parameters["ground_negative_x_retention"]),
@@ -457,8 +515,12 @@ class NamedFiberVisualBodyRunner:
             samples.append(self._sample(0.0, {}))
         for step in range(steps):
             time_s = step * dt
+            body_sensory_frame = self.body_state_transducer.sample(time_s)
+            self.sensory_frames.append(body_sensory_frame)
             activation_frame = self.protocol(
-                time_s, SpatialSensoryState.from_body(self.body)
+                time_s,
+                SpatialSensoryState.from_body(self.body),
+                body_sensory_frame,
             )
             force_frame = self.coupling.step(
                 activation_frame,
@@ -467,6 +529,9 @@ class NamedFiberVisualBodyRunner:
                 ),
                 last_spike_time_s_by_fiber=(
                     self.protocol.muscle_activation_model.last_applied_spike_s
+                ),
+                feedback_trace_by_source=(
+                    self.protocol.last_body_feedback_trace_by_source
                 ),
             )
             self.force_frames.append(force_frame)
@@ -478,10 +543,11 @@ class NamedFiberVisualBodyRunner:
                 dt,
                 gravity=(
                     Vec3(0.0, 0.0, -9.81)
-                    if self.ground_z_m is not None
+                    if self.ground_z_m is not None or self.contact_surface is not None
                     else Vec3(0.0, 0.0, 0.0)
                 ),
                 ground_z=self.ground_z_m,
+                contact_surface=self.contact_surface,
                 velocity_retention=float(self.parameters["body_velocity_retention"]),
                 ground_velocity_retention_x=(
                     float(self.parameters["ground_negative_x_retention"]),

@@ -12,8 +12,20 @@ The compact checked-in artifact is
 upstream `comboResults.mat` at repository commit
 `b9f3a82028b1223de1e5933151ad3a8ea1b10b91`. The extractor verifies the raw
 file's SHA-256 before reading it, selects the 18 behavior-only first-instar
-jGC7f animals with at least 50 accepted cycles, averages cycles within each
-animal, and then calculates p10, median, and p90 across animals.
+jGC7f animals with at least 50 accepted cycles, and never splits cycles from
+one animal across partitions. Schema v2 predeclares 12 calibration animals and
+6 held-out animals by stable source order. It calculates p10, median, p90, and
+a deterministic 2,000-resample animal-bootstrap 95% interval for each median.
+ The underlying per-animal preprocessed data are published as the Figshare
+dataset `10.6084/m9.figshare.31510339.v1` under CC BY 4.0. The exact
+checksum-pinned `comboResults.mat` is the authors generated consolidation in a
+public GitHub repository whose code has no declared license at the audited
+commit; no upstream code or MAT file is redistributed here.
+
+The held-out bundle additionally exposes segment duty cycle, per-cycle stride,
+crawl speed, cycle period/frequency, and T3-A7 onset propagation in segment
+intervals per second. Selected held-out medians are 149.495 um stride, 2.052
+segment intervals/s wave speed, and 37.100% A1 duty cycle.
 
 ## What the target says
 
@@ -65,7 +77,8 @@ requires:
 2. measurements for PSC, T1, T2, and A8;
 3. simultaneous L1 muscle recruitment and kinematics;
 4. free-surface and app-relevant substrate measurements;
-5. held-out animals that were not used for parameter fitting;
+5. a model that generates repeatable cycles whose metrics can be evaluated on
+   the already reserved held-out animals;
 6. neural and lesion predictions, not kinematic curve fitting alone.
 
 ## Reproduction
@@ -73,10 +86,12 @@ requires:
 The raw MAT file is not vendored. After obtaining the exact upstream artifact:
 
 ```bash
+python -m pip install -e '.[data]'
 python tools/extract_greaney_2026_l1_kinematics.py \
   comboResults.mat \
   data/validation/greaney_2026_l1_kinematics_v0.json
 oraclarva-kinematics-targets
+python tools/evaluate_body_feedback_held_out.py --check
 ```
 
 The extractor requires NumPy and SciPy only for regeneration; the runtime

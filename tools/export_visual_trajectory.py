@@ -8,11 +8,14 @@ from pathlib import Path
 from typing import Any
 
 from oraclarva.artifacts import NUMERIC_TOLERANCE, first_mismatch
+from oraclarva.body3d import Vec3
+from oraclarva.environment_inputs import LinearScalarField
 from oraclarva.visual import (
     L1VisualClosedLoopLarva,
     PHOTORECEPTOR_CLASSES,
     load_a03o_motor_connectome,
     load_a03o_segmental_projection,
+    load_l1_dbd_motor_feedback,
     load_visual_config,
     load_visual_connectome,
     load_visual_descending_connectome,
@@ -104,6 +107,19 @@ def _first_spike_trace(result, connectome) -> dict[str, float | None]:
         "named_muscle_activation": _earliest(
             list(result.muscle_first_activation_s.values())
         ),
+        "body_state_dbd": _earliest(
+            [
+                frame.time_s if frame.maximum_dbd_drive > 0.0 else None
+                for frame in result.body_sensory_frames
+            ]
+        ),
+        "dbd_spike": _earliest(
+            [
+                value
+                for label, value in visual.items()
+                if label.startswith("proprioceptor:dbd:")
+            ]
+        ),
         "named_attachment_force": _earliest(
             [
                 frame.time_s if frame.active_fiber_count else None
@@ -133,6 +149,7 @@ def _window_spike_counts(protocol, frame_index: int) -> dict[str, int]:
         "a1_mn",
         "derived_a03o",
         "derived_mn",
+        "dbd",
     )
     counts = {
         f"{side}:{group}": 0
@@ -162,6 +179,8 @@ def _window_spike_counts(protocol, frame_index: int) -> dict[str, int]:
                 group = "derived_a03o"
             elif neuron_class == "segmental_motor_target_proxy":
                 group = "derived_mn"
+            elif neuron_class == "dbd_A1":
+                group = "dbd"
             else:
                 continue
             counts[f"{side}:{group}"] += 1
@@ -232,6 +251,18 @@ def _sampled_visual(
             }
             for neuron_class, values in transduction.receptor_drive.items()
         },
+        "body_state_feedback": {
+            "a1_strain": round(frame.body_state_sensory.segments["A1"].strain, 9),
+            "dbd_drive": {
+                side: round(
+                    frame.body_state_sensory.dbd_channels[f"A1:{side}"].drive_0_1,
+                    9,
+                )
+                for side in ("left", "right")
+            },
+            "a1_contact": frame.body_state_sensory.segments["A1"].contact,
+            "contact_neural_path_executed": False,
+        },
         "spike_counts_in_window": _window_spike_counts(protocol, frame_index),
         "muscle_identity_events_in_window": event_counts,
         "active_mapped_fibers_in_window": len(active_fibers),
@@ -250,6 +281,8 @@ def _sampled_visual(
             "unit": force_frame.force_unit,
             "active_fibers": force_frame.active_fiber_count,
             "traced_active_fibers": force_frame.traced_active_fiber_count,
+            "feedback_driven_fibers": force_frame.feedback_driven_fiber_count,
+            "feedback_traced_fibers": force_frame.feedback_traced_fiber_count,
             "total_tension_model_units": round(sum(tensions), 9),
             "tension_model_units_by_side": {
                 side: round(value, 9)
@@ -314,12 +347,36 @@ def _summary(result) -> dict[str, Any]:
         "mechanics_provenance": "MODEL_FITTED",
         "body_force_unit": "model_unit_not_newton",
         "body_force_frames": len(force_frames),
+        "body_sensory_frames": len(result.body_sensory_frames),
+        "published_body_feedback_connection_pairs": (
+            result.published_body_feedback_connection_pairs
+        ),
+        "published_body_feedback_synaptic_contacts": (
+            result.published_body_feedback_synaptic_contacts
+        ),
+        "executed_body_feedback_connection_pairs": (
+            result.executed_body_feedback_connection_pairs
+        ),
+        "executed_body_feedback_synaptic_contacts": (
+            result.executed_body_feedback_synaptic_contacts
+        ),
+        "peak_dbd_drive": round(
+            max((frame.maximum_dbd_drive for frame in result.body_sensory_frames), default=0.0),
+            9,
+        ),
         "peak_active_body_force_fibers": max(
             (frame.active_fiber_count for frame in force_frames),
             default=0,
         ),
         "all_active_body_forces_traced": all(
             frame.active_fiber_count == frame.traced_active_fiber_count
+            for frame in force_frames
+        ),
+        "feedback_driven_force_frames": sum(
+            frame.feedback_driven_fiber_count > 0 for frame in force_frames
+        ),
+        "all_feedback_forces_traced": all(
+            frame.feedback_driven_fiber_count == frame.feedback_traced_fiber_count
             for frame in force_frames
         ),
         "parallel_fitted_bridge_executed": False,
@@ -352,30 +409,52 @@ def render_trajectory() -> str:
     descending_connectome = load_visual_descending_connectome()
     motor_connectome = load_a03o_motor_connectome()
     segmental_projection = load_a03o_segmental_projection()
+    body_feedback_connectome = load_l1_dbd_motor_feedback()
     scenario_specs = (
-        ("brighter_right_intact", 1.0, (), ()),
-        ("brighter_left_intact", -1.0, (), ()),
-        (
-            "brighter_right_m10_fiber_lesion",
-            1.0,
-            (),
-            ("A1:right:M10:DO2",),
-        ),
+        ("brighter_right_intact", 1.0, False),
+        ("brighter_left_intact", -1.0, False),
+        ("zero_light_a1_stretch_feedback", 0.0, True),
     )
     scenarios = []
-    for scenario_id, lateral_sign, lesions, muscle_lesions in scenario_specs:
+    for scenario_id, lateral_sign, stretch_perturbation in scenario_specs:
+        field = (
+            LinearScalarField(
+                modality_id="light",
+                unit="W_m-2",
+                origin_m=Vec3(0.0, 0.0, 0.0),
+                value_at_origin=0.0,
+                gradient_per_m=Vec3(0.0, 0.0, 0.0),
+                lower_bound=0.0,
+                upper_bound=0.0,
+            )
+            if stretch_perturbation
+            else validation_light_field(config, lateral_sign=lateral_sign)
+        )
         organism = L1VisualClosedLoopLarva(
-            field=validation_light_field(config, lateral_sign=lateral_sign),
+            field=field,
             config=config,
             connectome=connectome,
             descending_connectome=descending_connectome,
             motor_connectome=motor_connectome,
             segmental_projection=segmental_projection,
-            lesion_node_ids=lesions,
-            lesion_muscle_fiber_ids=muscle_lesions,
+            body_feedback_connectome=body_feedback_connectome,
+            lesion_node_ids=(),
+            lesion_muscle_fiber_ids=(),
             ground_z_m=None,
             record_visual_frames=True,
         )
+        if stretch_perturbation:
+            index = next(
+                i for i, segment in enumerate(organism.spatial.body.geometry)
+                if segment.id == "A1"
+            )
+            particle = organism.spatial.body.particles[index + 1]
+            particle.position = Vec3(
+                particle.position.x + 10e-6,
+                particle.position.y,
+                particle.position.z,
+            )
+            particle.previous_position = particle.position
         result = organism.run(
             duration_s=DURATION_S,
             record_trajectory_interval_s=SAMPLE_INTERVAL_S,
@@ -395,8 +474,11 @@ def render_trajectory() -> str:
             {
                 "id": scenario_id,
                 "lateral_gradient_sign": lateral_sign,
-                "lesion_node_ids": list(lesions),
-                "lesion_muscle_fiber_ids": list(muscle_lesions),
+                "lesion_node_ids": [],
+                "lesion_muscle_fiber_ids": [],
+                "initial_a1_stretch_perturbation_um": (
+                    10.0 if stretch_perturbation else 0.0
+                ),
                 "summary": _summary(result),
                 "first_spike_trace_s": _first_spike_trace(
                     result, connectome
@@ -406,7 +488,7 @@ def render_trajectory() -> str:
         )
 
     artifact = {
-        "schema_version": 1,
+        "schema_version": 2,
         "model_id": config["model_id"],
         "status": config["status"],
         "stage": config["stage"],
@@ -419,12 +501,14 @@ def render_trajectory() -> str:
             "descending": descending_connectome["source"],
             "a03o_motor": motor_connectome["source"],
             "a03o_segmental_audit": segmental_projection["source"],
+            "dbd_motor_feedback": body_feedback_connectome["source"],
         },
         "published_connectome_summary": {
             "lon": connectome["summary"],
             "descending": descending_connectome["summary"],
             "a03o_motor": motor_connectome["summary"],
             "a03o_segmental_projection": segmental_projection["summary"],
+            "dbd_motor_feedback": body_feedback_connectome["summary"],
         },
         "phototransduction": config["phototransduction"],
         "lon_dynamics": config["lon_dynamics"],
@@ -441,6 +525,7 @@ def render_trajectory() -> str:
         ],
         "a03o_segmental_bridge": config["a03o_segmental_bridge"],
         "named_fiber_body_coupling": config["named_fiber_body_coupling"],
+        "body_state_sensory_feedback": config["body_state_sensory_feedback"],
         "validation_light_field": config["validation_light_field"],
         "scenarios": scenarios,
         "limitations": config["limitations"]
@@ -449,7 +534,7 @@ def render_trajectory() -> str:
             "The intact left/right scenarios exercise causal response reversal; this is not held-out behavioral validation.",
             "All body motion in this artifact follows named motor output, one-step-delayed activation, attachment tension, and shared-node physics.",
             "A1-left attachment coordinates, bilateral mirror, and A2-A6 homology are ANATOMY_DERIVED; A7 remains blocked.",
-            "The third scenario lesions one named fiber while preserving its upstream motor neuron; its changed trajectory is a physical causal test.",
+            "The third scenario applies a declared 10 um A1 stretch under zero light to isolate body-state to dbd to MN to named-fiber feedback; it is a perturbation fixture, not a natural stimulus.",
             "Every active attachment force records an earlier source spike and uses model force units rather than newtons.",
             "The historical fitted A03o-to-generic-body bridge and generic downstream neural/motor pools are not executed.",
         ],
