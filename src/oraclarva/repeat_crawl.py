@@ -790,7 +790,9 @@ class RepeatCrawlLarva:
         self,
         time_s: float,
         activation_by_segment: Mapping[str, float],
+        node_force_model_units: Mapping[int, Vec3] | None = None,
     ) -> dict[str, Any]:
+        forces = node_force_model_units or {}
         return {
             "time_s": round(time_s, 9),
             "nodes_um": [
@@ -805,6 +807,14 @@ class RepeatCrawlLarva:
                 segment: round(activation_by_segment.get(segment, 0.0), 9)
                 for segment in WAVE_SEGMENTS
             },
+            "node_force_model_units": [
+                [
+                    round(forces.get(index, Vec3(0.0, 0.0, 0.0)).x, 12),
+                    round(forces.get(index, Vec3(0.0, 0.0, 0.0)).y, 12),
+                    round(forces.get(index, Vec3(0.0, 0.0, 0.0)).z, 12),
+                ]
+                for index in range(len(self.body.particles))
+            ],
         }
 
     def run(
@@ -905,7 +915,11 @@ class RepeatCrawlLarva:
                 (step + 1) % stride == 0 or step + 1 == steps
             ):
                 samples.append(
-                    self._sample((step + 1) * dt, activation_by_segment)
+                    self._sample(
+                        (step + 1) * dt,
+                        activation_by_segment,
+                        force.node_forces_model_units,
+                    )
                 )
         return RepeatCrawlResult(
             duration_s=steps * dt,

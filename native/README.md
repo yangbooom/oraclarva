@@ -20,9 +20,18 @@ local-tangent contact, and proprioceptive rail state. Symmetric, left, right,
 zero-input, and three side-specific lesion cases match Python on every spike and
 all 151 frames. The topology and all unmeasured gains remain research-only.
 
+The repeat-crawl fixture executes the frozen Stage 6 approximation rather than
+replaying its trajectory. It covers 164 LIF neurons, 307 delayed synapses,
+sensory adaptation, body-shortening and recovery feedback, 144 mapped motor
+sources, 146 named-fiber forces, the 13-node body, causal traces, and physical
+cycle detection. Its 16 s normal run and five zero/lesion cases match exact
+spikes and strict sampled-state tolerances. The checked report intentionally
+retains `release_validated=false` and the held-out amplitude/duty failures.
+
 Passing these gates establishes numerical parity for the current research
-approximation. It does not establish biological fidelity, held-out validation,
-individual muscle mechanics, a complete L1 brain/VNC, or mobile performance.
+approximations. It does not establish biological fidelity, held-out validation,
+measured individual muscle mechanics, a complete L1 brain/VNC, or mobile
+performance.
 
 ```bash
 c++ -std=c++17 -O2 -Wall -Wextra -Werror \
@@ -40,4 +49,11 @@ c++ -std=c++17 -O2 -Wall -Wextra -Werror \
   -o /tmp/oraclarva-native-bilateral
 /tmp/oraclarva-native-bilateral data/parity/bilateral_native_v1.tsv \
   --left 1 --right 0
+
+python tools/export_native_repeat_fixture.py --check
+python tools/export_native_repeat_parity.py --check
+c++ -std=c++17 -O2 -Wall -Wextra -Werror \
+  native/lif_core.cpp native/repeat_core.cpp native/repeat_main.cpp \
+  -o /tmp/oraclarva-native-repeat
+/tmp/oraclarva-native-repeat data/parity/repeat_crawl_native_v1.tsv
 ```

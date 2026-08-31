@@ -35,7 +35,11 @@ edge. The reserved 6-animal kinematic partition has now been evaluated once agai
 the frozen Stage 6 repeat fixture. Cycle period, stride, and the supported A6-A1
 physical wave speed pass, while all six segment-amplitude and all six duty rows
 fail. Those failures block behavioral validation; the three passing global
-metrics are not evidence of a complete L1 crawl match.
+metrics are not evidence of a complete L1 crawl match. The dependency-free
+C++17 repeat core now matches the Python reference on exact spikes and strict
+sampled-state tolerances across the normal run and five zero/lesion cases. That
+is a software numerical-reproducibility result only; it does not turn fitted
+parameters into measurements or override any held-out behavioral failure.
 
 ## Provenance labels
 
