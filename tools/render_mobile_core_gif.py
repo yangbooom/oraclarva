@@ -19,7 +19,7 @@ FONT = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
 FONT_BOLD = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 FONT_MONO = Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
 WIDTH, HEIGHT, SS = 1080, 720, 2
-WORLD_X = (-80.0, 1600.0)
+WORLD_X = (-450.0, 1100.0)
 RINGS, RADIAL = 25, 12
 
 
@@ -115,14 +115,6 @@ def draw_internal(draw, frame, rect, body_map):
             outline=(41, 33, 47),
             width=SS,
         )
-    head = points[0]
-    draw.ellipse(
-        (
-            *scaled((head[0] - 2.0, head[1] - 2.0)),
-            *scaled((head[0] + 2.0, head[1] + 2.0)),
-        ),
-        fill=(35, 25, 42),
-    )
 
 
 def draw_surface(draw, frame, rect):
@@ -168,14 +160,6 @@ def draw_surface(draw, frame, rect):
         width=2 * SS,
         joint="curve",
     )
-    eye = world_to_panel(rings[0][0][:3], rect)
-    draw.ellipse(
-        (
-            *scaled((eye[0] - 2.2, eye[1] - 2.2)),
-            *scaled((eye[0] + 2.2, eye[1] + 2.2)),
-        ),
-        fill=(35, 25, 42),
-    )
 
 
 def plot_timeline(draw, frames, index, rect, mono, small):
@@ -191,8 +175,8 @@ def plot_timeline(draw, frames, index, rect, mono, small):
     activations = [max(frame["segment_activation"].values()) for frame in frames]
     initial_x = sum(node[0] for node in frames[0]["physics_nodes_um"]) / 13
     displacements = [
-        (sum(node[0] for node in frame["physics_nodes_um"]) / 13 - initial_x)
-        / 700.0
+        (initial_x - sum(node[0] for node in frame["physics_nodes_um"]) / 13)
+        / 400.0
         for frame in frames
     ]
     for level in (0.0, 0.5, 1.0):
@@ -221,8 +205,15 @@ def plot_timeline(draw, frames, index, rect, mono, small):
         width=2 * SS,
     )
     label(draw, (left, bottom + 10), "activation", (245, 91, 128), small)
-    label(draw, (left + 90, bottom + 10), "displacement", (95, 204, 193), small)
-    label(draw, (right, bottom + 10), "16 s", (137, 121, 144), small, anchor="ra")
+    label(draw, (left + 90, bottom + 10), "anatomical forward", (95, 204, 193), small)
+    label(
+        draw,
+        (right, bottom + 10),
+        f"{frames[-1]['time_s']:.1f} s",
+        (137, 121, 144),
+        small,
+        anchor="ra",
+    )
 
 
 def render_frame(index, artifact, benchmark, body_map):
@@ -253,6 +244,13 @@ def render_frame(index, artifact, benchmark, body_map):
     panel(draw, right, "READ-ONLY RENDER PROJECTION", "302 vertices · 600 triangles · watertight", mono, small)
     draw_internal(draw, frame, left, body_map)
     draw_surface(draw, frame, right)
+    label(
+        draw,
+        (52, 92),
+        "← ANATOMICAL FORWARD · ANTERIOR IS LEFT · NO EYE MARKER",
+        (151, 207, 193),
+        small,
+    )
     label(draw, (52, 420), f"t = {frame['time_s']:05.2f} s", (226, 208, 190), mono)
     if index == 0:
         label(draw, (1030, 420), "POSTERIOR TOUCH 1.0 / FIRST 2 ms", (244, 173, 103), mono, anchor="ra")
@@ -280,7 +278,7 @@ def render_frame(index, artifact, benchmark, body_map):
         small,
     )
     label(draw, (790, 609), "Android/iOS    NOT TESTED", (244, 174, 103), small)
-    label(draw, (40, 678), "release_validated = false · held-out amplitude/duty FAIL", (244, 113, 133), small)
+    label(draw, (40, 678), "release_validated = false · held-out A5/A6 duty FAIL · NON-INDEPENDENT", (244, 113, 133), small)
     label(draw, (1040, 678), "HOST ENGINEERING GATE ≠ DEVICE OR BIOLOGICAL VALIDATION", (151, 132, 153), small, anchor="rs")
     return canvas.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
 
@@ -292,7 +290,10 @@ def render(output):
         artifact["schema"] != "mobile_core_integration_v1"
         or artifact["release_validated"] is not False
         or artifact["reset_replay"]["status"] != "exact"
-        or len(artifact["frames"]) != 51
+        or len(artifact["frames"]) < 2
+        or artifact["frames"][-1]["time_s"]
+        != artifact["fixed_step"]["steps"]
+        * artifact["fixed_step"]["dt_s"]
         or benchmark["all_gates_pass"] is not True
         or benchmark["android_ios_device_tested"] is not False
     ):

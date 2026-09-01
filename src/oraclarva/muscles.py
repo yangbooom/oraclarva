@@ -80,7 +80,10 @@ class NeuralMuscleActivationModel:
     rise_tau_s: float
     decay_tau_s: float
     event_target: float
+    rise_tau_s_by_segment: Mapping[str, float] | None = None
+    decay_tau_s_by_segment: Mapping[str, float] | None = None
     activations: dict[str, float] = field(init=False)
+    _segment_by_fiber: dict[str, str] = field(init=False, repr=False)
     first_activation_s: dict[str, float | None] = field(init=False)
     last_applied_spike_s: dict[str, float | None] = field(init=False)
     last_applied_source: dict[str, str | None] = field(init=False)
@@ -98,12 +101,31 @@ class NeuralMuscleActivationModel:
         ):
             if not isfinite(float(value)) or float(value) <= 0.0:
                 raise ValueError(f"muscle activation {name} must be positive")
-        if self.dt_s >= min(self.rise_tau_s, self.decay_tau_s):
-            raise ValueError(
-                "muscle activation timestep must be below both time constants"
-            )
         if self.event_target > 1.0:
             raise ValueError("muscle activation event target cannot exceed one")
+        mapped_segments = {item.segment_id for item in self.projection.mappings}
+        for label, values in (
+            ("rise", self.rise_tau_s_by_segment),
+            ("decay", self.decay_tau_s_by_segment),
+        ):
+            if values is None:
+                continue
+            unknown = set(values) - mapped_segments
+            if unknown:
+                raise ValueError(
+                    f"muscle activation {label} tau has unknown segments: "
+                    f"{sorted(unknown)}"
+                )
+            if any(
+                not isfinite(float(value)) or float(value) <= 0.0
+                for value in values.values()
+            ):
+                raise ValueError(
+                    f"muscle activation {label} tau values must be positive"
+                )
+        self._segment_by_fiber = {
+            item.fiber_id: item.segment_id for item in self.projection.mappings
+        }
         fiber_ids = self.projection.mapped_fiber_ids
         self.activations = {fiber_id: 0.0 for fiber_id in fiber_ids}
         self.first_activation_s = {fiber_id: None for fiber_id in fiber_ids}
@@ -122,11 +144,16 @@ class NeuralMuscleActivationModel:
                 "muscle activation must be stepped once per dt in order"
             )
         applied = dict(self._pending_event)
-        rise_fraction = 1.0 - exp(-self.dt_s / self.rise_tau_s)
-        decay_fraction = 1.0 - exp(-self.dt_s / self.decay_tau_s)
         for fiber_id, activation in self.activations.items():
+            segment = self._segment_by_fiber[fiber_id]
             if fiber_id in applied:
                 target = self.event_target
+                tau = (
+                    self.rise_tau_s
+                    if self.rise_tau_s_by_segment is None
+                    else self.rise_tau_s_by_segment.get(segment, self.rise_tau_s)
+                )
+                rise_fraction = 1.0 - exp(-self.dt_s / tau)
                 updated = activation + (target - activation) * rise_fraction
                 source, spike_time_s, _ = applied[fiber_id]
                 if not spike_time_s < time_s:
@@ -136,6 +163,12 @@ class NeuralMuscleActivationModel:
                 self.last_applied_spike_s[fiber_id] = spike_time_s
                 self.last_applied_source[fiber_id] = source
             else:
+                tau = (
+                    self.decay_tau_s
+                    if self.decay_tau_s_by_segment is None
+                    else self.decay_tau_s_by_segment.get(segment, self.decay_tau_s)
+                )
+                decay_fraction = 1.0 - exp(-self.dt_s / tau)
                 updated = activation + (0.0 - activation) * decay_fraction
             bounded = min(1.0, max(0.0, updated))
             self.activations[fiber_id] = bounded

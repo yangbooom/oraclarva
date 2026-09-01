@@ -133,35 +133,34 @@ sensory, MN, and fiber lesions break only their later causal stages. A2-A6
 homologs, contraction sensing, and contact remain non-executable diagnostics.
 See `docs/BODY_STATE_SENSORY_FEEDBACK_V0.md`.
 
-The 18-animal Greaney kinematic target is split before fitting into 12
-calibration and 6 held-out animals, with no cycle leakage. Stage 6 now produces
-three complete A6-A1 physical cycles from one posterior touch: body shortening
-relays the wave anteriorly and A1 body recovery restarts A6. The frozen model
-passes cycle period, stride, and supported-window physical wave speed on the
-single held-out evaluation, but all six segment-amplitude and all six duty
-comparisons fail. It therefore remains a research approximation with
-release_validated false. See docs/REPEAT_CRAWL_HELD_OUT_V0.md.
+The 18-animal Greaney kinematic target remains split into 12 calibration and
+6 held-out animals. Stage 6 now produces three complete A6-A1 physical cycles
+from one posterior touch and explicitly measures anatomical forward rather
+than raw world-x sign. A corrective mechanics audit fixed current-force friction,
+active segment length, axial projection, and buckling gates. All calibration
+period, signed stride, wave-speed, A1-A6 amplitude, and duty rows pass. Because
+the model changed after an earlier held-out evaluation, the six-animal result
+is diagnostic rather than independent; A5/A6 duty fail and
+`release_validated: false` remains mandatory. See
+`docs/REPEAT_CRAWL_HELD_OUT_V0.md`.
 
-Stage 7 now executes that same frozen 16 s path in a dependency-free C++17 core
-rather than replaying Python frames. One shared fixture covers 164 LIF neurons,
-307 sparse delayed synapses, 144 mapped sources, 146 named fibers, 13 body
-nodes, feedback, traces, and physical cycle detection. All 164 spike
-counts/first-spike times match; all 535 sampled node, activation, and node-force
-frames stay within declared strict tolerances. Zero input and sensory,
-premotor, mapped-MN, and fiber lesions also match. This establishes numerical
-parity only: the held-out amplitude/duty failures and
-`release_validated: false` are unchanged. See
+Stage 7 executes the same corrected 14.6 s path in a dependency-free C++17
+core rather than replaying Python frames. One generated fixture covers 164 LIF
+neurons, 307 sparse delayed synapses, 144 mapped sources, 146 named fibers,
+per-segment decay/active length, 13 body nodes, feedback, traces, and physical
+cycle detection. All spike summaries match and all 488 sampled node,
+activation, and applied-force frames stay inside strict tolerances. Zero input
+and sensory, premotor, mapped-MN, and fiber lesions also match. This is
+numerical parity only, not independent biological validation. See
 `docs/REPEAT_CRAWL_NATIVE_PARITY_V1.md`.
 
-Stage 8 exposes that actual C++ state as a C11 mobile lifecycle: deterministic
+Stage 8 exposes that C++ state through a C11 mobile lifecycle: deterministic
 reset, one 1 ms environment-input step, copied neural/force/body snapshot, and
-a separate read-only watertight render projection. The full 16 s stepped path
-equals the Stage 7 one-shot path, the same five causal conditions pass, and
-reset replay has a stable canonical digest. A release Linux aarch64 host proxy
-runs the 16 s workload at 28.48x simulated/wall throughput with 16.83 MiB peak
-process RSS.
-These are host engineering results, not Android/iOS device measurements or
-biological validation. See `docs/MOBILE_CORE_INTEGRATION_V1.md`.
+a separate read-only watertight render projection. The 14,600-step path equals
+the Stage 7 one-shot path and reset replay is byte-stable. A Linux aarch64 host
+proxy measures 25.87x simulated/wall throughput with 16.79 MiB peak process
+RSS. These are host engineering results, not Android/iOS device measurements
+or biological validation. See `docs/MOBILE_CORE_INTEGRATION_V1.md`.
 
 The isolated A1 mechanics fixture gives all 29 A1-left fibers normalized
 origins, insertions, rest lengths, lines of action, passive elasticity, damping,
@@ -275,12 +274,14 @@ python tools/render_visual_gif.py
 ## Repeat crawl and held-out diagnostic
 
 One posterior touch produces three checked A6-A1 cycles through body-state
-feedback; there is no periodic stimulus or gait command. The render mesh below
-is generated only from the frozen 13-node trajectory. Timing and stride pass
-the single six-animal held-out evaluation, while every segment amplitude and
-duty row fails and blocks validation.
+feedback; there is no periodic stimulus or gait command. The checked body moves
++299.96 µm along the initial tail-to-head axis with zero lateral span/deviation,
+and every calibration timing, signed-stride, amplitude, and duty row passes.
+The already-reused held-out diagnostic fails A5/A6 duty and cannot support an
+independent validation claim. The GIF labels anatomical forward explicitly;
+the former eye-like black dot was removed and there is no eye marker.
 
-![Frozen repeat-crawl trajectory](docs/assets/oraclarva_repeat_crawl.gif)
+![Corrected repeat-crawl trajectory](docs/assets/oraclarva_repeat_crawl.gif)
 
 ```bash
 python tools/export_repeat_crawl_trajectory.py --check
@@ -354,10 +355,11 @@ shortening value, and all 151 trajectory frames. Run
 `pytest tests/test_native_bilateral_parity.py`.
 
 The fourth fixture, `data/parity/repeat_crawl_native_v1.tsv`, executes the
-frozen repeat path: 164 neurons, 307 synapses, adaptation and delayed feedback,
-144 mapped sources, 146 fiber forces, 13-node XPBD, and cycle detection. The
-normal 16 s run plus zero-input and four causal lesions match the Python oracle
-on exact spikes and strict sampled-state tolerances. Run
+checked corrective repeat path: 164 neurons, 307 synapses, adaptation and
+delayed feedback, 144 mapped sources, 146 fiber activations, active-length
+13-node XPBD mechanics, and cycle detection. The normal 14.6 s run plus
+zero-input and four causal lesions match the Python oracle on exact spikes and
+strict sampled-state tolerances. Run
 `pytest tests/test_native_repeat_parity.py`.
 
 The Stage 8 C11 ABI advances the same repeat core one fixed step at a time and

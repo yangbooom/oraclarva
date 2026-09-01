@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evaluate the frozen repeat-crawl artifact against calibration then held-out L1 data."""
+"""Evaluate the corrective artifact against calibration and diagnostic held-out data."""
 
 from __future__ import annotations
 
@@ -103,11 +103,14 @@ def reports() -> tuple[dict[str, Any], dict[str, Any]]:
     if (
         generated["config_sha256"] != config_sha256
         or generated["parameter_fit_status"]
-        != "frozen_before_single_held_out_evaluation"
+        != config["calibration"]["fit_status"]
+        or generated["model_revision_after_prior_held_out_evaluation"]
+        is not True
+        or generated["independent_held_out_claim_available"] is not False
         or generated["selection_used_held_out_values"] is not False
         or config["calibration"]["selection_used_held_out_values"] is not False
     ):
-        raise ValueError("repeat-crawl parameters were not frozen before evaluation")
+        raise ValueError("repeat-crawl corrective fit provenance is inconsistent")
     cycle = trajectory["result_summary"]["cycle_metrics"]
     if cycle["complete_cycle_count"] < 3 or cycle["median"] is None:
         raise ValueError("at least three complete repeat-crawl cycles are required")
@@ -121,7 +124,7 @@ def reports() -> tuple[dict[str, Any], dict[str, Any]]:
     calibration_passed = all(item["passed"] for item in calibration_rows)
     held_out_passed = all(item["passed"] for item in held_out_rows)
     common = {
-        "schema_version": 1,
+        "schema_version": 2,
         "model_id": config["model_id"],
         "release_validated": False,
         "target_dataset": targets["dataset_id"],
@@ -142,8 +145,9 @@ def reports() -> tuple[dict[str, Any], dict[str, Any]]:
         "comparisons": calibration_rows,
         "passed": calibration_passed,
         "interpretation": (
-            "The fitted repeat path matches cycle timing/stride targets but "
-            "does not reproduce L1 segment contraction amplitude or duty."
+            "The corrected MODEL_FITTED repeat path is accepted only when "
+            "timing, signed forward stride, contraction amplitude, and duty "
+            "all remain inside the 12-animal calibration p10-p90 bands."
         ),
     }
     held_out_report = {
@@ -151,24 +155,30 @@ def reports() -> tuple[dict[str, Any], dict[str, Any]]:
         "partition": "held_out_validation",
         "animal_count": targets["split"]["validation_animal_count"],
         "status": (
-            "held_out_passed" if held_out_passed else "held_out_failed"
+            "diagnostic_held_out_passed"
+            if held_out_passed
+            else "diagnostic_held_out_failed"
         ),
         "evaluation_protocol": {
-            "evaluation_count": 1,
-            "evaluated_on": "2026-08-31",
-            "parameters_changed_after_evaluation": False,
+            "evaluation_count": 2,
+            "evaluated_on": "2026-09-01",
+            "parameters_changed_after_prior_evaluation": True,
             "selection_used_held_out_values": False,
+            "independent_validation_claim_available": False,
             "note": (
-                "Held-out values were already present in the repository, but "
-                "the frozen candidate selection used calibration values only."
+                "The correction used calibration values only, but the held-out "
+                "partition was already visible and had been evaluated before "
+                "this mechanics revision. This result is diagnostic, not an "
+                "independent validation."
             ),
         },
         "comparisons": held_out_rows,
         "passed": held_out_passed,
-        "fail_closed": not held_out_passed,
+        "independent_validation_passed": False,
+        "fail_closed": True,
         "interpretation": (
-            "This frozen research approximation is not behaviorally validated; "
-            "failed rows remain explicit and block a release claim."
+            "Release validation remains blocked regardless of the diagnostic "
+            "rows because the model changed after the prior held-out evaluation."
         ),
     }
     return calibration_report, held_out_report
@@ -203,7 +213,7 @@ def main(argv: list[str] | None = None) -> int:
             if mismatch:
                 print(f"repeat-crawl evaluation is stale: {path}: {mismatch}")
                 return 1
-        print("repeat-crawl calibration and single held-out evaluation are current")
+        print("repeat-crawl calibration and diagnostic held-out evaluation are current")
         return 0
     for path, rendered in outputs:
         path.parent.mkdir(parents=True, exist_ok=True)

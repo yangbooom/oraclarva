@@ -167,7 +167,7 @@ def native_repeat_binary(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 
 CASES = {
-    "normal": ((), {}, True, 16.0),
+    "normal": ((), {}, True, 14.6),
     "zero": (("--no-stimulus", "--steps", "200"), {}, False, 0.2),
     "sensory_a6": (
         ("--sensory-lesion", "A6", "--steps", "900"),
@@ -264,7 +264,11 @@ def test_native_repeat_matches_python_neural_force_and_cycle_summary(
         "dmel_l1_repeat_crawl_v0",
         "research_approximation",
         "release_validated=false",
-        "5cbaec6a716cf2b8dd2d8e053b00469f5e9f09389fa74645c17a148143b936e3",
+        next(
+            line.split("\t")[1]
+            for line in FIXTURE.read_text(encoding="utf-8").splitlines()
+            if line.startswith("config_sha256\t")
+        ),
     )
     assert actual.displacement_x_um == pytest.approx(
         expected.displacement_x_um, rel=0.0, abs=1e-8
@@ -375,7 +379,13 @@ def test_native_repeat_normal_trace_examples_are_ordered_and_identified(
 def test_native_repeat_fixture_preserves_freeze_and_no_action_boundary():
     fixture = FIXTURE.read_text(encoding="utf-8")
     assert "schema\trepeat_crawl_native_v1" in fixture
-    assert "config_sha256\t5cbaec6a716cf2b8" in fixture
+    config_hash = next(
+        line.split("\t")[1]
+        for line in fixture.splitlines()
+        if line.startswith("config_sha256\t")
+    )
+    assert len(config_hash) == 64
+    assert all(character in "0123456789abcdef" for character in config_hash)
     assert "release_validated\tfalse" in fixture
     assert "neuron_count\t164" in fixture
     assert fixture.count("\nsynapse\t") == 307

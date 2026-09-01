@@ -82,14 +82,14 @@ wired by a mobile implementation.
 
 The repeat-crawl path now has a dependency-free C++17 implementation. It
 consumes `data/parity/repeat_crawl_native_v1.tsv`, which is generated from the
-same frozen Stage 6 configuration as the Python oracle. The native program
+the same checked corrective Stage 6 configuration as the Python oracle. The native program
 executes rather than replays the 164-neuron/307-synapse network, sensory
 adaptation, delayed shortening and recovery relays, 144 mapped sources, 146
 named-fiber forces, 13-node XPBD body, feedback, trace ancestry, and physical
 cycle detector.
 
-The normal 16 s run matches all 164 spike counts and first-spike times exactly.
-All 535 sampled frames remain within ceilings of 5e-8 um for nodes, 5.1e-10 for
+The normal 14.6 s run matches all 164 spike counts and first-spike times exactly.
+All 488 sampled frames remain within ceilings of 5e-8 um for nodes, 5.1e-10 for
 activation, and 2e-7 model units for node force. Cycle period, stride, wave
 speed, displacement, trace counts, and cycle counts match their stricter
 summary gates. Zero input plus A6 sensory, A4 premotor, all-mapped-A6-MN, and
@@ -97,8 +97,9 @@ all-A6-fiber lesions preserve the expected causal boundaries in both
 implementations.
 
 This is correctness parity for the current `research_approximation`, not
-biological validation or a performance result. The held-out segment-amplitude
-and duty failures remain present and `release_validated` remains false. See
+biological validation or a performance result. The reused held-out diagnostic
+fails A5/A6 duty and cannot support an independent claim;
+`release_validated` remains false. See
 `docs/REPEAT_CRAWL_NATIVE_PARITY_V1.md`.
 
 ## Stage 8 mobile integration gate
@@ -120,19 +121,20 @@ trace state, and physical-cycle metrics. A separate const projection returns a
 watertight 302-vertex/600-triangle smooth mesh. Snapshot hashes before and after
 every mesh read prove the renderer does not mutate physics.
 
-The complete 16 s stepped workload exactly matches the Stage 7 one-shot native
-frames and remains inside the frozen Python tolerances. Reset plus the same
-input schedule reproduces canonical digest `4ffd09454349d2c7`. Zero input and
+The complete 14.6 s stepped workload exactly matches the Stage 7 one-shot
+native frames and remains inside the checked Python tolerances. Reset plus the
+same input schedule reproduces canonical digest `e8a2f9fdd37bab30`. Zero input and
 all four lesion classes continue to match.
 
 One GCC 13.3.0 `-O3 -DNDEBUG` measurement on the available Linux aarch64 host
-reported 1.133 ms initialization, 561.784 ms for 16 simulated seconds (28.48x),
-16.83 MiB peak process RSS, 13.78 us snapshot reads, and 29.58 us render-mesh
+reported 1.021 ms initialization, 564.274 ms for 14.6 simulated seconds
+(25.87x), 16.79 MiB peak process RSS, 12.31 us snapshot reads, and 28.24 us
+render-mesh
 reads. These are host process measurements only. Android/iOS compilation,
 device CPU/GPU, thermal, battery, app lifecycle, and shipping readiness remain
 untested and may not be inferred.
 
-The held-out amplitude and duty failures remain present and
+The non-independent held-out diagnostic fails A5/A6 duty and
 `release_validated` remains false. See
 `docs/MOBILE_CORE_INTEGRATION_V1.md`.
 

@@ -31,11 +31,12 @@ the other 8 contacts remain recorded but unexecuted. A1-A6 strain and contact
 are computed from the physical body, but transduction thresholds, currents,
 effects, and gains are `MODEL_FITTED`. A2-A6 homolog channels are
 `ANATOMY_DERIVED`; contraction and contact channels have no executable neural
-edge. The reserved 6-animal kinematic partition has now been evaluated once against
-the frozen Stage 6 repeat fixture. Cycle period, stride, and the supported A6-A1
-physical wave speed pass, while all six segment-amplitude and all six duty rows
-fail. Those failures block behavioral validation; the three passing global
-metrics are not evidence of a complete L1 crawl match. The dependency-free
+edge. The reserved 6-animal kinematic partition was evaluated before the corrective
+Stage 6 mechanics revision and is therefore no longer an untouched validation
+set. Corrective selection used only the 12-animal calibration bands, where
+period, signed stride, supported A6-A1 speed, amplitude, and duty now pass. The
+second held-out evaluation is diagnostic and fails A5/A6 duty. Model revision
+after the prior evaluation independently blocks a release-validation claim. The dependency-free
 C++17 repeat core now matches the Python reference on exact spikes and strict
 sampled-state tolerances across the normal run and five zero/lesion cases. That
 is a software numerical-reproducibility result only; it does not turn fitted

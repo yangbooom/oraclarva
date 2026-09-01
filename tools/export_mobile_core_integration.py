@@ -18,6 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "data" / "parity" / "repeat_crawl_native_v1.tsv"
 DEFAULT_OUTPUT = ROOT / "data" / "mobile" / "mobile_core_integration_v1.json"
 SEGMENTS = ("A6", "A5", "A4", "A3", "A2", "A1")
+PYTHON_TRAJECTORY = ROOT / "data" / "trajectories" / "l1_repeat_crawl_v0.json"
+SAMPLE_STRIDE = 320
 
 
 def vectors(value: str, size: int) -> list[list[float]]:
@@ -50,7 +52,7 @@ def render_artifact() -> str:
                 str(build / "oraclarva-mobile-host"),
                 str(FIXTURE),
                 "--sample-stride",
-                "320",
+                str(SAMPLE_STRIDE),
             ],
             check=True,
             capture_output=True,
@@ -114,15 +116,34 @@ def render_artifact() -> str:
         else:
             raise RuntimeError(f"unknown mobile host row: {fields[0]}")
 
+    fixture_rows = [
+        line.split("\t")
+        for line in FIXTURE.read_text(encoding="utf-8").splitlines()
+        if line and not line.startswith("#")
+    ]
+    fixture_values = {
+        row[0]: row[1] for row in fixture_rows if len(row) == 2
+    }
+    dt_s = next(
+        float(row[2])
+        for row in fixture_rows
+        if row[:2] == ["config", "dt_s"]
+    )
+    expected_steps = int(fixture_values["steps"])
+    expected_duration_s = expected_steps * dt_s
+    expected_frame_count = 1 + expected_steps // SAMPLE_STRIDE + (
+        expected_steps % SAMPLE_STRIDE != 0
+    )
+    python = json.loads(PYTHON_TRAJECTORY.read_text(encoding="utf-8"))
     expected_metadata = [
         "1",
-        "repeat_crawl_native_v1",
-        "dmel_l1_repeat_crawl_v0",
-        "research_approximation",
+        fixture_values["schema"],
+        fixture_values["model_id"],
+        fixture_values["status"],
         "release_validated=false",
-        "5cbaec6a716cf2b8dd2d8e053b00469f5e9f09389fa74645c17a148143b936e3",
-        "0.001",
-        "164",
+        fixture_values["config_sha256"],
+        format(dt_s, ".17g"),
+        fixture_values["neuron_count"],
         "13",
         "6",
         "302",
@@ -132,15 +153,20 @@ def render_artifact() -> str:
         raise RuntimeError("mobile metadata/freeze boundary mismatch")
     if summary is None or replay is None:
         raise RuntimeError("mobile summary or replay row is missing")
-    if len(frames) != 51 or frames[0]["time_s"] != 0.0 or frames[-1]["time_s"] != 16.0:
-        raise RuntimeError("mobile artifact must contain 51 complete frames")
+    if (
+        len(frames) != expected_frame_count
+        or frames[0]["time_s"] != 0.0
+        or frames[-1]["time_s"] != expected_duration_s
+    ):
+        raise RuntimeError("mobile artifact frame schedule is incomplete")
     if any(len(frame["render_vertices_um_activation"]) != 302 for frame in frames):
         raise RuntimeError("mobile render projection vertex count drifted")
     if (
-        summary["steps"] != 16000
+        summary["steps"] != expected_steps
         or summary["complete_cycle_count"] != 3
         or summary["physical_wave_cycle_count"] != 3
-        or summary["feedback_force_frames"] != 15993
+        or summary["feedback_force_frames"]
+        != python["result_summary"]["feedback_force_frames"]
         or summary["all_active_forces_traced"] is not True
         or summary["trace_valid"] != [1, 1, 1, 1, 1, 1]
         or len(summary["spike_counts"]) != 164
@@ -156,7 +182,13 @@ def render_artifact() -> str:
     held_out = json.loads(
         (ROOT / "data" / "validation" / "repeat_crawl_held_out_v0.json").read_text()
     )
-    if held_out["release_validated"] is not False:
+    if (
+        held_out["release_validated"] is not False
+        or held_out["status"] != "diagnostic_held_out_failed"
+        or held_out["evaluation_protocol"][
+            "independent_validation_claim_available"
+        ] is not False
+    ):
         raise RuntimeError("mobile artifact lost held-out failure boundary")
 
     artifact = {
@@ -186,12 +218,15 @@ def render_artifact() -> str:
             "exclusive_end_step": 2,
             "direct_behavior_command": False,
         },
-        "fixed_step": {"dt_s": float(metadata[6]), "steps": 16000},
+        "fixed_step": {
+            "dt_s": float(metadata[6]),
+            "steps": expected_steps,
+        },
         "snapshot": {
             "neuron_count": int(metadata[7]),
             "physics_node_count": int(metadata[8]),
             "wave_segment_count": int(metadata[9]),
-            "sample_stride_steps": 320,
+            "sample_stride_steps": SAMPLE_STRIDE,
             "digest_algorithm": "canonical_little_endian_fnv1a64",
         },
         "render_projection": {
@@ -205,7 +240,9 @@ def render_artifact() -> str:
         },
         "result_summary": summary,
         "reset_replay": replay,
-        "held_out_behavior_status": "held_out_failed_amplitude_and_duty",
+        "held_out_behavior_status": (
+            "diagnostic_held_out_failed_non_independent"
+        ),
         "frames": frames,
     }
     return json.dumps(artifact, indent=2, ensure_ascii=False) + "\n"

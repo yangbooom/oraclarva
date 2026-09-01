@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export the frozen repeat-crawl Python reference trajectory."""
+"""Export the checked corrective repeat-crawl Python reference trajectory."""
 
 from __future__ import annotations
 
@@ -29,14 +29,32 @@ def render_trajectory() -> str:
         trace_examples.setdefault(str(trace["segment_id"]), trace)
     if set(trace_examples) != set(config["supported_wave_segments_posterior_to_anterior"]):
         raise RuntimeError("repeat-crawl artifact lacks an A1-A6 force trace")
+    shape_gate = config["directional_shape_gate"]
+    movement_gate = {
+        "forward_displacement": result.forward_displacement_um
+        >= float(shape_gate["minimum_forward_displacement_um"]),
+        "absolute_lateral_displacement": abs(result.lateral_displacement_um)
+        <= float(shape_gate["maximum_absolute_lateral_displacement_um"]),
+        "lateral_node_span": result.maximum_lateral_span_um
+        <= float(shape_gate["maximum_lateral_node_span_um"]),
+        "planar_node_deviation": result.maximum_planar_deviation_um
+        <= float(shape_gate["maximum_planar_node_deviation_um"]),
+        "forward_segment_alignment": result.minimum_forward_segment_alignment
+        >= float(shape_gate["minimum_forward_segment_alignment"]),
+        "head_tail_chord_ratio": result.minimum_head_tail_chord_ratio
+        >= float(shape_gate["minimum_head_tail_chord_ratio"]),
+    }
     if (
-        metrics["complete_cycle_count"] < 3
+        metrics["status"] != "measured"
+        or metrics["complete_cycle_count"] != 3
+        or metrics["physical_wave_cycle_count"] != 3
+        or not all(movement_gate.values())
         or not result.all_active_forces_sensory_traced
         or result.release_validated is not False
     ):
-        raise RuntimeError("repeat-crawl trajectory fails its causal export gate")
+        raise RuntimeError("repeat-crawl trajectory fails its causal movement gate")
     artifact = {
-        "schema_version": 1,
+        "schema_version": 2,
         "model_id": config["model_id"],
         "stage": "L1",
         "status": "research_approximation",
@@ -47,6 +65,12 @@ def render_trajectory() -> str:
             "parameter_fit_status": config["calibration"]["fit_status"],
             "selection_used_held_out_values": config["calibration"][
                 "selection_used_held_out_values"
+            ],
+            "model_revision_after_prior_held_out_evaluation": config[
+                "calibration"
+            ]["model_revision_after_prior_held_out_evaluation"],
+            "independent_held_out_claim_available": config["calibration"][
+                "independent_held_out_claim_available"
             ],
         },
         "causal_contract": config["causal_contract"],
@@ -65,6 +89,26 @@ def render_trajectory() -> str:
         "frames": list(result.trajectory_samples),
         "result_summary": {
             "displacement_x_um": round(result.displacement_x_um, 9),
+            "displacement_y_um": round(result.displacement_y_um, 9),
+            "forward_displacement_um": round(
+                result.forward_displacement_um, 9
+            ),
+            "lateral_displacement_um": round(
+                result.lateral_displacement_um, 9
+            ),
+            "maximum_lateral_span_um": round(
+                result.maximum_lateral_span_um, 9
+            ),
+            "maximum_planar_deviation_um": round(
+                result.maximum_planar_deviation_um, 9
+            ),
+            "minimum_forward_segment_alignment": round(
+                result.minimum_forward_segment_alignment, 12
+            ),
+            "minimum_head_tail_chord_ratio": round(
+                result.minimum_head_tail_chord_ratio, 12
+            ),
+            "movement_gate": movement_gate,
             "feedback_force_frames": result.feedback_force_frames,
             "all_active_forces_sensory_traced": (
                 result.all_active_forces_sensory_traced

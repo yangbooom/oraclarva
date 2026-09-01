@@ -1,4 +1,4 @@
-"""Compile the frozen repeat-crawl model into a C++17 parity fixture."""
+"""Compile the checked corrective repeat-crawl model into a C++17 fixture."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def render_fixture() -> str:
     dt_s = float(config["parameters"]["dt_s"])
     lines = [
         "# Oraclarva Stage 7 repeat-crawl native parity fixture.",
-        "# Compiled from frozen provenance-aware config; do not edit by hand.",
+        "# Compiled from checked provenance-aware config; do not edit by hand.",
         "# No action command, FSM, policy network, or authored motion.",
         "schema\trepeat_crawl_native_v1",
         f"model_id\t{config['model_id']}",
@@ -126,6 +126,7 @@ def render_fixture() -> str:
                     number(segment.width_m),
                     number(segment.height_m),
                     number(segment.mass_kg),
+                    number(larva.body.maximum_shortening_fractions[index]),
                 )
             )
         )
@@ -150,6 +151,11 @@ def render_fixture() -> str:
                     str(protocol.index_by_id[f"premotor_A27h_like:{segment}"]),
                     str(protocol.index_by_id[f"inhibitory_PMSI_like:{segment}"]),
                     ",".join(str(value) for value in source_indices),
+                    number(
+                        parameters["muscle_activation_decay_tau_s_by_segment"][
+                            segment
+                        ]
+                    ),
                 )
             )
         )
@@ -192,6 +198,13 @@ def render_fixture() -> str:
                     number(geometry.insertion.theta_rad),
                     number(geometry.insertion.depth_fraction),
                     mapping.mapping_provenance,
+                    number(
+                        1.0
+                        if larva.coupling.fiber_force_scale_by_id is None
+                        else larva.coupling.fiber_force_scale_by_id[
+                            mapping.fiber_id
+                        ]
+                    ),
                 )
             )
         )
