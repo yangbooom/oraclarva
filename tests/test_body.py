@@ -88,6 +88,36 @@ def test_ground_tangential_retention_is_a_bounded_physical_parameter():
     body.step(0.001, ground_velocity_retention_x=(0.9, 0.1))
 
 
+def test_directional_ground_retention_can_include_current_external_force():
+    def shifted(include_acceleration: bool) -> float:
+        body = ScientificBody3D(load_body_spec())
+        before = sum(item.position.x for item in body.particles) / len(
+            body.particles
+        )
+        body.step(
+            0.001,
+            gravity=Vec3(0.0, 0.0, 0.0),
+            ground_z=0.0,
+            external_accelerations_m_s2={
+                index: Vec3(1.0, 0.0, 0.0)
+                for index in range(len(body.particles))
+            },
+            velocity_retention=0.0,
+            ground_velocity_retention_x=(0.9, 0.1),
+            use_local_tangent_friction=True,
+            directional_retention_includes_acceleration=include_acceleration,
+        )
+        after = sum(item.position.x for item in body.particles) / len(
+            body.particles
+        )
+        return after - before
+
+    legacy = shifted(False)
+    corrected = shifted(True)
+    assert legacy == pytest.approx(1e-6, rel=1e-9)
+    assert corrected == pytest.approx(legacy * 0.1, rel=1e-9)
+
+
 def test_segment_specific_shortening_capacity_is_bounded_and_changes_target():
     spec = load_body_spec()
     body = ScientificBody3D(

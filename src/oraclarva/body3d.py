@@ -354,7 +354,9 @@ class ScientificBody3D:
         active_curvature_gain: float = 0.0,
         active_pitch_curvature_gain: float = 0.0,
         active_bending_stiffness_ratio: float = 0.25,
+        passive_planar_bending_stiffness_ratio: float | None = None,
         use_local_tangent_friction: bool = False,
+        directional_retention_includes_acceleration: bool = False,
         contact_surface: ContactSurface | None = None,
         contact_friction_coefficient: float = 0.0,
         external_accelerations_m_s2: Mapping[int, Vec3] | None = None,
@@ -375,6 +377,11 @@ class ScientificBody3D:
             raise ValueError("active curvature gain must be non-negative")
         if active_bending_stiffness_ratio <= 0:
             raise ValueError("active bending stiffness ratio must be positive")
+        if (
+            passive_planar_bending_stiffness_ratio is not None
+            and passive_planar_bending_stiffness_ratio <= 0
+        ):
+            raise ValueError("passive planar bending stiffness ratio must be positive")
         external_accelerations = external_accelerations_m_s2 or {}
         if set(external_accelerations) - set(range(len(self.particles))):
             raise ValueError("external acceleration references an unknown body node")
@@ -388,6 +395,7 @@ class ScientificBody3D:
             if particle.inverse_mass == 0:
                 continue
             velocity = (particle.position - particle.previous_position) * velocity_retention
+            deferred_planar_frame: tuple[Vec3, Vec3] | None = None
             clearance = self._node_clearance(index)
             contact_margin = max(1e-15, gravity.norm() * dt_s * dt_s * 1.1)
             surface_contact = (
@@ -421,19 +429,22 @@ class ScientificBody3D:
                     if use_local_tangent_friction:
                         tangent = self._node_tangent_xy(index)
                         lateral = Vec3(-tangent.y, tangent.x, 0.0)
-                        tangential_speed = velocity.dot(tangent)
-                        lateral_speed = velocity.dot(lateral)
-                        tangential_retention = (
-                            negative_x if tangential_speed < 0 else positive_x
-                        )
-                        planar_velocity = (
-                            tangent * (tangential_speed * tangential_retention)
-                            + lateral
-                            * (lateral_speed * min(negative_x, positive_x))
-                        )
-                        velocity = Vec3(
-                            planar_velocity.x, planar_velocity.y, velocity.z
-                        )
+                        if directional_retention_includes_acceleration:
+                            deferred_planar_frame = (tangent, lateral)
+                        else:
+                            tangential_speed = velocity.dot(tangent)
+                            lateral_speed = velocity.dot(lateral)
+                            tangential_retention = (
+                                negative_x if tangential_speed < 0 else positive_x
+                            )
+                            planar_velocity = (
+                                tangent * (tangential_speed * tangential_retention)
+                                + lateral
+                                * (lateral_speed * min(negative_x, positive_x))
+                            )
+                            velocity = Vec3(
+                                planar_velocity.x, planar_velocity.y, velocity.z
+                            )
                     else:
                         tangential_retention = (
                             negative_x if velocity.x < 0 else positive_x
@@ -462,9 +473,22 @@ class ScientificBody3D:
             acceleration = particle_gravity + external_accelerations.get(
                 index, Vec3(0.0, 0.0, 0.0)
             )
-            particle.position = (
-                particle.position + velocity + acceleration * (dt_s * dt_s)
-            )
+            displacement = velocity + acceleration * (dt_s * dt_s)
+            if deferred_planar_frame is not None:
+                tangent, lateral = deferred_planar_frame
+                negative_x, positive_x = ground_velocity_retention_x
+                tangential = displacement.dot(tangent)
+                lateral_value = displacement.dot(lateral)
+                tangential_retention = (
+                    negative_x if tangential < 0 else positive_x
+                )
+                planar = (
+                    tangent * (tangential * tangential_retention)
+                    + lateral
+                    * (lateral_value * min(negative_x, positive_x))
+                )
+                displacement = Vec3(planar.x, planar.y, displacement.z)
+            particle.position = particle.position + displacement
             particle.previous_position = old_position
             if contact_surface is not None:
                 projection = contact_surface.query(
@@ -481,9 +505,14 @@ class ScientificBody3D:
 
         compliance = 1.0 / self._instantaneous_stiffness
         alpha = compliance / (dt_s * dt_s)
+        bending_ratio = (
+            active_bending_stiffness_ratio
+            if passive_planar_bending_stiffness_ratio is None
+            else passive_planar_bending_stiffness_ratio
+        )
         bending_alpha = (
             compliance
-            / active_bending_stiffness_ratio
+            / bending_ratio
             / (dt_s * dt_s)
         )
         for _ in range(iterations):
@@ -502,7 +531,10 @@ class ScientificBody3D:
                     left.position = left.position - direction * (left.inverse_mass * lagrange)
                 if right.inverse_mass:
                     right.position = right.position + direction * (right.inverse_mass * lagrange)
-            if active_curvature_gain and not active_pitch_curvature_gain:
+            if (
+                (active_curvature_gain or passive_planar_bending_stiffness_ratio)
+                and not active_pitch_curvature_gain
+            ):
                 # Preserve the original planar constraint arithmetic exactly.
                 # The generic 3D frame below is mathematically equivalent for
                 # zero pitch, but its normalization order perturbs archived
@@ -687,6 +719,12 @@ class ScientificBody3D:
         else:
             lateral = lateral.normalized()
         return tangent.cross(lateral).normalized()
+
+    def node_tangent_xy(self, node_index: int) -> Vec3:
+        """Return the current normalized ground-plane tangent at a body node."""
+        if not 0 <= node_index < len(self.particles):
+            raise IndexError("body node tangent index is out of range")
+        return self._node_tangent_xy(node_index)
 
     def _node_tangent_xy(self, node_index: int) -> Vec3:
         if node_index == 0:

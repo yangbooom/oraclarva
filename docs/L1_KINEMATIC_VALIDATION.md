@@ -27,9 +27,10 @@ crawl speed, cycle period/frequency, T3-A7 onset propagation, and the supported
 A6-A1 attachment-window propagation in segment intervals per second. Selected
 held-out medians are 149.495 um stride, 2.052 segment intervals/s full-window
 wave speed, 1.760 segment intervals/s A6-A1 wave speed, and 37.100% A1 duty
-cycle. Stage 6 evaluated the frozen model once: period, stride, and A6-A1 speed
-pass, but every A1-A6 amplitude and duty row fails, so release validation
-remains false.
+cycle. Stage 6 was subsequently corrected after its first held-out evaluation.
+Calibration period, signed stride, A6-A1 speed, amplitude, and duty now pass,
+but the reused held-out diagnostic fails A5/A6 duty and is not independent.
+Release validation therefore remains false.
 
 ## What the target says
 

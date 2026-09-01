@@ -22,7 +22,7 @@ FONT_BOLD = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 FONT_MONO = Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
 WIDTH, HEIGHT, SS = 1080, 720, 2
 DURATION_MS = 80
-WORLD_X = (-80.0, 1520.0)
+WORLD_X = (-450.0, 1100.0)
 WORLD_Y = (-260.0, 260.0)
 
 
@@ -181,15 +181,6 @@ def draw_body(draw, nodes_um, activation, body, rect, native):
             fill=mix(skin, (244, 71, 111), active * 0.95),
             width=max(2 * SS, round(1.15 * radius * SS)),
         )
-    head = centers[0]
-    radius = smooth_radii[0] * 0.3
-    draw.ellipse(
-        (
-            *scaled((head[0] - radius, head[1] - radius)),
-            *scaled((head[0] + radius, head[1] + radius)),
-        ),
-        fill=(46, 35, 51),
-    )
 
 
 def render_frame(index, report, body):
@@ -217,7 +208,7 @@ def render_frame(index, report, body):
     label(
         draw,
         (43, 62),
-        "SAME FROZEN FIXTURE · 164 LIF · 307 SYNAPSES · 146 FIBERS · 13 BODY NODES",
+        "SAME CHECKED FIXTURE · 164 LIF · 307 SYNAPSES · 146 FIBERS · 13 BODY NODES",
         (166, 145, 169),
         mono,
     )
@@ -239,7 +230,7 @@ def render_frame(index, report, body):
             (220, 202, 188),
             mono,
         )
-        for tick in range(0, 1501, 500):
+        for tick in range(-400, 1001, 400):
             x = rect[0] + (
                 (tick - WORLD_X[0])
                 / (WORLD_X[1] - WORLD_X[0])
@@ -265,6 +256,13 @@ def render_frame(index, report, body):
         body,
         panels[1],
         True,
+    )
+    label(
+        draw,
+        (54, 91),
+        "← ANATOMICAL FORWARD · ANTERIOR IS LEFT · NO EYE MARKER",
+        (151, 207, 193),
+        small,
     )
     label(
         draw,
@@ -368,7 +366,7 @@ def render_frame(index, report, body):
     label(
         draw,
         (805, 618),
-        "held-out amplitude/duty: FAIL",
+        "held-out A5/A6 duty: FAIL",
         (244, 116, 133),
         small,
     )

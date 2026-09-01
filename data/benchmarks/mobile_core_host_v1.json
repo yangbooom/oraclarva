@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "schema": "mobile_core_host_benchmark_v1",
-  "measurement_date_utc": "2026-08-31",
+  "measurement_date_utc": "2026-09-01",
   "target_class": "linux_host_proxy",
   "host_tested_only": true,
   "android_ios_device_tested": false,
   "device_performance_claim_allowed": false,
-  "frozen_config_sha256": "5cbaec6a716cf2b8dd2d8e053b00469f5e9f09389fa74645c17a148143b936e3",
-  "canonical_workload_fnv1a64": "4ffd09454349d2c7",
+  "frozen_config_sha256": "6c6bcec355391b72e2b694c37400fc4fc8880812b78015b39bcfc0d244e11494",
+  "canonical_workload_fnv1a64": "e8a2f9fdd37bab30",
   "build": {
     "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
     "flags": [
@@ -22,16 +22,16 @@
     ],
     "artifacts": {
       "static_library": {
-        "bytes": 248718,
-        "sha256": "b930d160cc5fab306ce09d1dd0f7cf4a50a2a1b74e515cc7e993504167d9be92"
+        "bytes": 250342,
+        "sha256": "6114b4f6f77e58afa98f7f3bf2338d2b3e1ddcc1daf6225219dabdab804dca8a"
       },
       "shared_library": {
-        "bytes": 155808,
-        "sha256": "522605354453142cb45c9c40b4d0b537e7242f7abd202f95afef253562f81dcc"
+        "bytes": 155816,
+        "sha256": "7cedce17315b98eec2d91fe0a2004631e0b02acad8879118f2559ad4d535ad34"
       },
       "host_harness": {
-        "bytes": 224264,
-        "sha256": "3651c5f6aa6ab0d804a8051f4f3ad049b666439da85f9b427fdf5ee07eb6f229"
+        "bytes": 224256,
+        "sha256": "e0745d2821a9e6c7b2dc7446f430b67aec8c1871171ef24eac9b3cd041f137b1"
       }
     }
   },
@@ -43,8 +43,8 @@
   },
   "workload": {
     "fixed_dt_s": 0.001,
-    "steps": 16000,
-    "simulated_duration_s": 16.0,
+    "steps": 14600,
+    "simulated_duration_s": 14.6,
     "posterior_touch_steps": 2,
     "posterior_touch_intensity": 1.0,
     "median_run_count": 7,
@@ -54,20 +54,20 @@
     "render_triangles": 600
   },
   "measurements": {
-    "initialize_ms": 1.132804,
-    "full_16s_run_median_ms": 561.783745,
-    "simulated_seconds_per_wall_second": 28.48071013517844,
-    "peak_process_rss_kib": 17232,
+    "initialize_ms": 1.020843,
+    "full_standard_run_median_ms": 564.27401,
+    "simulated_seconds_per_wall_second": 25.87395439318568,
+    "peak_process_rss_kib": 17196,
     "snapshot_struct_bytes": 3144,
-    "snapshot_read_us": 13.77804,
-    "render_mesh_read_us": 29.5817,
-    "shared_library_bytes": 155808,
-    "static_library_bytes": 248718,
-    "host_harness_bytes": 224264
+    "snapshot_read_us": 12.31164,
+    "render_mesh_read_us": 28.2357,
+    "shared_library_bytes": 155816,
+    "static_library_bytes": 250342,
+    "host_harness_bytes": 224256
   },
   "budgets": {
     "initialize_ms_max": 250.0,
-    "full_16s_run_median_ms_max": 1000.0,
+    "full_standard_run_median_ms_max": 1000.0,
     "simulated_seconds_per_wall_second_min": 10.0,
     "peak_process_rss_kib_max": 65536,
     "snapshot_struct_bytes_max": 4096,
@@ -94,6 +94,6 @@
     "This is a process-level Linux host proxy, not Android or iOS device data.",
     "Peak RSS includes the executable, C++ runtime, fixture, and measurement process.",
     "Timing varies with host load and is an engineering budget, not a biological parameter.",
-    "Passing this benchmark does not repair held-out amplitude or duty failures."
+    "Passing this benchmark does not create an independent held-out behavioral validation claim."
   ]
 }

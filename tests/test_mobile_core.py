@@ -247,7 +247,7 @@ def test_mobile_full_stepped_run_matches_frozen_python_oracle(
 ):
     expected = oracle()
     frames = expected["frames"]
-    assert len(full_mobile.frames) == len(frames) == 535
+    assert len(full_mobile.frames) == len(frames) == 488
     for actual, reference in zip(full_mobile.frames, frames, strict=True):
         assert actual.time_s == pytest.approx(reference["time_s"], abs=3e-15)
         assert flatten(actual.nodes) == pytest.approx(
@@ -347,7 +347,7 @@ def test_mobile_metadata_preserves_claim_boundary(full_mobile: MobileOutput):
         "dmel_l1_repeat_crawl_v0",
         "research_approximation",
         "release_validated=false",
-        "5cbaec6a716cf2b8dd2d8e053b00469f5e9f09389fa74645c17a148143b936e3",
+        oracle()["generated_from"]["config_sha256"],
         "0.001",
         "164",
         "13",
@@ -359,6 +359,10 @@ def test_mobile_metadata_preserves_claim_boundary(full_mobile: MobileOutput):
         (ROOT / "data" / "validation" / "repeat_crawl_held_out_v0.json").read_text()
     )
     assert held_out["release_validated"] is False
+    assert held_out["status"] == "diagnostic_held_out_failed"
+    assert held_out["evaluation_protocol"][
+        "independent_validation_claim_available"
+    ] is False
 
 
 def test_mobile_c_header_and_shared_exports_are_c_only(mobile_build: dict[str, Path]):
@@ -546,7 +550,8 @@ def test_mobile_checked_artifacts_preserve_host_and_scientific_boundaries():
     assert integration["release_validated"] is False
     assert integration["android_ios_device_tested"] is False
     assert integration["reset_replay"]["status"] == "exact"
-    assert len(integration["frames"]) == 51
+    assert len(integration["frames"]) == 47
+    assert integration["fixed_step"] == {"dt_s": 0.001, "steps": 14600}
     assert integration["render_projection"] == {
         "read_only": True,
         "internal_physics_nodes_exposed_as_render_vertices": False,

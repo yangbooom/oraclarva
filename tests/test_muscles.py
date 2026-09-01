@@ -287,6 +287,28 @@ def test_mapped_fiber_activation_decays_and_remains_bounded():
         model.step(0.004, projection.emit(()))
 
 
+def test_activation_decay_can_be_model_fitted_per_segment():
+    projection = load_neural_muscle_identity_projection()
+    model = NeuralMuscleActivationModel(
+        projection=projection,
+        dt_s=0.001,
+        rise_tau_s=0.02,
+        decay_tau_s=0.08,
+        event_target=1.0,
+        decay_tau_s_by_segment={"A1": 0.01, "A6": 0.1},
+    )
+    a1 = next(
+        item.fiber_id for item in projection.mappings if item.segment_id == "A1"
+    )
+    a6 = next(
+        item.fiber_id for item in projection.mappings if item.segment_id == "A6"
+    )
+    model.activations[a1] = 1.0
+    model.activations[a6] = 1.0
+    frame = model.step(0.0, projection.emit(()))
+    assert 0.0 < frame.activations[a1] < frame.activations[a6] < 1.0
+
+
 def test_fiber_event_lesion_prevents_activation_without_geometry_fallback():
     projection = load_neural_muscle_identity_projection()
     model = NeuralMuscleActivationModel(

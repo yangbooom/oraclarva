@@ -1,52 +1,52 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "model_id": "dmel_l1_repeat_crawl_v0",
   "release_validated": false,
   "target_dataset": "greaney_2026_l1_kinematics_v0",
   "target_schema_version": 2,
-  "frozen_config_sha256": "5cbaec6a716cf2b8dd2d8e053b00469f5e9f09389fa74645c17a148143b936e3",
+  "frozen_config_sha256": "6c6bcec355391b72e2b694c37400fc4fc8880812b78015b39bcfc0d244e11494",
   "trajectory": "data/trajectories/l1_repeat_crawl_v0.json",
   "complete_cycle_count": 3,
   "physical_wave_cycle_count": 3,
   "model_metrics": {
-    "period_s": 5.010999999999999,
-    "stride_um": 145.866256110617,
-    "neural_a1_a6_wave_speed_segments_s": 1.672240802675585,
-    "a1_a6_wave_speed_segments_s": 1.6728044737198409,
+    "period_s": 4.718,
+    "stride_um": 149.36072772675357,
+    "neural_a1_a6_wave_speed_segments_s": 1.6672224074691562,
+    "a1_a6_wave_speed_segments_s": 1.6672163455728082,
     "segments": {
       "A6": {
-        "length_change_percent": 0.024883277966765583,
-        "duty_cycle_percent": 0.4734137689197177
+        "length_change_percent": 48.60929732410215,
+        "duty_cycle_percent": 41.48628163774829
       },
       "A5": {
-        "length_change_percent": 0.07130177694137292,
-        "duty_cycle_percent": 12.104026934081716
+        "length_change_percent": 49.570145472491696,
+        "duty_cycle_percent": 45.21326601091875
       },
       "A4": {
-        "length_change_percent": 0.09234793923855594,
-        "duty_cycle_percent": 0.17320968998623038
+        "length_change_percent": 51.34362882754105,
+        "duty_cycle_percent": 43.80983425152373
       },
       "A3": {
-        "length_change_percent": 0.11820922373645552,
-        "duty_cycle_percent": 0.17264393529740277
+        "length_change_percent": 49.99266775263116,
+        "duty_cycle_percent": 39.02111708955394
       },
       "A2": {
-        "length_change_percent": 0.11260984925631315,
-        "duty_cycle_percent": 0.13298223007274557
+        "length_change_percent": 46.91065725211931,
+        "duty_cycle_percent": 37.283977891706655
       },
       "A1": {
-        "length_change_percent": 0.010348522616670382,
-        "duty_cycle_percent": 7.509442551034103
+        "length_change_percent": 46.32610453263168,
+        "duty_cycle_percent": 32.97857287044138
       }
     }
   },
   "partition": "calibration",
   "animal_count": 12,
-  "status": "calibration_failed",
+  "status": "calibration_passed",
   "comparisons": [
     {
       "metric": "cycle_period_s",
-      "model_value": 5.010999999999999,
+      "model_value": 4.718,
       "target_p10": 3.751851,
       "target_median": 5.044003,
       "target_p90": 6.1246,
@@ -54,7 +54,7 @@
     },
     {
       "metric": "stride_um",
-      "model_value": 145.866256110617,
+      "model_value": 149.36072772675357,
       "target_p10": 140.327238,
       "target_median": 153.1691,
       "target_p90": 179.485254,
@@ -62,7 +62,7 @@
     },
     {
       "metric": "a1_a6_wave_speed_segments_s",
-      "model_value": 1.6728044737198409,
+      "model_value": 1.6672163455728082,
       "target_p10": 1.467566,
       "target_median": 1.682623,
       "target_p90": 2.121631,
@@ -70,101 +70,101 @@
     },
     {
       "metric": "A1.contraction_amplitude_percent",
-      "model_value": 0.010348522616670382,
+      "model_value": 46.32610453263168,
       "target_p10": 41.193602,
       "target_median": 49.017928,
       "target_p90": 52.021047,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A1.duty_cycle_percent",
-      "model_value": 7.509442551034103,
+      "model_value": 32.97857287044138,
       "target_p10": 29.931515,
       "target_median": 32.172585,
       "target_p90": 38.463793,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A2.contraction_amplitude_percent",
-      "model_value": 0.11260984925631315,
+      "model_value": 46.91065725211931,
       "target_p10": 46.306662,
       "target_median": 48.953133,
       "target_p90": 54.761841,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A2.duty_cycle_percent",
-      "model_value": 0.13298223007274557,
+      "model_value": 37.283977891706655,
       "target_p10": 34.54961,
       "target_median": 37.222758,
       "target_p90": 43.060404,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A3.contraction_amplitude_percent",
-      "model_value": 0.11820922373645552,
+      "model_value": 49.99266775263116,
       "target_p10": 49.225866,
       "target_median": 52.386038,
       "target_p90": 56.226349,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A3.duty_cycle_percent",
-      "model_value": 0.17264393529740277,
+      "model_value": 39.02111708955394,
       "target_p10": 35.910444,
       "target_median": 39.168371,
       "target_p90": 44.228109,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A4.contraction_amplitude_percent",
-      "model_value": 0.09234793923855594,
+      "model_value": 51.34362882754105,
       "target_p10": 49.279175,
       "target_median": 51.854769,
       "target_p90": 54.166228,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A4.duty_cycle_percent",
-      "model_value": 0.17320968998623038,
+      "model_value": 43.80983425152373,
       "target_p10": 41.367616,
       "target_median": 45.686161,
       "target_p90": 48.966813,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A5.contraction_amplitude_percent",
-      "model_value": 0.07130177694137292,
+      "model_value": 49.570145472491696,
       "target_p10": 48.090213,
       "target_median": 50.260593,
       "target_p90": 52.050819,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A5.duty_cycle_percent",
-      "model_value": 12.104026934081716,
+      "model_value": 45.21326601091875,
       "target_p10": 43.821195,
       "target_median": 47.777204,
       "target_p90": 53.704309,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A6.contraction_amplitude_percent",
-      "model_value": 0.024883277966765583,
+      "model_value": 48.60929732410215,
       "target_p10": 47.595298,
       "target_median": 52.117372,
       "target_p90": 54.554931,
-      "passed": false
+      "passed": true
     },
     {
       "metric": "A6.duty_cycle_percent",
-      "model_value": 0.4734137689197177,
+      "model_value": 41.48628163774829,
       "target_p10": 38.306409,
       "target_median": 42.449695,
       "target_p90": 50.123582,
-      "passed": false
+      "passed": true
     }
   ],
-  "passed": false,
-  "interpretation": "The fitted repeat path matches cycle timing/stride targets but does not reproduce L1 segment contraction amplitude or duty."
+  "passed": true,
+  "interpretation": "The corrected MODEL_FITTED repeat path is accepted only when timing, signed forward stride, contraction amplitude, and duty all remain inside the 12-animal calibration p10-p90 bands."
 }

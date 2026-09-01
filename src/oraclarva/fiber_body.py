@@ -87,6 +87,7 @@ class NamedFiberBodyCoupling:
     passive_stiffness: float
     damping: float
     acceleration_scale_m_s2_per_model_force: float
+    fiber_force_scale_by_id: Mapping[str, float] | None = None
     geometries: tuple[FullBodyFiberGeometry, ...] = field(init=False)
     rest_lengths_m: dict[str, float] = field(init=False)
     previous_lengths_m: dict[str, float] = field(init=False)
@@ -105,6 +106,19 @@ class NamedFiberBodyCoupling:
         if len(self.projection.mappings) != 146:
             raise ValueError("body coupling requires exactly 146 mapped fibers")
         self.geometries = self._derive_geometries()
+        if self.fiber_force_scale_by_id is not None:
+            unknown = set(self.fiber_force_scale_by_id) - {
+                item.fiber_id for item in self.geometries
+            }
+            if unknown:
+                raise ValueError(
+                    f"fiber force scale references unknown fibers: {sorted(unknown)}"
+                )
+            if any(
+                not isfinite(float(value)) or float(value) <= 0.0
+                for value in self.fiber_force_scale_by_id.values()
+            ):
+                raise ValueError("fiber force projection scales must be positive")
         self.rest_lengths_m = {}
         for geometry in self.geometries:
             origin, insertion = self._attachment_points(geometry)
@@ -287,7 +301,14 @@ class NamedFiberBodyCoupling:
             passive = self.passive_stiffness * extension
             damping = self.damping * length_rate
             total = max(0.0, active + passive + damping)
-            force = direction * total
+            projection_scale = (
+                1.0
+                if self.fiber_force_scale_by_id is None
+                else float(
+                    self.fiber_force_scale_by_id.get(geometry.fiber_id, 1.0)
+                )
+            )
+            force = direction * (total * projection_scale)
             left_node = geometry.segment_index
             right_node = left_node + 1
             self._add_force(

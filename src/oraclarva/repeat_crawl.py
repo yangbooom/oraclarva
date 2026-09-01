@@ -111,13 +111,70 @@ def load_repeat_crawl_config(path: str | Path | None = None) -> dict[str, Any]:
     if (
         coupling.get("parameter_provenance") != "MODEL_FITTED"
         or coupling.get("force_unit") != "model_unit_not_newton"
+        or coupling.get("force_projection_mode") != "local_tangent_axial"
+        or coupling.get("force_projection_provenance") != "ANATOMY_DERIVED"
+        or coupling.get("balance_mapped_fiber_side_coverage") is not True
+        or coupling.get("coverage_balance_provenance") != "ANATOMY_DERIVED"
     ):
         raise ValueError("repeat-crawl mechanics boundary is invalid")
+    decay_by_segment = parameters.get(
+        "muscle_activation_decay_tau_s_by_segment", {}
+    )
+    shortening_by_segment = coupling.get(
+        "maximum_shortening_fraction_by_segment", {}
+    )
+    if (
+        set(decay_by_segment) != set(WAVE_SEGMENTS)
+        or set(shortening_by_segment) != set(WAVE_SEGMENTS)
+        or any(
+            not isfinite(float(value)) or float(value) <= 0.0
+            for value in decay_by_segment.values()
+        )
+        or any(
+            not isfinite(float(value)) or not 0.0 < float(value) < 1.0
+            for value in shortening_by_segment.values()
+        )
+        or not isfinite(float(coupling.get(
+            "passive_planar_bending_stiffness_ratio", 0.0
+        )))
+        or float(coupling.get(
+            "passive_planar_bending_stiffness_ratio", 0.0
+        )) <= 0.0
+        or not all(
+            0.0 <= float(coupling[name]) <= 1.0
+            for name in (
+                "ground_negative_x_retention",
+                "ground_positive_x_retention",
+            )
+        )
+    ):
+        raise ValueError("repeat-crawl fitted mechanics values are invalid")
+    movement_gate = raw.get("directional_shape_gate", {})
+    if (
+        movement_gate.get("parameter_provenance") != "MODEL_FITTED"
+        or any(
+            not isfinite(float(movement_gate.get(name, 0.0)))
+            or float(movement_gate.get(name, 0.0)) <= 0.0
+            for name in (
+                "minimum_forward_displacement_um",
+                "maximum_absolute_lateral_displacement_um",
+                "maximum_lateral_node_span_um",
+                "maximum_planar_node_deviation_um",
+                "minimum_forward_segment_alignment",
+                "minimum_head_tail_chord_ratio",
+            )
+        )
+    ):
+        raise ValueError("repeat-crawl directional shape gate is invalid")
     calibration = raw.get("calibration", {})
     if (
         calibration.get("selection_used_held_out_values") is not False
         or calibration.get("parameter_provenance") != "MODEL_FITTED"
         or calibration.get("release_validated") is not False
+        or calibration.get(
+            "model_revision_after_prior_held_out_evaluation"
+        ) is not True
+        or calibration.get("independent_held_out_claim_available") is not False
     ):
         raise ValueError("repeat-crawl calibration boundary is invalid")
     return raw
@@ -153,12 +210,20 @@ class CausalMotorTrace:
 class RepeatCrawlResult:
     duration_s: float
     displacement_x_um: float
+    displacement_y_um: float
+    forward_displacement_um: float
+    lateral_displacement_um: float
+    maximum_lateral_span_um: float
+    maximum_planar_deviation_um: float
+    minimum_forward_segment_alignment: float
+    minimum_head_tail_chord_ratio: float
     spike_counts: Mapping[str, int]
     first_spike_s: Mapping[str, float | None]
     premotor_spike_times_s: Mapping[str, tuple[float, ...]]
     motor_spike_times_s: Mapping[str, tuple[float, ...]]
     length_history_m: Mapping[str, tuple[float, ...]]
     center_x_history_m: tuple[float, ...]
+    forward_position_history_m: tuple[float, ...]
     activation_history: Mapping[str, tuple[float, ...]]
     trajectory_samples: tuple[dict[str, Any], ...]
     feedback_force_frames: int
@@ -176,14 +241,16 @@ class RepeatCrawlResult:
             zip(boundaries, boundaries[1:], strict=False)
         ):
             event_times: dict[str, float] = {}
+            previous_event_s = start_s - dt_s
             for segment in WAVE_SEGMENTS:
                 candidates = tuple(
                     value
                     for value in self.premotor_spike_times_s.get(segment, ())
-                    if start_s <= value < end_s
+                    if start_s <= value < end_s and value > previous_event_s
                 )
                 if candidates:
                     event_times[segment] = candidates[0]
+                    previous_event_s = candidates[0]
             neural_ordered = len(event_times) == len(WAVE_SEGMENTS) and all(
                 event_times[posterior] < event_times[anterior]
                 for posterior, anterior in zip(
@@ -193,7 +260,7 @@ class RepeatCrawlResult:
             if not neural_ordered:
                 continue
             start = max(0, round(start_s / dt_s))
-            end = min(len(self.center_x_history_m), round(end_s / dt_s))
+            end = min(len(self.forward_position_history_m), round(end_s / dt_s))
             if end - start < 3:
                 continue
             physical_onsets: dict[str, float] = {}
@@ -225,12 +292,21 @@ class RepeatCrawlResult:
                     before, after = values[index - 1], values[index]
                     if before > threshold >= after and before != after:
                         fraction = (before - threshold) / (before - after)
-                        onset_s = (index + fraction) * dt_s
+                        onset_s = (index - 1 + fraction) * dt_s
                         break
                 if onset_s is None:
                     missing_physical_response.append(segment)
                     continue
-                contraction_end_s = (trough_index + 1) * dt_s
+                contraction_end_s: float | None = None
+                for index in range(trough_index + 1, len(values)):
+                    before, after = values[index - 1], values[index]
+                    if before < threshold <= after and before != after:
+                        fraction = (threshold - before) / (after - before)
+                        contraction_end_s = (index - 1 + fraction) * dt_s
+                        break
+                if contraction_end_s is None:
+                    missing_physical_response.append(segment)
+                    continue
                 physical_onsets[segment] = onset_s
                 segment_metrics[segment] = {
                     "length_change_percent": 100.0 * amplitude / peak,
@@ -269,8 +345,8 @@ class RepeatCrawlResult:
                 "end_s": end_s,
                 "period_s": end_s - start_s,
                 "stride_um": (
-                    self.center_x_history_m[end - 1]
-                    - self.center_x_history_m[start]
+                    self.forward_position_history_m[end - 1]
+                    - self.forward_position_history_m[start]
                 ) * 1e6,
                 "neural_a1_a6_wave_speed_segments_s": (
                     5.0 / (event_times["A1"] - event_times["A6"])
@@ -478,6 +554,12 @@ class RepeatCrawlProtocol:
                 self.parameters["muscle_activation_decay_tau_s"]
             ),
             event_target=float(self.parameters["muscle_event_target"]),
+            rise_tau_s_by_segment=self.parameters.get(
+                "muscle_activation_rise_tau_s_by_segment"
+            ),
+            decay_tau_s_by_segment=self.parameters.get(
+                "muscle_activation_decay_tau_s_by_segment"
+            ),
         )
         self.adaptation = {
             f"mechanosensory:shortening:{segment}": 0.0
@@ -740,8 +822,13 @@ class RepeatCrawlLarva:
             lesion_motor_node_ids=lesion_motor_node_ids,
             lesion_fiber_ids=lesion_fiber_ids,
         )
-        self.body = ScientificBody3D(load_body_spec())
         coupling = self.config["named_fiber_body_coupling"]
+        self.body = ScientificBody3D(
+            load_body_spec(),
+            maximum_shortening_by_segment=coupling.get(
+                "maximum_shortening_fraction_by_segment"
+            ),
+        )
         dt = float(coupling["dt_s"])
         for _ in range(50):
             self.body.step(
@@ -757,10 +844,32 @@ class RepeatCrawlLarva:
             )
         for particle in self.body.particles:
             particle.previous_position = particle.position
+        side_counts: dict[tuple[str, str], int] = {}
+        for item in self.projection.mappings:
+            key = (item.segment_id, item.side)
+            side_counts[key] = side_counts.get(key, 0) + 1
+        fiber_force_scale_by_id = None
+        if coupling.get("balance_mapped_fiber_side_coverage", False):
+            segment_totals = {
+                segment: sum(
+                    side_counts.get((segment, side), 0)
+                    for side in ("left", "right")
+                )
+                for segment in WAVE_SEGMENTS
+            }
+            fiber_force_scale_by_id = {
+                item.fiber_id: (
+                    segment_totals[item.segment_id]
+                    / 2.0
+                    / side_counts[(item.segment_id, item.side)]
+                )
+                for item in self.projection.mappings
+            }
         self.coupling = NamedFiberBodyCoupling(
             body=self.body,
             projection=self.projection,
             dt_s=dt,
+            fiber_force_scale_by_id=fiber_force_scale_by_id,
             active_tension_gain=float(
                 coupling["active_tension_gain_model_units"]
             ),
@@ -781,9 +890,34 @@ class RepeatCrawlLarva:
         }
 
     @staticmethod
-    def _center_x(body: ScientificBody3D) -> float:
-        return sum(item.position.x for item in body.particles) / len(
-            body.particles
+    def _center(body: ScientificBody3D) -> Vec3:
+        count = len(body.particles)
+        return Vec3(
+            sum(item.position.x for item in body.particles) / count,
+            sum(item.position.y for item in body.particles) / count,
+            sum(item.position.z for item in body.particles) / count,
+        )
+
+    @classmethod
+    def _center_x(cls, body: ScientificBody3D) -> float:
+        return cls._center(body).x
+
+    @staticmethod
+    def _planar_deviation(body: ScientificBody3D) -> float:
+        head = body.particles[0].position
+        tail = body.particles[-1].position
+        axis_x = tail.x - head.x
+        axis_y = tail.y - head.y
+        magnitude = (axis_x * axis_x + axis_y * axis_y) ** 0.5
+        if magnitude == 0.0:
+            return float("inf")
+        return max(
+            abs(
+                (item.position.x - head.x) * axis_y
+                - (item.position.y - head.y) * axis_x
+            )
+            / magnitude
+            for item in body.particles
         )
 
     def _sample(
@@ -836,9 +970,19 @@ class RepeatCrawlLarva:
             if record_trajectory_interval_s is None
             else max(1, round(record_trajectory_interval_s / dt))
         )
-        initial_center = self._center_x(self.body)
+        initial_center = self._center(self.body)
+        head = self.body.particles[0].position
+        tail = self.body.particles[-1].position
+        forward = Vec3(head.x - tail.x, head.y - tail.y, 0.0).normalized()
+        lateral = Vec3(-forward.y, forward.x, 0.0)
         length_history = {segment: [] for segment in WAVE_SEGMENTS}
         center_x_history: list[float] = []
+        forward_position_history: list[float] = []
+        maximum_lateral_span = 0.0
+        maximum_planar_deviation = 0.0
+        minimum_forward_segment_alignment = 1.0
+        minimum_head_tail_chord_ratio = 1.0
+        posterior = forward * -1.0
         activation_history = {segment: [] for segment in WAVE_SEGMENTS}
         samples: list[dict[str, Any]] = []
         feedback_frames = 0
@@ -867,6 +1011,15 @@ class RepeatCrawlLarva:
                     self.protocol.last_force_trace_by_source
                 ),
             )
+            activation_by_segment = {}
+            for segment in WAVE_SEGMENTS:
+                values = [
+                    activation.activations[item.fiber_id]
+                    for item in self.projection.mappings
+                    if item.segment_id == segment
+                ]
+                activation_by_segment[segment] = sum(values) / len(values)
+            self.body.set_activations(activation_by_segment)
             if force.active_fiber_count > 0:
                 feedback_frames += 1
                 all_traced = all_traced and (
@@ -884,27 +1037,70 @@ class RepeatCrawlLarva:
                     if item.segment_id == segment
                 ]
                 local_tension_drive[segment] = sum(values) / len(values)
+            applied_node_forces = dict(force.node_forces_model_units)
+            applied_accelerations = dict(force.node_accelerations_m_s2)
+            if coupling.get("force_projection_mode") == "local_tangent_axial":
+                applied_node_forces = {}
+                applied_accelerations = {}
+                acceleration_scale = float(
+                    coupling["acceleration_scale_m_s2_per_model_force"]
+                )
+                for index, raw_force in force.node_forces_model_units.items():
+                    tangent = self.body.node_tangent_xy(index)
+                    axial_force = tangent * raw_force.dot(tangent)
+                    applied_node_forces[index] = axial_force
+                    applied_accelerations[index] = (
+                        axial_force * acceleration_scale
+                    )
             self.body.step(
                 dt,
                 gravity=Vec3(0.0, 0.0, -9.81),
                 ground_z=0.0,
-                external_accelerations_m_s2=force.node_accelerations_m_s2,
+                external_accelerations_m_s2=applied_accelerations,
                 velocity_retention=float(coupling["body_velocity_retention"]),
                 ground_velocity_retention_x=(
                     float(coupling["ground_negative_x_retention"]),
                     float(coupling["ground_positive_x_retention"]),
                 ),
                 use_local_tangent_friction=True,
+                directional_retention_includes_acceleration=True,
+                passive_planar_bending_stiffness_ratio=float(
+                    coupling.get("passive_planar_bending_stiffness_ratio", 1.0)
+                ),
             )
-            activation_by_segment: dict[str, float] = {}
-            center_x_history.append(self._center_x(self.body))
+            center = self._center(self.body)
+            center_x_history.append(center.x)
+            forward_position_history.append((center - initial_center).dot(forward))
+            lateral_positions = [
+                (item.position - initial_center).dot(lateral)
+                for item in self.body.particles
+            ]
+            maximum_lateral_span = max(
+                maximum_lateral_span,
+                max(lateral_positions) - min(lateral_positions),
+            )
+            maximum_planar_deviation = max(
+                maximum_planar_deviation, self._planar_deviation(self.body)
+            )
+            segment_vectors = [
+                self.body.particles[index + 1].position
+                - self.body.particles[index].position
+                for index in range(len(self.body.particles) - 1)
+            ]
+            minimum_forward_segment_alignment = min(
+                minimum_forward_segment_alignment,
+                *(value.normalized().dot(posterior) for value in segment_vectors),
+            )
+            polyline_length = sum(value.norm() for value in segment_vectors)
+            chord = (
+                self.body.particles[-1].position
+                - self.body.particles[0].position
+            ).norm()
+            minimum_head_tail_chord_ratio = min(
+                minimum_head_tail_chord_ratio,
+                chord / polyline_length if polyline_length else 0.0,
+            )
             for segment in WAVE_SEGMENTS:
-                values = [
-                    activation.activations[item.fiber_id]
-                    for item in self.projection.mappings
-                    if item.segment_id == segment
-                ]
-                activation_by_segment[segment] = sum(values) / len(values)
                 activation_history[segment].append(
                     activation_by_segment[segment]
                 )
@@ -918,12 +1114,21 @@ class RepeatCrawlLarva:
                     self._sample(
                         (step + 1) * dt,
                         activation_by_segment,
-                        force.node_forces_model_units,
+                        applied_node_forces,
                     )
                 )
+        final_center = self._center(self.body)
+        displacement = final_center - initial_center
         return RepeatCrawlResult(
             duration_s=steps * dt,
-            displacement_x_um=(self._center_x(self.body) - initial_center) * 1e6,
+            displacement_x_um=displacement.x * 1e6,
+            displacement_y_um=displacement.y * 1e6,
+            forward_displacement_um=displacement.dot(forward) * 1e6,
+            lateral_displacement_um=displacement.dot(lateral) * 1e6,
+            maximum_lateral_span_um=maximum_lateral_span * 1e6,
+            maximum_planar_deviation_um=maximum_planar_deviation * 1e6,
+            minimum_forward_segment_alignment=minimum_forward_segment_alignment,
+            minimum_head_tail_chord_ratio=minimum_head_tail_chord_ratio,
             spike_counts=dict(self.protocol.spike_counts),
             first_spike_s=dict(self.protocol.first_spike_s),
             premotor_spike_times_s={
@@ -939,6 +1144,7 @@ class RepeatCrawlLarva:
                 for segment, values in length_history.items()
             },
             center_x_history_m=tuple(center_x_history),
+            forward_position_history_m=tuple(forward_position_history),
             activation_history={
                 segment: tuple(values)
                 for segment, values in activation_history.items()

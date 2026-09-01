@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the frozen repeat-crawl trajectory as an honest animated GIF."""
+"""Render the checked corrective repeat-crawl trajectory as an honest GIF."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ FONT_MONO = Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
 WIDTH, HEIGHT, SS = 1080, 720, 2
 FRAME_COUNT = 51
 FRAME_DURATION_MS = 80
-WORLD_X = (-80.0, 1520.0)
+WORLD_X = (-450.0, 1100.0)
 WORLD_Y = (-260.0, 260.0)
 BODY_RECT = (54.0, 105.0, 1026.0, 435.0)
 WAVE_SEGMENTS = ("A6", "A5", "A4", "A3", "A2", "A1")
@@ -150,15 +150,6 @@ def draw_body(draw, frame, body):
         width=SS,
         joint="curve",
     )
-    head = centers[0]
-    radius = smooth_radii[0] * 0.30
-    draw.ellipse(
-        (
-            *scaled((head[0] - radius, head[1] - radius)),
-            *scaled((head[0] + radius, head[1] + radius)),
-        ),
-        fill=(82, 35, 47),
-    )
 
 def draw_wave_panel(draw, trajectory, frame_index):
     frames = trajectory["frames"]
@@ -194,27 +185,44 @@ def render_frame(trajectory, body, index):
     label(draw, (42, 25), "ORACLARVA / REPEAT CRAWL", (245, 231, 211), title)
     label(draw, (43, 62), "ONE POSTERIOR TOUCH → SENSORY → LIF → MN → 146 FIBERS → 13-NODE BODY → SENSORY", (168, 145, 169), mono)
     draw.rounded_rectangle((*scaled((36, 92)), *scaled((1044, 450))), radius=18 * SS, fill=(17, 12, 23), outline=(58, 41, 64), width=SS)
-    for tick in range(0, 1501, 250):
+    for tick in range(-250, 1001, 250):
         x, _ = world_to_screen((tick, 0, 0))
         draw.line((*scaled((x, 115)), *scaled((x, 422))), fill=(34, 25, 41), width=SS)
         label(draw, (x, 430), f"{tick} µm", (96, 80, 102), small, anchor="ms")
     draw.line((*scaled((BODY_RECT[0], 270)), *scaled((BODY_RECT[2], 270))), fill=(48, 36, 51), width=SS)
     draw_body(draw, frame, body)
+    draw.line(
+        (*scaled((220, 142)), *scaled((105, 142))),
+        fill=(116, 215, 167),
+        width=2 * SS,
+    )
+    draw.polygon(
+        [scaled((105, 142)), scaled((118, 135)), scaled((118, 149))],
+        fill=(116, 215, 167),
+    )
+    label(
+        draw,
+        (230, 136),
+        "ANATOMICAL FORWARD · ANTERIOR IS LEFT · NO EYE MARKER",
+        (151, 207, 193),
+        small,
+    )
     time_s = float(frame["time_s"])
     summary = trajectory["result_summary"]
     label(draw, (54, 112), f"t = {time_s:05.2f} s", (238, 216, 193), mono)
-    label(draw, (1024, 112), f"checked displacement = {summary['displacement_x_um']:.1f} µm", (238, 216, 193), mono, anchor="ra")
+    label(draw, (1024, 112), f"checked forward = {summary['forward_displacement_um']:+.1f} µm", (238, 216, 193), mono, anchor="ra")
     label(draw, (42, 470), "A6 → A1 named-fiber activation", (224, 205, 187), mono)
     draw_wave_panel(draw, trajectory, index)
     metrics = summary["cycle_metrics"]["median"]
     x = 827
-    label(draw, (x, 492), "FROZEN RESULT", (224, 205, 187), mono)
+    label(draw, (x, 492), "CALIBRATION RESULT", (224, 205, 187), mono)
     label(draw, (x, 520), f"cycles       3", (185, 164, 183), small)
     label(draw, (x, 540), f"period       {metrics['period_s']:.3f} s   PASS", (116, 215, 167), small)
     label(draw, (x, 560), f"stride       {metrics['stride_um']:.1f} µm  PASS", (116, 215, 167), small)
     label(draw, (x, 580), f"wave speed   {metrics['a1_a6_wave_speed_segments_s']:.3f} seg/s PASS", (116, 215, 167), small)
-    label(draw, (x, 604), "amplitude    FAIL", (244, 116, 133), small)
-    label(draw, (x, 624), "duty         FAIL", (244, 116, 133), small)
+    label(draw, (x, 604), "amplitude    PASS", (116, 215, 167), small)
+    label(draw, (x, 624), "duty         PASS", (116, 215, 167), small)
+    label(draw, (x, 644), "held-out A5/A6 duty: FAIL", (244, 116, 133), small)
     label(draw, (42, 680), "release_validated = false", (150, 126, 149), small)
     label(draw, (1038, 680), "NO GAIT COMMAND / NO FSM / NO AUTHORED MOTION", (150, 126, 149), small, anchor="rs")
     return canvas.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
@@ -229,7 +237,11 @@ def render(output: Path) -> None:
         or trajectory["action_command"] is not False
         or trajectory["periodic_stimulus"] is not False
         or trajectory["node_count"] != 13
-        or metrics["complete_cycle_count"] < 3
+        or metrics["complete_cycle_count"] != 3
+        or metrics["physical_wave_cycle_count"] != 3
+        or not all(
+            trajectory["result_summary"]["movement_gate"].values()
+        )
     ):
         raise RuntimeError("repeat-crawl GIF source contract is invalid")
     count = len(trajectory["frames"])

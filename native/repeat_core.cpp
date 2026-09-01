@@ -189,43 +189,53 @@ class RepeatBody {
     }
   }
 
+  RepeatVec3 ProjectToLocalAxis(
+      std::size_t index, const RepeatVec3& value) const {
+    const RepeatVec3 tangent = NodeTangentXY(index);
+    return Multiply(tangent, Dot(value, tangent));
+  }
+
   void Step(
       double dt_s,
       const RepeatParameters& p,
-      const std::vector<RepeatVec3>& external_accelerations) {
+      const std::vector<RepeatVec3>& external_accelerations,
+      const std::vector<double>& activations) {
     if (external_accelerations.size() != particles_.size()) {
       throw std::runtime_error("repeat body acceleration size mismatch");
     }
+    if (activations.size() != geometry_.size()) {
+      throw std::runtime_error("repeat body activation size mismatch");
+    }
     for (std::size_t index = 0; index < particles_.size(); ++index) {
       Particle& particle = particles_[index];
-      RepeatVec3 velocity = Multiply(
+      const RepeatVec3 velocity = Multiply(
           Subtract(particle.position, particle.previous_position),
           p.body_velocity_retention);
       const double clearance = NodeClearance(index);
-      if (particle.position.z <= p.ground_z_m + clearance + 1e-15) {
-        const RepeatVec3 tangent = NodeTangentXY(index);
-        const RepeatVec3 lateral{-tangent.y, tangent.x, 0.0};
-        const double tangential_speed = Dot(velocity, tangent);
-        const double lateral_speed = Dot(velocity, lateral);
-        const double retention = tangential_speed < 0.0
-            ? p.ground_negative_x_retention
-            : p.ground_positive_x_retention;
-        const RepeatVec3 planar = Add(
-            Multiply(tangent, tangential_speed * retention),
-            Multiply(
-                lateral,
-                lateral_speed * std::min(
-                    p.ground_negative_x_retention,
-                    p.ground_positive_x_retention)));
-        velocity = {planar.x, planar.y, velocity.z};
-      }
       const RepeatVec3 old_position = particle.position;
       const RepeatVec3 acceleration = Add(
           {0.0, 0.0, p.gravity_z_m_s2},
           external_accelerations[index]);
-      particle.position = Add(
-          Add(particle.position, velocity),
-          Multiply(acceleration, dt_s * dt_s));
+      RepeatVec3 displacement = Add(
+          velocity, Multiply(acceleration, dt_s * dt_s));
+      if (particle.position.z <= p.ground_z_m + clearance + 1e-15) {
+        const RepeatVec3 tangent = NodeTangentXY(index);
+        const RepeatVec3 lateral{-tangent.y, tangent.x, 0.0};
+        const double tangential = Dot(displacement, tangent);
+        const double lateral_value = Dot(displacement, lateral);
+        const double retention = tangential < 0.0
+            ? p.ground_negative_x_retention
+            : p.ground_positive_x_retention;
+        const RepeatVec3 planar = Add(
+            Multiply(tangent, tangential * retention),
+            Multiply(
+                lateral,
+                lateral_value * std::min(
+                    p.ground_negative_x_retention,
+                    p.ground_positive_x_retention)));
+        displacement = {planar.x, planar.y, displacement.z};
+      }
+      particle.position = Add(particle.position, displacement);
       particle.previous_position = old_position;
       if (particle.position.z < p.ground_z_m + clearance) {
         particle.position.z = p.ground_z_m + clearance;
@@ -242,8 +252,10 @@ class RepeatBody {
             Subtract(right.position, left.position);
         const double distance = Norm(delta);
         if (distance == 0.0) continue;
-        const double constraint =
-            distance - geometry_[index].rest_length_m;
+        const double target = geometry_[index].rest_length_m * (
+            1.0 - geometry_[index].maximum_shortening_fraction
+                * activations[index]);
+        const double constraint = distance - target;
         const double denominator =
             left.inverse_mass + right.inverse_mass + alpha;
         const double lagrange = -constraint / denominator;
@@ -397,18 +409,21 @@ RepeatCycleMetrics MeasureCycles(
     const double end_s = boundaries[cycle + 1];
     std::vector<double> events(6, 0.0);
     bool neural_ordered = true;
+    double previous_event_s = start_s - dt_s;
     for (std::size_t segment = 0; segment < 6; ++segment) {
       const auto found = std::find_if(
           premotor[segment].begin(),
           premotor[segment].end(),
-          [start_s, end_s](double value) {
-            return start_s <= value && value < end_s;
+          [start_s, end_s, previous_event_s](double value) {
+            return start_s <= value && value < end_s
+                && value > previous_event_s;
           });
       if (found == premotor[segment].end()) {
         neural_ordered = false;
         break;
       }
       events[segment] = *found;
+      previous_event_s = *found;
       if (segment > 0 && events[segment - 1] >= events[segment]) {
         neural_ordered = false;
         break;
@@ -424,7 +439,7 @@ RepeatCycleMetrics MeasureCycles(
     ++result.complete_cycle_count;
     periods.push_back(end_s - start_s);
     strides.push_back(
-        (centers.at(end - 1) - centers.at(start)) * 1e6);
+        -(centers.at(end - 1) - centers.at(start)) * 1e6);
 
     std::vector<double> onsets(6, 0.0);
     bool physical_ordered = true;
@@ -465,7 +480,7 @@ RepeatCycleMetrics MeasureCycles(
           const double fraction =
               (before - threshold) / (before - after);
           onsets[segment] =
-              (static_cast<double>(index) + fraction) * dt_s;
+              (static_cast<double>(index - 1) + fraction) * dt_s;
           found_onset = true;
           break;
         }
@@ -553,16 +568,17 @@ RepeatFixture LoadRepeatFixture(const std::string& path) {
       }
       fixture.neuron_labels[index] = fields[2];
     } else if (kind == "body_segment") {
-      RequireFields(fields, 7, line_number);
+      RequireFields(fields, 8, line_number);
       const std::size_t index = std::stoul(fields[1]);
       if (index != fixture.body_segments.size()) {
         throw std::runtime_error("repeat body segments must be contiguous");
       }
       fixture.body_segments.push_back({
           fields[2], std::stod(fields[3]), std::stod(fields[4]),
-          std::stod(fields[5]), std::stod(fields[6])});
+          std::stod(fields[5]), std::stod(fields[6]),
+          std::stod(fields[7])});
     } else if (kind == "wave_segment") {
-      RequireFields(fields, 8, line_number);
+      RequireFields(fields, 9, line_number);
       const std::size_t index = std::stoul(fields[1]);
       if (index != fixture.wave_segments.size()) {
         throw std::runtime_error("repeat wave segments must be contiguous");
@@ -570,7 +586,7 @@ RepeatFixture LoadRepeatFixture(const std::string& path) {
       fixture.wave_segments.push_back({
           fields[2], std::stoul(fields[3]), std::stoul(fields[4]),
           std::stoul(fields[5]), std::stoul(fields[6]),
-          SplitIndices(fields[7])});
+          SplitIndices(fields[7]), std::stod(fields[8])});
     } else if (kind == "synapse") {
       RequireFields(fields, 6, line_number);
       if (fields[4] != "excitatory" && fields[4] != "inhibitory") {
@@ -581,7 +597,7 @@ RepeatFixture LoadRepeatFixture(const std::string& path) {
           std::stod(fields[3]), fields[4] == "inhibitory",
           std::stoi(fields[5])});
     } else if (kind == "fiber") {
-      RequireFields(fields, 15, line_number);
+      RequireFields(fields, 16, line_number);
       const std::size_t index = std::stoul(fields[1]);
       if (index != fixture.fibers.size()) {
         throw std::runtime_error("repeat fibers must be contiguous");
@@ -591,7 +607,7 @@ RepeatFixture LoadRepeatFixture(const std::string& path) {
           std::stoul(fields[6]), std::stoul(fields[7]),
           {std::stod(fields[8]), std::stod(fields[9]), std::stod(fields[10])},
           {std::stod(fields[11]), std::stod(fields[12]), std::stod(fields[13])},
-          fields[14]});
+          fields[14], std::stod(fields[15])});
     } else {
       throw std::runtime_error(
           "unknown repeat fixture row at line "
@@ -604,8 +620,7 @@ RepeatFixture LoadRepeatFixture(const std::string& path) {
       || fixture.model_id != "dmel_l1_repeat_crawl_v0"
       || fixture.status != "research_approximation"
       || fixture.release_validated
-      || fixture.config_sha256
-          != "5cbaec6a716cf2b8dd2d8e053b00469f5e9f09389fa74645c17a148143b936e3") {
+      || fixture.config_sha256.size() != 64) {
     throw std::runtime_error("repeat fixture claim/freeze boundary is invalid");
   }
   if (fixture.neuron_count != 164
@@ -614,7 +629,7 @@ RepeatFixture LoadRepeatFixture(const std::string& path) {
       || fixture.wave_segments.size() != 6
       || fixture.synapses.size() != 307
       || fixture.fibers.size() != 146
-      || fixture.steps != 16000
+      || fixture.steps != 14600
       || fixture.sample_stride != 30
       || fixture.equilibrium_steps != 50) {
     throw std::runtime_error("repeat fixture structural contract is invalid");
@@ -662,7 +677,7 @@ struct RepeatSimulation::Impl {
   double initial_center = 0.0;
   double adaptation_decay = 0.0;
   double rise = 0.0;
-  double decay = 0.0;
+  std::array<double, 6> decay_by_wave{};
   int step_index = 0;
 
   Impl(const RepeatFixture& fixture_value, const RepeatOptions& options_value)
@@ -698,8 +713,10 @@ struct RepeatSimulation::Impl {
     ApplyLesions();
     const std::vector<RepeatVec3> no_acceleration(
         fixture.body_segments.size() + 1);
+    const std::vector<double> no_activation(
+        fixture.body_segments.size(), 0.0);
     for (int index = 0; index < fixture.equilibrium_steps; ++index) {
-      body.Step(dt_s, p, no_acceleration);
+      body.Step(dt_s, p, no_acceleration, no_activation);
     }
     body.ResetVelocity();
 
@@ -750,8 +767,11 @@ struct RepeatSimulation::Impl {
         std::exp(-dt_s / p.sensory_adaptation_tau_s);
     rise =
         1.0 - std::exp(-dt_s / p.muscle_activation_rise_tau_s);
-    decay =
-        1.0 - std::exp(-dt_s / p.muscle_activation_decay_tau_s);
+    for (std::size_t segment = 0; segment < 6; ++segment) {
+      decay_by_wave[segment] = 1.0 - std::exp(
+          -dt_s
+          / fixture.wave_segments[segment].muscle_activation_decay_tau_s);
+    }
   }
 
   void ApplyLesions() {
@@ -970,7 +990,10 @@ struct RepeatSimulation::Impl {
         last_spike[index] = pending[index].source_spike_time_s;
         last_trace[index] = pending[index].trace;
       } else {
-        activation[index] += (0.0 - activation[index]) * decay;
+        const std::size_t wave = FindWaveIndex(
+            fixture, fixture.fibers[index].segment_id);
+        activation[index] +=
+            (0.0 - activation[index]) * decay_by_wave[wave];
       }
       activation[index] =
           std::min(1.0, std::max(0.0, activation[index]));
@@ -1044,7 +1067,8 @@ struct RepeatSimulation::Impl {
           p.damping_model_units * length_rate;
       const double total =
           std::max(0.0, active + passive + damping);
-      const RepeatVec3 force = Multiply(direction, total);
+      const RepeatVec3 force = Multiply(
+          direction, total * fiber.force_projection_scale);
       const std::size_t left = fiber.body_index;
       const std::size_t right = left + 1;
       node_force[left] = Add(
@@ -1081,11 +1105,18 @@ struct RepeatSimulation::Impl {
         fixture.body_segments.size() + 1);
     for (std::size_t node = 0;
          node < accelerations.size(); ++node) {
+      node_force[node] = body.ProjectToLocalAxis(node, node_force[node]);
       accelerations[node] = Multiply(
           node_force[node],
           p.acceleration_scale_m_s2_per_model_force);
     }
-    body.Step(dt_s, p, accelerations);
+    std::vector<double> body_activation(
+        fixture.body_segments.size(), 0.0);
+    for (std::size_t segment = 0; segment < 6; ++segment) {
+      body_activation[fixture.wave_segments[segment].body_index] =
+          local_tension[segment];
+    }
+    body.Step(dt_s, p, accelerations, body_activation);
     last_node_force = node_force;
 
     center_history.push_back(body.CenterX());

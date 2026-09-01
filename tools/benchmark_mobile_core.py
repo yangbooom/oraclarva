@@ -24,7 +24,7 @@ RUNS = 7
 
 BUDGETS = {
     "initialize_ms_max": 250.0,
-    "full_16s_run_median_ms_max": 1000.0,
+    "full_standard_run_median_ms_max": 1000.0,
     "simulated_seconds_per_wall_second_min": 10.0,
     "peak_process_rss_kib_max": 65536,
     "snapshot_struct_bytes_max": 4096,
@@ -99,15 +99,16 @@ def measure() -> dict[str, Any]:
         raise RuntimeError("mobile benchmark reset replay mismatch")
     if metadata[4] != "release_validated=false":
         raise RuntimeError("mobile benchmark lost scientific status boundary")
-    expected_digest = json.loads(INTEGRATION.read_text())["result_summary"][
-        "canonical_fnv1a64"
-    ]
+    integration = json.loads(INTEGRATION.read_text())
+    expected_digest = integration["result_summary"]["canonical_fnv1a64"]
+    workload_steps = int(integration["fixed_step"]["steps"])
+    workload_dt_s = float(integration["fixed_step"]["dt_s"])
     if digest != expected_digest:
         raise RuntimeError("benchmark workload digest differs from integration gate")
 
     measurements = {
         "initialize_ms": float(benchmark[0]),
-        "full_16s_run_median_ms": float(benchmark[1]),
+        "full_standard_run_median_ms": float(benchmark[1]),
         "simulated_seconds_per_wall_second": float(benchmark[2]),
         "peak_process_rss_kib": int(benchmark[3]),
         "snapshot_struct_bytes": int(benchmark[4]),
@@ -119,8 +120,8 @@ def measure() -> dict[str, Any]:
     }
     gates = {
         "initialize": measurements["initialize_ms"] <= BUDGETS["initialize_ms_max"],
-        "full_run": measurements["full_16s_run_median_ms"]
-        <= BUDGETS["full_16s_run_median_ms_max"],
+        "full_run": measurements["full_standard_run_median_ms"]
+        <= BUDGETS["full_standard_run_median_ms_max"],
         "throughput": measurements["simulated_seconds_per_wall_second"]
         >= BUDGETS["simulated_seconds_per_wall_second_min"],
         "rss": measurements["peak_process_rss_kib"]
@@ -176,8 +177,8 @@ def measure() -> dict[str, Any]:
         },
         "workload": {
             "fixed_dt_s": float(metadata[6]),
-            "steps": 16000,
-            "simulated_duration_s": 16.0,
+            "steps": workload_steps,
+            "simulated_duration_s": workload_steps * workload_dt_s,
             "posterior_touch_steps": 2,
             "posterior_touch_intensity": 1.0,
             "median_run_count": RUNS,
@@ -194,7 +195,7 @@ def measure() -> dict[str, Any]:
             "This is a process-level Linux host proxy, not Android or iOS device data.",
             "Peak RSS includes the executable, C++ runtime, fixture, and measurement process.",
             "Timing varies with host load and is an engineering budget, not a biological parameter.",
-            "Passing this benchmark does not repair held-out amplitude or duty failures.",
+            "Passing this benchmark does not create an independent held-out behavioral validation claim.",
         ],
     }
 

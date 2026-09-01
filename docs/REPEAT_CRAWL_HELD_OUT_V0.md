@@ -1,129 +1,106 @@
-# Repeat crawl and held-out evaluation v0
+# Repeat crawl corrective mechanics and held-out diagnostic v0
 
 ## Result
 
-Stage 6 generates three complete posterior-to-anterior A6-A1 cycles after one
-posterior touch. There is no periodic stimulus, gait command, finite-state
-machine, policy network, or animation-authored displacement. Each repeated wave
-must return through the body:
+One posterior touch produces three complete A6-to-A1 physical waves without a
+periodic stimulus, gait command, FSM, policy network, or animation-authored
+displacement. The checked causal path remains:
 
-    initial posterior touch
-      -> touch receptor -> sparse LIF premotor -> mapped MN identities
-      -> one-step muscle activation -> 146 named-fiber attachment forces
-      -> shared 13-node body shortening/recovery
-      -> shortening receptor for the next anterior segment
-      -> A1 recovery receptor -> delayed A6 restart
+    environment touch -> sensory transduction -> sparse LIF -> mapped MN
+      -> named-fiber activation -> reduced axial muscle/body physics
+      -> contact environment -> shortening/recovery sensation
 
-The checked 16 s run contains A6 premotor events at 0.003, 4.995, 10.006, and
-15.017 s. Every nonzero attachment-force frame has an earlier body-state or
-declared initial-touch sample, sensory spike, premotor spike, mapped MN spike,
-and activation event. Zero input remains silent.
+The corrected 14.600 s run has A6 premotor boundaries at 0.003, 4.997,
+9.715, and 14.417 s. Every active mechanical frame retains earlier sensory,
+premotor, MN, and activation ancestry. Zero input remains silent.
 
-This is a research approximation, not validated L1 crawling. The frozen model
-passes held-out timing and stride but fails every segment-shape comparison.
-release_validated therefore remains false.
+The world body coordinate increases anterior-to-posterior, so anatomical
+forward is negative world x. The checked result reports both quantities:
+`displacement_x_um = -299.962` and `forward_displacement_um = +299.962`.
+The render no longer draws a black head dot: it shows an explicit left-pointing
+anatomical-forward label, and there is no eye marker.
 
-## Evidence and parameter boundary
+## Corrected mechanics boundary
 
-The reduced shortening-to-next-premotor and A1-recovery-to-A6 topology is
-ANATOMY_DERIVED. It is a segmental circuit hypothesis, not a claim that these
-are identified monosynaptic L1 edges. A1 uses published mapped motor identities
-where available; A2-A6 use the existing explicitly derived homolog channels.
-T3 and A7 remain blocked because the attachment runtime supports A1-A6 only.
+The earlier artifact was invalid as a forward-crawl visual: it accepted positive
+world-x stride even though node 0 is anterior, current-step muscle acceleration
+bypassed directional ground retention, and muscle activation did not update the
+body's active target length. The chain could therefore translate posteriorly
+while buckling laterally.
 
-Every new current, delay, adaptation constant, sensory gain, activation
-constant, attachment tension, passive stiffness, damping, acceleration scale,
-and friction value is MODEL_FITTED. Tension remains in model units, never
-newtons. No measured attachment coordinate, CSA, Fmax, or specific stress is
-introduced.
+The correction is restricted to biological/physical model layers:
 
-The 12-animal Greaney calibration partition was used to select the frozen
-candidate. Held-out values already existed in the repository, so the project
-does not claim they were inaccessible; it records the narrower and auditable
-claim that candidate selection did not use them. The frozen config SHA-256 is:
+- directional retention acts on velocity plus current external acceleration;
+- mean traced A1-A6 activation updates active segment target length;
+- per-segment activation decay and maximum shortening are `MODEL_FITTED`;
+- mapped-fiber left/right sums are normalized for unequal atlas coverage;
+- because individual L1 3D attachment vectors are not measured, straight-crawl
+  executes only the `ANATOMY_DERIVED` local-axis component of mapped tension;
+- a passive planar bending constraint resists numerical chain buckling;
+- signed forward, lateral span/deviation, segment alignment, and head-tail chord
+  ratio are acceptance measurements, never behavior commands.
 
-    5cbaec6a716cf2b8dd2d8e053b00469f5e9f09389fa74645c17a148143b936e3
+No coordinate, CSA, Fmax, stress, or force value is relabeled as measured. Force
+remains in model units. The reduced shortening relays and A1 recovery relay
+remain anatomy-derived circuit hypotheses, not identified complete L1 paths.
 
-Candidate force scales below the selected fixture produced first-cycle strides
-of 51.553 µm (50x) and 111.350 µm (100x), below the calibration p10. The
-selected 126x model-unit combination produced 143.397 µm on the first
-calibration run. These labels describe relative model-force products, not
-biological force.
+## Measurement and gates
 
-## Physical metric detector
+Contraction onset is the downward 25% shortening crossing. Contraction offset is
+the later upward crossing through the same threshold, including when recovery
+extends beyond the next cycle boundary. Within each A6 boundary interval, the
+first strictly posterior-to-anterior premotor sequence is associated with that
+wave so a trailing event cannot be assigned to a newer wave.
 
-Successive body-caused A6 premotor events bound a cycle. For each traceable
-segment premotor event, the detector searches only the next 0.8 s of that
-segment's physical length. Onset is the first 25% shortening crossing and
-contraction end is the minimum length in that response window. Missing physical
-responses or a non-posterior-to-anterior onset order make physical wave speed
-fail closed. The neural event speed is retained only as a diagnostic and is not
-substituted for a missing physical metric.
+The three-cycle medians are:
 
-The frozen three-cycle medians are:
+| Metric | Model | Calibration p10-p90 | Calibration |
+|---|---:|---:|:---:|
+| cycle period (s) | 4.718 | 3.752-6.125 | pass |
+| signed forward stride (um) | 149.361 | 140.327-179.485 | pass |
+| A6-A1 physical wave speed (segment/s) | 1.667 | 1.468-2.122 | pass |
 
-| Metric | Model | Calibration p10-p90 | Held-out p10-p90 | Held-out |
-|---|---:|---:|---:|:---:|
-| cycle period (s) | 5.011 | 3.752-6.125 | 4.104-5.384 | pass |
-| stride (µm) | 145.866 | 140.327-179.485 | 129.765-159.675 | pass |
-| A6-A1 physical wave speed (segment/s) | 1.673 | 1.468-2.122 | 1.578-2.345 | pass |
+| Segment | length change (%) | duty (%) | Calibration |
+|---|---:|---:|:---:|
+| A1 | 46.326 | 32.979 | pass |
+| A2 | 46.911 | 37.284 | pass |
+| A3 | 49.993 | 39.021 | pass |
+| A4 | 51.344 | 43.810 | pass |
+| A5 | 49.570 | 45.213 | pass |
+| A6 | 48.609 | 41.486 | pass |
 
-Segment shape does not match:
+The directional/shape gate also passes: lateral displacement, maximum lateral
+node span, and maximum planar deviation are zero; minimum forward segment
+alignment is 0.953 and minimum head-tail chord/polyline ratio is 0.994.
 
-| Segment | Model length change (%) | Held-out p10-p90 | Model duty (%) | Held-out p10-p90 |
-|---|---:|---:|---:|---:|
-| A1 | 0.010 | 38.984-52.688 | 7.509 | 32.546-44.774 |
-| A2 | 0.113 | 44.762-52.118 | 0.133 | 35.321-48.959 |
-| A3 | 0.118 | 45.757-53.757 | 0.173 | 38.201-49.580 |
-| A4 | 0.092 | 48.055-54.029 | 0.173 | 43.246-52.128 |
-| A5 | 0.071 | 46.707-53.192 | 12.104 | 45.825-52.538 |
-| A6 | 0.025 | 48.585-53.859 | 0.473 | 41.628-47.306 |
+## Held-out honesty
 
-The six-animal held-out partition was evaluated once after the config and
-trajectory were frozen. Parameters were not changed afterward. Passing three
-global timing metrics does not override the twelve failed amplitude/duty rows.
+The model was changed after the prior held-out evaluation. Although corrective
+selection used only the 12-animal calibration bands, the six held-out animals
+were already visible and had already been evaluated. A new untouched held-out
+claim is therefore unavailable. The second evaluation is labeled diagnostic,
+not independent.
 
-## Lesion and failure gates
+The diagnostic held-out result fails A5 and A6 duty cycle. More importantly,
+`independent_validation_passed` is false and `fail_closed` is true regardless of
+individual rows. `release_validated` remains false.
 
-- no initial touch: zero spikes, zero force, zero translation;
-- A6 shortening-sensory lesion: A6 fires from touch, A5 and later do not;
-- A4 premotor lesion: A6 and A5 remain, A4 and later do not;
-- all A6 mapped-MN lesion: A6 premotor remains, MN spikes and force disappear;
-- all A6 fiber lesion: premotor and MN spikes remain, force disappears;
-- invalid sensory, MN, or fiber IDs are rejected;
-- fewer than three complete cycles, missing trace ancestry, or failed physical
-  onset order blocks export or validation.
+## Failure gates and reproduction
 
-## Reproduction
+Export fails unless all three cycles have ordered physical responses, all active
+forces are traced, signed forward displacement is positive, lateral and planar
+limits pass, every segment preserves forward order, and the chord ratio stays
+above its fitted floor. Sensory, premotor, mapped-MN, and fiber lesions retain
+the earlier fail-closed causal boundaries.
 
-The checked artifact and reports are:
+```bash
+python tools/export_repeat_crawl_trajectory.py --check
+python tools/evaluate_repeat_crawl.py --check
+python tools/render_repeat_crawl_gif.py
+pytest -q tests/test_repeat_crawl.py tests/test_body.py tests/test_muscles.py
+```
 
-- data/trajectories/l1_repeat_crawl_v0.json
-- data/validation/repeat_crawl_calibration_v0.json
-- data/validation/repeat_crawl_held_out_v0.json
-
-    python tools/export_repeat_crawl_trajectory.py --check
-    python tools/evaluate_repeat_crawl.py --check
-    python tools/render_repeat_crawl_gif.py
-    pytest -q tests/test_repeat_crawl.py tests/test_kinematics.py
-
-The GIF is rendered only from checked body nodes and activation values. Its
-smoothed capsule-union skin is a render mesh over the internal mechanics, not
-an animation that changes motion.
-
-## Native parity
-
-Stage 7 now executes this frozen path in both Python and a dependency-free C++17
-core using one generated fixture. All 164 neuron spike counts/first-spike times,
-535 sampled node/activation/force frames, trace ancestry, three complete cycles,
-three physical waves, summary metrics, zero input, and four causal lesion cases
-pass the declared numerical gates. The C++ result is computed, not replayed
-from the Python trajectory.
-
-This does not repair the behavioral failures above. Native output and the
-checked parity report retain all twelve failed amplitude/duty comparisons and
-`release_validated=false`. See
-`docs/REPEAT_CRAWL_NATIVE_PARITY_V1.md` for exact tolerances and reproduction.
-
-GitHub Actions remains manual-only through `workflow_dispatch` and was not run
-for this stage.
+The GIF is generated only from checked body nodes and activations. Its smooth
+skin is a read-only render construction over the internal mechanics.
+GitHub Actions remains manual-only through `workflow_dispatch` and is not run by
+this work.

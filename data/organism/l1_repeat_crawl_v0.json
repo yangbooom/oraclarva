@@ -41,7 +41,7 @@
   },
   "parameters": {
     "dt_s": 0.001,
-    "duration_s": 16.0,
+    "duration_s": 14.6,
     "posterior_touch_current_a": 4e-09,
     "posterior_touch_duration_s": 0.002,
     "premotor_synaptic_current_a": 1.8e-09,
@@ -52,15 +52,23 @@
     "a1_recovery_to_a6_delay_s": 2.0,
     "sensory_maximum_current_a": 4e-09,
     "sensory_adaptation_tau_s": 4.0,
-    "sensory_adaptation_fraction": 2.0,
+    "sensory_adaptation_fraction": 3.35,
     "recovery_rate_threshold_s_1": 1e-05,
     "recovery_rate_gain_s": 100000.0,
     "trace_arrival_window_s": 0.08,
-    "muscle_activation_rise_tau_s": 0.002,
-    "muscle_activation_decay_tau_s": 0.3,
+    "muscle_activation_rise_tau_s": 0.0003,
+    "muscle_activation_decay_tau_s": 1.5,
     "muscle_event_target": 1.0,
     "local_tension_gate_gain": 1000.0,
-    "recovery_adaptation_fraction": 3.0
+    "recovery_adaptation_fraction": 3.0,
+    "muscle_activation_decay_tau_s_by_segment": {
+      "A1": 1.16038,
+      "A2": 1.34253,
+      "A3": 1.4127,
+      "A4": 1.64778,
+      "A5": 1.7232,
+      "A6": 1.53105
+    }
   },
   "body_state_transduction": {
     "model_id": "dmel_l1_repeat_crawl_body_state_v0",
@@ -83,12 +91,27 @@
     "active_tension_gain_model_units": 165.0,
     "passive_stiffness_model_units": 180.0,
     "damping_model_units": 24.0,
-    "acceleration_scale_m_s2_per_model_force": 0.023,
+    "acceleration_scale_m_s2_per_model_force": 0.003,
     "body_velocity_retention": 0.5,
-    "ground_negative_x_retention": 0.9,
-    "ground_positive_x_retention": 0.1,
+    "ground_negative_x_retention": 0.603,
+    "ground_positive_x_retention": 0.397,
     "parameter_provenance": "MODEL_FITTED",
-    "force_unit": "model_unit_not_newton"
+    "force_unit": "model_unit_not_newton",
+    "passive_planar_bending_stiffness_ratio": 25.0,
+    "maximum_shortening_fraction_by_segment": {
+      "A1": 0.4812055,
+      "A2": 0.48953133,
+      "A3": 0.523,
+      "A4": 0.542,
+      "A5": 0.526,
+      "A6": 0.51304524
+    },
+    "balance_mapped_fiber_side_coverage": true,
+    "coverage_balance_provenance": "ANATOMY_DERIVED",
+    "coverage_balance_equation": "Within each segment, scale each mapped fiber by half the total mapped-fiber count divided by its side count; this removes left/right sampling-count bias without creating unmapped fibers.",
+    "force_projection_mode": "local_tangent_axial",
+    "force_projection_provenance": "ANATOMY_DERIVED",
+    "force_projection_limitation": "The reduced straight-crawl body executes the axial component of mapped-fiber tension only because individual L1 3D attachments and force vectors are not measured; spatial steering uses separate bilateral and dorsoventral models."
   },
   "calibration": {
     "partition": "12 Greaney 2026 calibration animals only",
@@ -100,11 +123,10 @@
     ],
     "parameter_provenance": "MODEL_FITTED",
     "release_validated": false,
-    "fit_status": "frozen_before_single_held_out_evaluation",
-    "frozen_on": "2026-08-31",
+    "fit_status": "corrected_after_directional_mechanics_audit",
     "selection_used_held_out_values": false,
     "held_out_values_were_present_in_repository": true,
-    "selection_rule": "Choose only against the 12-animal calibration p10-p90 bands; held-out values must not change parameters after this freeze.",
+    "selection_rule": "Correct mechanics defects, then fit only to the 12-animal calibration p10-p90 bands; the already-seen held-out partition is reported as diagnostic and cannot support an independent validation claim.",
     "calibration_target_snapshot": {
       "cycle_period_s": {
         "p10": 3.751851,
@@ -188,20 +210,40 @@
         165.0
       ],
       "acceleration_scale_m_s2_per_model_force": [
-        0.01,
-        0.023
+        0.002,
+        0.01
       ],
       "body_velocity_retention": [
         0.5,
         0.5
       ],
       "ground_negative_x_retention": [
-        0.9,
-        0.9
+        0.6,
+        0.61
       ],
       "ground_positive_x_retention": [
-        0.1,
-        0.1
+        0.39,
+        0.4
+      ],
+      "muscle_activation_rise_tau_s": [
+        0.0003,
+        0.002
+      ],
+      "muscle_activation_decay_tau_s_by_segment": [
+        1.16038,
+        1.7232
+      ],
+      "maximum_shortening_fraction_by_segment": [
+        0.4812055,
+        0.542
+      ],
+      "passive_planar_bending_stiffness_ratio": [
+        1.0,
+        100.0
+      ],
+      "sensory_adaptation_fraction": [
+        2.0,
+        3.5
       ]
     },
     "candidate_audit": [
@@ -237,8 +279,35 @@
       "cycle_boundary": "successive A6 premotor spikes caused by initial touch then A1 body-recovery feedback",
       "physical_response_window_s": 0.8,
       "onset": "first 25% shortening crossing after the traceable segment premotor event",
-      "contraction_end": "minimum segment length in the response window",
-      "failure_policy": "missing or non-posterior-to-anterior physical responses make wave-speed validation fail closed"
+      "contraction_end": "first upward recovery through the same 25% shortening threshold after the local minimum",
+      "failure_policy": "missing or non-posterior-to-anterior physical responses make wave-speed validation fail closed",
+      "stride_direction": "positive projection onto the initial tail-to-head anatomical forward axis; raw world-x displacement is reported separately",
+      "straightness_gate": "maximum lateral node span and maximum node deviation from the instantaneous head-tail line",
+      "wave_association": "Within each A6 boundary interval, associate the first strictly posterior-to-anterior premotor sequence; ignore trailing events from an older wave.",
+      "contraction_end_search": "Search forward beyond the next cycle boundary when needed; contraction duration may overlap the next cycle.",
+      "standard_run_end": "14.600 s: includes recovery through the 25% threshold for A1 in the third complete cycle while excluding most of the fourth wave; selected from neural/physical event timing, not visual pose."
+    },
+    "fitted_on": "2026-09-01",
+    "prior_held_out_evaluation_count": 1,
+    "model_revision_after_prior_held_out_evaluation": true,
+    "independent_held_out_claim_available": false,
+    "corrective_candidate_audit": {
+      "selection_partition": "12-animal calibration only",
+      "rejected_failure_modes": [
+        "posteriorward signed displacement",
+        "lateral buckling",
+        "collinear node-order reversal",
+        "stride outside calibration p10-p90"
+      ],
+      "selected": {
+        "acceleration_scale_m_s2_per_model_force": 0.003,
+        "ground_negative_x_retention": 0.603,
+        "ground_positive_x_retention": 0.397,
+        "sensory_adaptation_fraction": 3.35,
+        "maximum_shortening_fraction_A3": 0.523,
+        "maximum_shortening_fraction_A5": 0.526
+      },
+      "parameter_provenance": "MODEL_FITTED"
     }
   },
   "release_validated": false,
@@ -247,5 +316,16 @@
     "equation": "contraction receptor drive = body shortening drive * min(1, local active-tension drive * fitted gate gain)",
     "provenance": "MODEL_FITTED",
     "purpose": "Reject passive strain propagated from another segment without bypassing muscle force or body physics."
+  },
+  "directional_shape_gate": {
+    "anatomical_forward_axis": "initial tail-to-head centerline in the ground plane",
+    "minimum_forward_displacement_um": 1.0,
+    "maximum_absolute_lateral_displacement_um": 5.0,
+    "maximum_lateral_node_span_um": 20.0,
+    "maximum_planar_node_deviation_um": 20.0,
+    "minimum_forward_segment_alignment": 0.8,
+    "minimum_head_tail_chord_ratio": 0.95,
+    "parameter_provenance": "MODEL_FITTED",
+    "purpose": "Reject posteriorward translation, lateral buckling, and collinear node-order reversal; this is an acceptance measurement, not a behavior command."
   }
 }

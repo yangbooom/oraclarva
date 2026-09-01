@@ -2,6 +2,7 @@
 
 #include "lif_core.hpp"
 
+#include <array>
 #include <cstddef>
 #include <map>
 #include <memory>
@@ -22,6 +23,7 @@ struct RepeatBodySegment {
   double width_m = 0.0;
   double height_m = 0.0;
   double mass_kg = 0.0;
+  double maximum_shortening_fraction = 0.0;
 };
 
 struct RepeatWaveSegment {
@@ -31,6 +33,7 @@ struct RepeatWaveSegment {
   std::size_t premotor_neuron = 0;
   std::size_t inhibitory_neuron = 0;
   std::vector<std::size_t> source_neurons;
+  double muscle_activation_decay_tau_s = 0.0;
 };
 
 struct RepeatCoordinate {
@@ -49,6 +52,7 @@ struct RepeatFiber {
   RepeatCoordinate origin;
   RepeatCoordinate insertion;
   std::string mapping_provenance;
+  double force_projection_scale = 1.0;
 };
 
 struct RepeatParameters {

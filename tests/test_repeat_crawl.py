@@ -26,7 +26,7 @@ def load(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def test_repeat_crawl_config_freezes_model_fitted_numerics_before_evaluation():
+def test_repeat_crawl_config_records_corrective_fit_without_independent_holdout_claim():
     config = load_repeat_crawl_config()
     assert config["release_validated"] is False
     assert config["topology"]["provenance"] == "ANATOMY_DERIVED"
@@ -34,9 +34,11 @@ def test_repeat_crawl_config_freezes_model_fitted_numerics_before_evaluation():
     assert config["topology"]["action_command"] is False
     assert (
         config["calibration"]["fit_status"]
-        == "frozen_before_single_held_out_evaluation"
+        == "corrected_after_directional_mechanics_audit"
     )
     assert config["calibration"]["selection_used_held_out_values"] is False
+    assert config["calibration"]["model_revision_after_prior_held_out_evaluation"] is True
+    assert config["calibration"]["independent_held_out_claim_available"] is False
     assert config["body_state_transduction"]["provenance"] == "MODEL_FITTED"
     assert (
         config["named_fiber_body_coupling"]["parameter_provenance"]
@@ -74,41 +76,36 @@ def test_checked_repeat_trajectory_has_three_physical_cycles_and_full_trace():
     assert summary["all_active_forces_sensory_traced"] is True
     assert summary["feedback_force_frames"] > 0
     assert metrics["median"]["stride_um"] > 0.0
+    assert summary["forward_displacement_um"] > 0.0
+    assert summary["displacement_x_um"] < 0.0
+    assert all(summary["movement_gate"].values())
+    assert summary["maximum_lateral_span_um"] == 0.0
+    assert summary["maximum_planar_deviation_um"] == 0.0
     assert metrics["median"]["a1_a6_wave_speed_segments_s"] > 0.0
     for cycle in metrics["cycles"]:
         assert cycle["physical_onset_order_valid"] is True
         assert cycle["missing_physical_response"] == []
 
 
-def test_single_held_out_evaluation_passes_timing_but_fails_shape_closed():
+def test_corrected_calibration_passes_but_reused_held_out_fails_closed():
     calibration = load(CALIBRATION)
     held_out = load(HELD_OUT)
-    assert calibration["status"] == "calibration_failed"
-    assert held_out["status"] == "held_out_failed"
+    assert calibration["status"] == "calibration_passed"
+    assert calibration["passed"] is True
+    assert not [row for row in calibration["comparisons"] if not row["passed"]]
+    assert held_out["status"] == "diagnostic_held_out_failed"
     assert held_out["release_validated"] is False
     assert held_out["fail_closed"] is True
-    assert held_out["evaluation_protocol"]["evaluation_count"] == 1
-    assert (
-        held_out["evaluation_protocol"]["selection_used_held_out_values"]
-        is False
-    )
-    passed = {row["metric"] for row in held_out["comparisons"] if row["passed"]}
-    assert passed == {
-        "cycle_period_s",
-        "stride_um",
-        "a1_a6_wave_speed_segments_s",
-    }
+    protocol = held_out["evaluation_protocol"]
+    assert protocol["evaluation_count"] == 2
+    assert protocol["parameters_changed_after_prior_evaluation"] is True
+    assert protocol["selection_used_held_out_values"] is False
+    assert protocol["independent_validation_claim_available"] is False
+    assert held_out["independent_validation_passed"] is False
     failed = {
         row["metric"] for row in held_out["comparisons"] if not row["passed"]
     }
-    assert failed == {
-        f"{segment}.{metric}"
-        for segment in ("A1", "A2", "A3", "A4", "A5", "A6")
-        for metric in (
-            "contraction_amplitude_percent",
-            "duty_cycle_percent",
-        )
-    }
+    assert failed == {"A5.duty_cycle_percent", "A6.duty_cycle_percent"}
 
 
 def test_zero_input_is_silent_and_does_not_translate():
