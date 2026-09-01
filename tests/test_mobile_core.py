@@ -276,6 +276,9 @@ def test_mobile_full_stepped_run_matches_frozen_python_oracle(
     assert full_mobile.summary.displacement_um == pytest.approx(
         result["displacement_x_um"], rel=0.0, abs=1e-8
     )
+    assert all(result["movement_gate"].values())
+    assert result["maximum_backward_retrace_um"] <= 25.0
+    assert result["forward_progress_efficiency"] >= 0.8
     assert full_mobile.summary.feedback_force_frames == result["feedback_force_frames"]
     assert full_mobile.summary.complete_cycles == 3
     assert full_mobile.summary.physical_cycles == 3
@@ -359,7 +362,9 @@ def test_mobile_metadata_preserves_claim_boundary(full_mobile: MobileOutput):
         (ROOT / "data" / "validation" / "repeat_crawl_held_out_v0.json").read_text()
     )
     assert held_out["release_validated"] is False
-    assert held_out["status"] == "diagnostic_held_out_failed"
+    assert held_out["status"] == "diagnostic_held_out_passed"
+    assert held_out["passed"] is True
+    assert held_out["fail_closed"] is True
     assert held_out["evaluation_protocol"][
         "independent_validation_claim_available"
     ] is False

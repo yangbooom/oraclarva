@@ -136,12 +136,12 @@ See `docs/BODY_STATE_SENSORY_FEEDBACK_V0.md`.
 The 18-animal Greaney kinematic target remains split into 12 calibration and
 6 held-out animals. Stage 6 now produces three complete A6-A1 physical cycles
 from one posterior touch and explicitly measures anatomical forward rather
-than raw world-x sign. A corrective mechanics audit fixed current-force friction,
-active segment length, axial projection, and buckling gates. All calibration
-period, signed stride, wave-speed, A1-A6 amplitude, and duty rows pass. Because
-the model changed after an earlier held-out evaluation, the six-animal result
-is diagnostic rather than independent; A5/A6 duty fail and
-`release_validated: false` remains mandatory. See
+than raw world-x sign. Corrective audits fixed force/friction ordering, active segment length,
+axial projection, buckling, and a net-forward artifact with 476 um intra-cycle
+back-slip. The new full-timestep maximum retrace is 16.63 um and progress
+efficiency is 0.830. All calibration rows pass. The third six-animal diagnostic
+also passes its rows, but the model changed after earlier held-out evaluations,
+so it is not independent and `release_validated: false` remains mandatory. See
 `docs/REPEAT_CRAWL_HELD_OUT_V0.md`.
 
 Stage 7 executes the same corrected 14.6 s path in a dependency-free C++17
@@ -158,7 +158,7 @@ Stage 8 exposes that C++ state through a C11 mobile lifecycle: deterministic
 reset, one 1 ms environment-input step, copied neural/force/body snapshot, and
 a separate read-only watertight render projection. The 14,600-step path equals
 the Stage 7 one-shot path and reset replay is byte-stable. A Linux aarch64 host
-proxy measures 25.87x simulated/wall throughput with 16.79 MiB peak process
+proxy measures 25.72x simulated/wall throughput with 16.83 MiB peak process
 RSS. These are host engineering results, not Android/iOS device measurements
 or biological validation. See `docs/MOBILE_CORE_INTEGRATION_V1.md`.
 
@@ -275,10 +275,11 @@ python tools/render_visual_gif.py
 
 One posterior touch produces three checked A6-A1 cycles through body-state
 feedback; there is no periodic stimulus or gait command. The checked body moves
-+299.96 µm along the initial tail-to-head axis with zero lateral span/deviation,
-and every calibration timing, signed-stride, amplitude, and duty row passes.
-The already-reused held-out diagnostic fails A5/A6 duty and cannot support an
-independent validation claim. The GIF labels anatomical forward explicitly;
++467.54 µm along the initial tail-to-head axis with zero lateral span/deviation.
+Maximum full-timestep backward retrace is 16.63 µm, down from 476.20 µm, and
+forward-progress efficiency is 0.830. Every calibration row passes. The third
+held-out diagnostic also passes its rows, but it is reused and cannot support
+an independent validation claim. The GIF labels anatomical forward explicitly;
 the former eye-like black dot was removed and there is no eye marker.
 
 ![Corrected repeat-crawl trajectory](docs/assets/oraclarva_repeat_crawl.gif)

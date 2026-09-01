@@ -19,7 +19,7 @@ FONT = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
 FONT_BOLD = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 FONT_MONO = Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
 WIDTH, HEIGHT, SS = 1080, 720, 2
-WORLD_X = (-450.0, 1100.0)
+WORLD_X = (-600.0, 1000.0)
 RINGS, RADIAL = 25, 12
 
 
@@ -176,7 +176,7 @@ def plot_timeline(draw, frames, index, rect, mono, small):
     initial_x = sum(node[0] for node in frames[0]["physics_nodes_um"]) / 13
     displacements = [
         (initial_x - sum(node[0] for node in frame["physics_nodes_um"]) / 13)
-        / 400.0
+        / 500.0
         for frame in frames
     ]
     for level in (0.0, 0.5, 1.0):
@@ -278,7 +278,16 @@ def render_frame(index, artifact, benchmark, body_map):
         small,
     )
     label(draw, (790, 609), "Android/iOS    NOT TESTED", (244, 174, 103), small)
-    label(draw, (40, 678), "release_validated = false · held-out A5/A6 duty FAIL · NON-INDEPENDENT", (244, 113, 133), small)
+    max_back = artifact["movement_quality"]["full_timestep_python_oracle"][
+        "maximum_backward_retrace_um"
+    ]
+    label(
+        draw,
+        (40, 678),
+        f"max back-slip {max_back:.1f} µm PASS · held-out diagnostic PASS* · release_validated=false",
+        (244, 174, 103),
+        small,
+    )
     label(draw, (1040, 678), "HOST ENGINEERING GATE ≠ DEVICE OR BIOLOGICAL VALIDATION", (151, 132, 153), small, anchor="rs")
     return canvas.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
 
@@ -296,6 +305,7 @@ def render(output):
         * artifact["fixed_step"]["dt_s"]
         or benchmark["all_gates_pass"] is not True
         or benchmark["android_ios_device_tested"] is not False
+        or not all(artifact["movement_quality"]["movement_gate"].values())
     ):
         raise RuntimeError("mobile GIF source contract is invalid")
     body_map = wave_body_indices()

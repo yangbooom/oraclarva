@@ -34,7 +34,7 @@ def test_repeat_crawl_config_records_corrective_fit_without_independent_holdout_
     assert config["topology"]["action_command"] is False
     assert (
         config["calibration"]["fit_status"]
-        == "corrected_after_directional_mechanics_audit"
+        == "corrected_after_observed_backslip_audit"
     )
     assert config["calibration"]["selection_used_held_out_values"] is False
     assert config["calibration"]["model_revision_after_prior_held_out_evaluation"] is True
@@ -79,6 +79,14 @@ def test_checked_repeat_trajectory_has_three_physical_cycles_and_full_trace():
     assert summary["forward_displacement_um"] > 0.0
     assert summary["displacement_x_um"] < 0.0
     assert all(summary["movement_gate"].values())
+    shape_gate = load_repeat_crawl_config()["directional_shape_gate"]
+    assert summary["maximum_backward_retrace_um"] <= shape_gate[
+        "maximum_backward_retrace_um"
+    ]
+    assert summary["forward_progress_efficiency"] >= shape_gate[
+        "minimum_forward_progress_efficiency"
+    ]
+    assert summary["cumulative_backward_travel_um"] >= 0.0
     assert summary["maximum_lateral_span_um"] == 0.0
     assert summary["maximum_planar_deviation_um"] == 0.0
     assert metrics["median"]["a1_a6_wave_speed_segments_s"] > 0.0
@@ -87,25 +95,25 @@ def test_checked_repeat_trajectory_has_three_physical_cycles_and_full_trace():
         assert cycle["missing_physical_response"] == []
 
 
-def test_corrected_calibration_passes_but_reused_held_out_fails_closed():
+def test_corrected_calibration_and_diagnostic_holdout_pass_but_release_fails_closed():
     calibration = load(CALIBRATION)
     held_out = load(HELD_OUT)
     assert calibration["status"] == "calibration_passed"
     assert calibration["passed"] is True
     assert not [row for row in calibration["comparisons"] if not row["passed"]]
-    assert held_out["status"] == "diagnostic_held_out_failed"
+    assert held_out["status"] == "diagnostic_held_out_passed"
+    assert held_out["passed"] is True
     assert held_out["release_validated"] is False
     assert held_out["fail_closed"] is True
     protocol = held_out["evaluation_protocol"]
-    assert protocol["evaluation_count"] == 2
+    assert protocol["evaluation_count"] == 3
     assert protocol["parameters_changed_after_prior_evaluation"] is True
     assert protocol["selection_used_held_out_values"] is False
     assert protocol["independent_validation_claim_available"] is False
     assert held_out["independent_validation_passed"] is False
-    failed = {
-        row["metric"] for row in held_out["comparisons"] if not row["passed"]
-    }
-    assert failed == {"A5.duty_cycle_percent", "A6.duty_cycle_percent"}
+    assert not [
+        row for row in held_out["comparisons"] if not row["passed"]
+    ]
 
 
 def test_zero_input_is_silent_and_does_not_translate():
@@ -117,6 +125,9 @@ def test_zero_input_is_silent_and_does_not_translate():
     assert sum(result.spike_counts.values()) == 0
     assert result.feedback_force_frames == 0
     assert result.displacement_x_um == pytest.approx(0.0, abs=1e-9)
+    assert result.maximum_backward_retrace_um == pytest.approx(0.0, abs=1e-9)
+    assert result.cumulative_backward_travel_um == pytest.approx(0.0, abs=1e-9)
+    assert result.forward_progress_efficiency == 0.0
     assert result.all_active_forces_sensory_traced is True
 
 

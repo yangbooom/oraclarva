@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import subprocess
 import sys
 import tempfile
@@ -31,6 +32,45 @@ def vectors(value: str, size: int) -> list[list[float]]:
 
 def optional(value: str) -> float | None:
     return None if value == "-" else float(value)
+
+
+def sampled_progress(frames: list[dict[str, Any]]) -> dict[str, float]:
+    initial = frames[0]["physics_nodes_um"]
+    forward_x = initial[0][0] - initial[-1][0]
+    forward_y = initial[0][1] - initial[-1][1]
+    magnitude = math.hypot(forward_x, forward_y)
+    forward_x /= magnitude
+    forward_y /= magnitude
+    centers = [
+        (
+            sum(node[0] for node in frame["physics_nodes_um"]) / 13,
+            sum(node[1] for node in frame["physics_nodes_um"]) / 13,
+        )
+        for frame in frames
+    ]
+    origin_x, origin_y = centers[0]
+    positions = [
+        (x - origin_x) * forward_x + (y - origin_y) * forward_y
+        for x, y in centers
+    ]
+    peak = positions[0]
+    retrace = 0.0
+    backward = 0.0
+    for left, right in zip(positions, positions[1:], strict=False):
+        delta = right - left
+        backward += max(0.0, -delta)
+        peak = max(peak, right)
+        retrace = max(retrace, peak - right)
+    net = positions[-1] - positions[0]
+    denominator = net + backward
+    return {
+        "net_forward_um": net,
+        "maximum_backward_retrace_um": retrace,
+        "cumulative_backward_travel_um": backward,
+        "forward_progress_efficiency": (
+            net / denominator if denominator > 0.0 else 0.0
+        ),
+    }
 
 
 def render_artifact() -> str:
@@ -184,12 +224,21 @@ def render_artifact() -> str:
     )
     if (
         held_out["release_validated"] is not False
-        or held_out["status"] != "diagnostic_held_out_failed"
+        or held_out["status"] != "diagnostic_held_out_passed"
+        or held_out["fail_closed"] is not True
         or held_out["evaluation_protocol"][
             "independent_validation_claim_available"
         ] is not False
     ):
-        raise RuntimeError("mobile artifact lost held-out failure boundary")
+        raise RuntimeError("mobile artifact lost non-independent held-out boundary")
+    progress = sampled_progress(frames)
+    python_summary = python["result_summary"]
+    if (
+        not all(python_summary["movement_gate"].values())
+        or abs(progress["net_forward_um"] + summary["displacement_x_um"])
+        > 1e-8
+    ):
+        raise RuntimeError("mobile artifact lost forward-progress boundary")
 
     artifact = {
         "schema_version": 1,
@@ -239,9 +288,24 @@ def render_artifact() -> str:
             "watertight_manifold_tested": True,
         },
         "result_summary": summary,
+        "movement_quality": {
+            "retained_mobile_frames": progress,
+            "full_timestep_python_oracle": {
+                "maximum_backward_retrace_um": python_summary[
+                    "maximum_backward_retrace_um"
+                ],
+                "cumulative_backward_travel_um": python_summary[
+                    "cumulative_backward_travel_um"
+                ],
+                "forward_progress_efficiency": python_summary[
+                    "forward_progress_efficiency"
+                ],
+            },
+            "movement_gate": python_summary["movement_gate"],
+        },
         "reset_replay": replay,
         "held_out_behavior_status": (
-            "diagnostic_held_out_failed_non_independent"
+            "diagnostic_held_out_passed_non_independent"
         ),
         "frames": frames,
     }

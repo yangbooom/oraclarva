@@ -34,13 +34,14 @@ effects, and gains are `MODEL_FITTED`. A2-A6 homolog channels are
 edge. The reserved 6-animal kinematic partition was evaluated before the corrective
 Stage 6 mechanics revision and is therefore no longer an untouched validation
 set. Corrective selection used only the 12-animal calibration bands, where
-period, signed stride, supported A6-A1 speed, amplitude, and duty now pass. The
-second held-out evaluation is diagnostic and fails A5/A6 duty. Model revision
-after the prior evaluation independently blocks a release-validation claim. The dependency-free
+period, signed stride, supported A6-A1 speed, amplitude, and duty now pass. The third held-out evaluation is diagnostic and passes its individual
+rows. Model revision after the prior evaluations still independently blocks a
+release-validation claim. The dependency-free
 C++17 repeat core now matches the Python reference on exact spikes and strict
 sampled-state tolerances across the normal run and five zero/lesion cases. That
 is a software numerical-reproducibility result only; it does not turn fitted
-parameters into measurements or override any held-out behavioral failure. The
+parameters into measurements or restore independence to a reused held-out
+partition. The
 Stage 8 C ABI, deterministic reset digest, watertight render projection, and
 Linux host benchmark are likewise engineering integration evidence. They do
 not establish Android/iOS device performance, natural behavior validity,

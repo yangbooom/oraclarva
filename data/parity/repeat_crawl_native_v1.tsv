@@ -5,7 +5,7 @@ schema	repeat_crawl_native_v1
 model_id	dmel_l1_repeat_crawl_v0
 status	research_approximation
 release_validated	false
-config_sha256	6c6bcec355391b72e2b694c37400fc4fc8880812b78015b39bcfc0d244e11494
+config_sha256	740435586abad7735521b279ea7f73a0815adeaa31d72cee29381d94bbea774f
 neuron_count	164
 steps	14600
 sample_stride	30
@@ -44,10 +44,10 @@ parameter	maximum_external_current_a	4.0000000000000002e-09
 parameter	active_tension_gain_model_units	165
 parameter	passive_stiffness_model_units	180
 parameter	damping_model_units	24
-parameter	acceleration_scale_m_s2_per_model_force	0.0030000000000000001
+parameter	acceleration_scale_m_s2_per_model_force	0.00029999999999999997
 parameter	body_velocity_retention	0.5
-parameter	ground_negative_x_retention	0.60299999999999998
-parameter	ground_positive_x_retention	0.39700000000000002
+parameter	ground_negative_x_retention	1
+parameter	ground_positive_x_retention	0
 parameter	gravity_z_m_s2	-9.8100000000000005
 parameter	ground_z_m	0
 parameter	body_iterations	12

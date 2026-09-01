@@ -43,6 +43,10 @@ def render_trajectory() -> str:
         >= float(shape_gate["minimum_forward_segment_alignment"]),
         "head_tail_chord_ratio": result.minimum_head_tail_chord_ratio
         >= float(shape_gate["minimum_head_tail_chord_ratio"]),
+        "maximum_backward_retrace": result.maximum_backward_retrace_um
+        <= float(shape_gate["maximum_backward_retrace_um"]),
+        "forward_progress_efficiency": result.forward_progress_efficiency
+        >= float(shape_gate["minimum_forward_progress_efficiency"]),
     }
     if (
         metrics["status"] != "measured"
@@ -65,6 +69,9 @@ def render_trajectory() -> str:
             "parameter_fit_status": config["calibration"]["fit_status"],
             "selection_used_held_out_values": config["calibration"][
                 "selection_used_held_out_values"
+            ],
+            "prior_held_out_evaluation_count": config["calibration"][
+                "prior_held_out_evaluation_count"
             ],
             "model_revision_after_prior_held_out_evaluation": config[
                 "calibration"
@@ -92,6 +99,15 @@ def render_trajectory() -> str:
             "displacement_y_um": round(result.displacement_y_um, 9),
             "forward_displacement_um": round(
                 result.forward_displacement_um, 9
+            ),
+            "maximum_backward_retrace_um": round(
+                result.maximum_backward_retrace_um, 9
+            ),
+            "cumulative_backward_travel_um": round(
+                result.cumulative_backward_travel_um, 9
+            ),
+            "forward_progress_efficiency": round(
+                result.forward_progress_efficiency, 12
             ),
             "lateral_displacement_um": round(
                 result.lateral_displacement_um, 9
