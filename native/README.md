@@ -34,6 +34,15 @@ deterministic reset, copied snapshot/trace/cycle state, and a separate read-only
 watertight render mesh. `mobile_main.cpp` is a host acceptance and benchmark
 harness. It does not expose a behavior command.
 
+Stage 9 adds the optional `mobile_environment.h` extension and
+`spatial_controller.cpp`. It samples a scalar light field at four current
+head-surface locations, advances a generated 168-neuron/188-synapse sparse-LIF
+controller, and applies opposed yaw/pitch muscle activation to the same
+`RepeatBody` that performs axial crawl. The original Stage 8 functions and
+struct layouts remain unchanged. Spatial proprioceptive cross-coupling is
+serialized but disabled until it has its own calibration gate; uniform light
+therefore preserves the corrected axial path exactly.
+
 Passing these gates establishes numerical parity and a host-tested mobile
 source boundary for the current research approximations. It does not establish
 biological fidelity, held-out validation, measured individual muscle
@@ -59,12 +68,18 @@ c++ -std=c++17 -O2 -Wall -Wextra -Werror \
 python tools/export_native_repeat_fixture.py --check
 python tools/export_native_repeat_parity.py --check
 c++ -std=c++17 -O2 -Wall -Wextra -Werror \
-  native/lif_core.cpp native/repeat_core.cpp native/repeat_main.cpp \
+  native/lif_core.cpp native/spatial_controller.cpp \
+  native/repeat_core.cpp native/repeat_main.cpp \
   -o /tmp/oraclarva-native-repeat
 /tmp/oraclarva-native-repeat data/parity/repeat_crawl_native_v1.tsv
 
 python tools/build_mobile_core.py --output /tmp/oraclarva-mobile-build
-/tmp/oraclarva-mobile-build/oraclarva-mobile-host \n  data/parity/repeat_crawl_native_v1.tsv
+/tmp/oraclarva-mobile-build/oraclarva-mobile-host \
+  data/parity/repeat_crawl_native_v1.tsv
 python tools/export_mobile_core_integration.py --check
 python tools/benchmark_mobile_core.py --check
+
+python tools/export_native_spatial_fixture.py --check
+python tools/export_native_environment_trajectory.py --check
+python tools/render_native_environment_gif.py
 ```

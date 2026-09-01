@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lif_core.hpp"
+#include "spatial_controller.hpp"
 
 #include <array>
 #include <cstddef>
@@ -161,6 +162,7 @@ struct RepeatOutput {
 
 struct RepeatEnvironmentInput {
   double posterior_touch_intensity = 0.0;
+  SpatialLightField light;
 };
 
 struct RepeatStateSnapshot {
@@ -177,13 +179,16 @@ struct RepeatStateSnapshot {
   bool all_active_forces_traced = true;
   RepeatCycleMetrics cycle_metrics;
   std::vector<RepeatTrace> trace_examples;
+  SpatialControllerFrame spatial;
 };
 
 class RepeatSimulation {
  public:
   explicit RepeatSimulation(
       const RepeatFixture& fixture,
-      const RepeatOptions& options = {});
+      const RepeatOptions& options = {},
+      const SpatialFixture* spatial_fixture = nullptr,
+      const SpatialControllerOptions& spatial_options = {});
   ~RepeatSimulation();
   RepeatSimulation(RepeatSimulation&&) = delete;
   RepeatSimulation& operator=(RepeatSimulation&&) = delete;
@@ -202,6 +207,8 @@ class RepeatSimulation {
   struct Impl;
   RepeatFixture fixture_;
   RepeatOptions options_;
+  const SpatialFixture* spatial_fixture_ = nullptr;
+  SpatialControllerOptions spatial_options_;
   std::unique_ptr<Impl> impl_;
 };
 

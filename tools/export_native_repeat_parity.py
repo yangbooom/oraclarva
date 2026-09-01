@@ -170,6 +170,7 @@ def compile_native(output: Path) -> None:
             "-Wextra",
             "-Werror",
             str(ROOT / "native" / "lif_core.cpp"),
+            str(ROOT / "native" / "spatial_controller.cpp"),
             str(ROOT / "native" / "repeat_core.cpp"),
             str(ROOT / "native" / "repeat_main.cpp"),
             "-o",

@@ -179,6 +179,7 @@ def mobile_build(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
             "-Wextra",
             "-Werror",
             str(ROOT / "native" / "lif_core.cpp"),
+            str(ROOT / "native" / "spatial_controller.cpp"),
             str(ROOT / "native" / "repeat_core.cpp"),
             str(ROOT / "native" / "repeat_main.cpp"),
             "-o",
@@ -395,6 +396,9 @@ def test_mobile_c_header_and_shared_exports_are_c_only(mobile_build: dict[str, P
     ).stdout.splitlines()
     assert {line.split()[-1] for line in symbols} == {
         "oraclarva_mobile_create",
+        "oraclarva_mobile_create_spatial",
+        "oraclarva_mobile_advance_environment",
+        "oraclarva_mobile_read_environment_snapshot",
         "oraclarva_mobile_destroy",
         "oraclarva_mobile_reset",
         "oraclarva_mobile_advance",
