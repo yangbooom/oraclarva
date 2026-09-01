@@ -1,4 +1,5 @@
 #include "mobile_core.h"
+#include "mobile_environment.h"
 
 #include "repeat_core.hpp"
 
@@ -20,18 +21,66 @@ using oraclarva::RepeatOptions;
 using oraclarva::RepeatSimulation;
 using oraclarva::RepeatStateSnapshot;
 using oraclarva::RepeatVec3;
+using oraclarva::SpatialControllerOptions;
+using oraclarva::SpatialFixture;
+using oraclarva::SpatialLightField;
 
 struct OraclarvaMobileCore {
   RepeatFixture fixture;
+  SpatialFixture spatial_fixture;
+  bool spatial_enabled = false;
   RepeatOptions options;
+  SpatialControllerOptions spatial_options;
   RepeatSimulation simulation;
+  RepeatVec3 initial_center;
+  double initial_yaw_rad = 0.0;
+  double initial_pitch_rad = 0.0;
 
   OraclarvaMobileCore(
       RepeatFixture fixture_value,
       RepeatOptions options_value)
       : fixture(std::move(fixture_value)),
         options(std::move(options_value)),
-        simulation(fixture, options) {}
+        simulation(fixture, options) {
+    RecordInitial();
+  }
+
+  OraclarvaMobileCore(
+      RepeatFixture fixture_value,
+      SpatialFixture spatial_fixture_value,
+      RepeatOptions options_value,
+      SpatialControllerOptions spatial_options_value)
+      : fixture(std::move(fixture_value)),
+        spatial_fixture(std::move(spatial_fixture_value)),
+        spatial_enabled(true),
+        options(std::move(options_value)),
+        spatial_options(std::move(spatial_options_value)),
+        simulation(fixture, options, &spatial_fixture, spatial_options) {
+    RecordInitial();
+  }
+
+  void RecordInitial() {
+    const RepeatStateSnapshot snapshot = simulation.Snapshot();
+    RepeatVec3 total{};
+    for (const RepeatVec3& value : snapshot.nodes_m) {
+      total.x += value.x;
+      total.y += value.y;
+      total.z += value.z;
+    }
+    const double inverse_count =
+        1.0 / static_cast<double>(snapshot.nodes_m.size());
+    initial_center = {
+        total.x * inverse_count,
+        total.y * inverse_count,
+        total.z * inverse_count};
+    const RepeatVec3& head = snapshot.nodes_m.front();
+    const RepeatVec3& tail = snapshot.nodes_m.back();
+    const RepeatVec3 axis{
+        head.x - tail.x, head.y - tail.y, head.z - tail.z};
+    initial_yaw_rad = std::atan2(axis.y, axis.x);
+    initial_pitch_rad = std::atan2(
+        axis.z, std::hypot(axis.x, axis.y));
+  }
 };
 
 namespace {
@@ -77,6 +126,53 @@ RepeatOptions ConvertOptions(const OraclarvaMobileOptions* options) {
   converted.fiber_segment_lesion =
       OptionalText(options->fiber_lesion_segment);
   return converted;
+}
+SpatialControllerOptions ConvertSpatialOptions(
+    const OraclarvaMobileSpatialOptions* options) {
+  SpatialControllerOptions converted;
+  if (options == nullptr) return converted;
+  converted.sensory_lesion_channel =
+      OptionalText(options->sensory_lesion_channel);
+  converted.premotor_lesion_channel =
+      OptionalText(options->premotor_lesion_channel);
+  converted.motor_lesion_channel =
+      OptionalText(options->motor_lesion_channel);
+  converted.muscle_lesion_channel =
+      OptionalText(options->muscle_lesion_channel);
+  return converted;
+}
+
+SpatialLightField ConvertLight(const OraclarvaMobileLightField& input) {
+  if (input.enabled > 1) {
+    throw std::runtime_error("light enabled flag must be zero or one");
+  }
+  return {
+      input.enabled == 1,
+      {input.origin_m[0], input.origin_m[1], input.origin_m[2]},
+      input.value_at_origin_w_m2,
+      {input.gradient_w_m3[0], input.gradient_w_m3[1],
+       input.gradient_w_m3[2]},
+      input.temporal_rate_w_m2_s,
+      input.lower_bound_w_m2,
+      input.upper_bound_w_m2};
+}
+
+RepeatVec3 SnapshotCenter(const RepeatStateSnapshot& snapshot) {
+  RepeatVec3 result{};
+  for (const RepeatVec3& node : snapshot.nodes_m) {
+    result.x += node.x;
+    result.y += node.y;
+    result.z += node.z;
+  }
+  const double inverse = 1.0 / static_cast<double>(snapshot.nodes_m.size());
+  return {result.x * inverse, result.y * inverse, result.z * inverse};
+}
+
+double WrappedAngleChange(double current, double initial) {
+  double difference = current - initial;
+  while (difference > kPi) difference -= 2.0 * kPi;
+  while (difference < -kPi) difference += 2.0 * kPi;
+  return difference;
 }
 
 RepeatVec3 Add(const RepeatVec3& a, const RepeatVec3& b) {
@@ -342,6 +438,36 @@ int oraclarva_mobile_create(
     return ORACLARVA_MOBILE_LOAD_ERROR;
   }
 }
+int oraclarva_mobile_create_spatial(
+    const char* repeat_fixture_path,
+    const char* spatial_fixture_path,
+    const OraclarvaMobileOptions* repeat_options,
+    const OraclarvaMobileSpatialOptions* spatial_options,
+    OraclarvaMobileCore** output,
+    char* error_message,
+    std::size_t error_capacity) {
+  ClearError(error_message, error_capacity);
+  if (output == nullptr
+      || repeat_fixture_path == nullptr || repeat_fixture_path[0] == '\0'
+      || spatial_fixture_path == nullptr || spatial_fixture_path[0] == '\0') {
+    SetError(
+        error_message, error_capacity,
+        "repeat fixture, spatial fixture, and output are required");
+    return ORACLARVA_MOBILE_INVALID_ARGUMENT;
+  }
+  *output = nullptr;
+  try {
+    *output = new OraclarvaMobileCore(
+        oraclarva::LoadRepeatFixture(repeat_fixture_path),
+        oraclarva::LoadSpatialFixture(spatial_fixture_path),
+        ConvertOptions(repeat_options),
+        ConvertSpatialOptions(spatial_options));
+    return ORACLARVA_MOBILE_OK;
+  } catch (const std::exception& error) {
+    SetError(error_message, error_capacity, error.what());
+    return ORACLARVA_MOBILE_LOAD_ERROR;
+  }
+}
 
 void oraclarva_mobile_destroy(OraclarvaMobileCore* core) {
   delete core;
@@ -377,7 +503,34 @@ int oraclarva_mobile_advance(
   }
   try {
     core->simulation.Advance(
-        RepeatEnvironmentInput{input->posterior_touch_intensity});
+        RepeatEnvironmentInput{input->posterior_touch_intensity, {}});
+    return ORACLARVA_MOBILE_OK;
+  } catch (const std::exception& error) {
+    SetError(error_message, error_capacity, error.what());
+    return ORACLARVA_MOBILE_STATE_ERROR;
+  }
+}
+int oraclarva_mobile_advance_environment(
+    OraclarvaMobileCore* core,
+    const OraclarvaMobileIntegratedEnvironmentInput* input,
+    char* error_message,
+    std::size_t error_capacity) {
+  ClearError(error_message, error_capacity);
+  if (core == nullptr || input == nullptr) {
+    SetError(
+        error_message, error_capacity,
+        "spatial mobile core and integrated environment input are required");
+    return ORACLARVA_MOBILE_INVALID_ARGUMENT;
+  }
+  if (!core->spatial_enabled) {
+    SetError(
+        error_message, error_capacity,
+        "core was not created with a spatial fixture");
+    return ORACLARVA_MOBILE_STATE_ERROR;
+  }
+  try {
+    core->simulation.Advance(RepeatEnvironmentInput{
+        input->posterior_touch_intensity, ConvertLight(input->light)});
     return ORACLARVA_MOBILE_OK;
   } catch (const std::exception& error) {
     SetError(error_message, error_capacity, error.what());
@@ -474,6 +627,108 @@ int oraclarva_mobile_read_snapshot(
       output->trace_premotor_spike_time_s[index] = trace.premotor_spike_time_s;
       output->trace_motor_spike_time_s[index] = trace.motor_spike_time_s;
     }
+    return ORACLARVA_MOBILE_OK;
+  } catch (const std::exception& error) {
+    SetError(error_message, error_capacity, error.what());
+    return ORACLARVA_MOBILE_STATE_ERROR;
+  }
+}
+int oraclarva_mobile_read_environment_snapshot(
+    const OraclarvaMobileCore* core,
+    OraclarvaMobileEnvironmentSnapshot* output,
+    char* error_message,
+    std::size_t error_capacity) {
+  ClearError(error_message, error_capacity);
+  if (core == nullptr || output == nullptr) {
+    SetError(
+        error_message, error_capacity,
+        "spatial mobile core and environment snapshot are required");
+    return ORACLARVA_MOBILE_INVALID_ARGUMENT;
+  }
+  if (!core->spatial_enabled) {
+    SetError(
+        error_message, error_capacity,
+        "core was not created with a spatial fixture");
+    return ORACLARVA_MOBILE_STATE_ERROR;
+  }
+  try {
+    const RepeatStateSnapshot snapshot = core->simulation.Snapshot();
+    Require(
+        snapshot.spatial.spike_counts.size()
+            == ORACLARVA_MOBILE_SPATIAL_NEURON_COUNT,
+        "spatial snapshot neuron count mismatch");
+    Require(
+        snapshot.nodes_m.size() == ORACLARVA_MOBILE_BODY_NODE_COUNT
+            && snapshot.spatial.yaw_activation.size()
+                == ORACLARVA_MOBILE_BODY_SEGMENT_COUNT
+            && snapshot.spatial.pitch_activation.size()
+                == ORACLARVA_MOBILE_BODY_SEGMENT_COUNT,
+        "spatial snapshot body count mismatch");
+    *output = OraclarvaMobileEnvironmentSnapshot{};
+    output->extension_abi_version =
+        ORACLARVA_MOBILE_ENVIRONMENT_ABI_VERSION;
+    output->step_index = static_cast<std::uint32_t>(snapshot.step_index);
+    output->time_s = snapshot.time_s;
+    const RepeatVec3 center = SnapshotCenter(snapshot);
+    output->displacement_um[0] = (center.x - core->initial_center.x) * 1e6;
+    output->displacement_um[1] = (center.y - core->initial_center.y) * 1e6;
+    output->displacement_um[2] = (center.z - core->initial_center.z) * 1e6;
+    const RepeatVec3& head = snapshot.nodes_m.front();
+    const RepeatVec3& tail = snapshot.nodes_m.back();
+    const RepeatVec3 axis{
+        head.x - tail.x, head.y - tail.y, head.z - tail.z};
+    const double yaw = std::atan2(axis.y, axis.x);
+    const double pitch = std::atan2(axis.z, std::hypot(axis.x, axis.y));
+    output->heading_change_deg =
+        WrappedAngleChange(yaw, core->initial_yaw_rad) * 180.0 / kPi;
+    output->head_pitch_change_deg =
+        WrappedAngleChange(pitch, core->initial_pitch_rad) * 180.0 / kPi;
+    for (std::size_t node = 0;
+         node < ORACLARVA_MOBILE_BODY_NODE_COUNT; ++node) {
+      output->physics_nodes_um[node * 3] = snapshot.nodes_m[node].x * 1e6;
+      output->physics_nodes_um[node * 3 + 1] = snapshot.nodes_m[node].y * 1e6;
+      output->physics_nodes_um[node * 3 + 2] = snapshot.nodes_m[node].z * 1e6;
+    }
+    for (std::size_t segment = 0;
+         segment < ORACLARVA_MOBILE_BODY_SEGMENT_COUNT; ++segment) {
+      output->segment_yaw_activation[segment * 2] =
+          snapshot.spatial.yaw_activation[segment][0];
+      output->segment_yaw_activation[segment * 2 + 1] =
+          snapshot.spatial.yaw_activation[segment][1];
+      output->segment_pitch_activation[segment * 2] =
+          snapshot.spatial.pitch_activation[segment][0];
+      output->segment_pitch_activation[segment * 2 + 1] =
+          snapshot.spatial.pitch_activation[segment][1];
+    }
+    for (std::size_t channel = 0;
+         channel < ORACLARVA_MOBILE_SPATIAL_CHANNEL_COUNT; ++channel) {
+      output->raw_light_w_m2[channel] =
+          snapshot.spatial.raw_light_w_m2[channel];
+      output->adapted_light_w_m2[channel] =
+          snapshot.spatial.adapted_light_w_m2[channel];
+      output->light_drive[channel] = snapshot.spatial.light_drive[channel];
+      output->receptor_current[channel] =
+          snapshot.spatial.receptor_current[channel];
+      output->channel_activation[channel] =
+          snapshot.spatial.channel_activation[channel];
+    }
+    for (std::size_t neuron = 0;
+         neuron < ORACLARVA_MOBILE_SPATIAL_NEURON_COUNT; ++neuron) {
+      output->spatial_spike_counts[neuron] =
+          static_cast<std::uint32_t>(snapshot.spatial.spike_counts[neuron]);
+    }
+    for (const std::size_t neuron : snapshot.spatial.last_step_spikes) {
+      output->spatial_last_step_spiked[neuron] = 1;
+    }
+    output->release_validated = 0;
+    CopyText(
+        output->spatial_fixture_schema,
+        sizeof(output->spatial_fixture_schema),
+        core->spatial_fixture.schema);
+    CopyText(
+        output->spatial_model_id,
+        sizeof(output->spatial_model_id),
+        core->spatial_fixture.model_id);
     return ORACLARVA_MOBILE_OK;
   } catch (const std::exception& error) {
     SetError(error_message, error_capacity, error.what());

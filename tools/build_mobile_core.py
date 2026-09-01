@@ -44,7 +44,12 @@ def main(argv: list[str] | None = None) -> int:
         str(NATIVE),
     ]
     objects: list[Path] = []
-    for source in ("lif_core.cpp", "repeat_core.cpp", "mobile_core.cpp"):
+    for source in (
+        "lif_core.cpp",
+        "spatial_controller.cpp",
+        "repeat_core.cpp",
+        "mobile_core.cpp",
+    ):
         output = args.output / f"{Path(source).stem}.o"
         run([*common, "-fPIC", "-c", str(NATIVE / source), "-o", str(output)])
         objects.append(output)

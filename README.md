@@ -162,6 +162,19 @@ proxy measures 25.72x simulated/wall throughput with 16.83 MiB peak process
 RSS. These are host engineering results, not Android/iOS device measurements
 or biological validation. See `docs/MOBILE_CORE_INTEGRATION_V1.md`.
 
+Stage 9 adds a physical light field to that stepped native state. Four current
+head-surface locations are sampled on every 1 ms step, transduced, passed
+through a generated 168-neuron/188-synapse sparse LIF fixture, and converted to
+bilateral yaw/pitch muscle activation in the same 13-node body used for axial
+crawl. Uniform light preserves the corrected Stage 8 path exactly; mirrored
++Y/-Y gradients produce -3.8310°/+3.8303° heading changes, +Z produces a
+ground-relative lift, and a right sensory lesion abolishes the +Y turn. Inputs
+remain physical field parameters rather than action commands. The topology and
+unmeasured gains remain research approximations, spatial proprioceptive
+cross-coupling is disabled pending calibration, and
+`release_validated: false` remains mandatory. See
+`docs/NATIVE_ENVIRONMENT_CLOSED_LOOP_V1.md`.
+
 The isolated A1 mechanics fixture gives all 29 A1-left fibers normalized
 origins, insertions, rest lengths, lines of action, passive elasticity, damping,
 and activation-driven tension. Stage 4 now reuses the supported subset in the
@@ -319,6 +332,24 @@ python tools/export_mobile_core_integration.py --check
 python tools/benchmark_mobile_core.py --check
 python tools/render_mobile_core_gif.py
 pytest -q tests/test_mobile_core.py
+```
+
+## Native integrated environment diagnostic
+
+Stage 9 samples a physical light gradient at the current body surface, advances
+the 168-neuron spatial circuit, activates bilateral muscle constraints, and
+feeds the resulting 3D body back into the next sample. The top and side views
+below use a 1:1 world-coordinate scale and render checked C++ physics nodes only.
+The ring marks the anterior end; it is not an eye.
+
+![Native integrated environment closed loop](docs/assets/oraclarva_native_environment_closed_loop.gif)
+
+```bash
+python tools/export_native_spatial_fixture.py --check
+python tools/build_mobile_core.py --output /tmp/oraclarva-stage9-mobile
+python tools/export_native_environment_trajectory.py --check
+python tools/render_native_environment_gif.py
+pytest -q tests/test_native_environment_closed_loop.py
 ```
 
 ## Isolated A1 muscle mechanics diagnostic

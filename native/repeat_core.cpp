@@ -156,6 +156,15 @@ class RepeatBody {
         x += std::sqrt(rest * rest - vertical * vertical);
       }
     }
+    rest_pitch_offsets_.assign(particles_.size(), 0.0);
+    for (std::size_t index = 1; index + 1 < particles_.size(); ++index) {
+      const RepeatVec3 midpoint = Multiply(
+          Add(particles_[index - 1].position, particles_[index + 1].position),
+          0.5);
+      rest_pitch_offsets_[index] = Dot(
+          Subtract(particles_[index].position, midpoint),
+          NodeFrame(index)[1]);
+    }
   }
 
   double SegmentLength(std::size_t index) const {
@@ -183,6 +192,29 @@ class RepeatBody {
     return total / static_cast<double>(particles_.size());
   }
 
+  RepeatVec3 Center() const {
+    RepeatVec3 total{};
+    for (const Particle& particle : particles_) {
+      total = Add(total, particle.position);
+    }
+    return Multiply(total, 1.0 / static_cast<double>(particles_.size()));
+  }
+
+  SpatialBodyState SpatialState() const {
+    SpatialBodyState result;
+    result.nodes_m.reserve(particles_.size());
+    for (const Particle& particle : particles_) {
+      result.nodes_m.push_back({
+          particle.position.x, particle.position.y, particle.position.z});
+    }
+    result.segments.reserve(geometry_.size());
+    for (const RepeatBodySegment& segment : geometry_) {
+      result.segments.push_back({
+          segment.id, segment.rest_length_m, segment.width_m, segment.height_m});
+    }
+    return result;
+  }
+
   void ResetVelocity() {
     for (Particle& particle : particles_) {
       particle.previous_position = particle.position;
@@ -199,13 +231,34 @@ class RepeatBody {
       double dt_s,
       const RepeatParameters& p,
       const std::vector<RepeatVec3>& external_accelerations,
-      const std::vector<double>& activations) {
+      const std::vector<double>& activations,
+      const std::vector<std::array<double, 2>>& yaw_activation = {},
+      const std::vector<std::array<double, 2>>& pitch_activation = {},
+      double active_yaw_curvature_gain = 0.0,
+      double active_pitch_curvature_gain = 0.0,
+      double active_bending_stiffness_ratio = 0.25) {
     if (external_accelerations.size() != particles_.size()) {
       throw std::runtime_error("repeat body acceleration size mismatch");
     }
     if (activations.size() != geometry_.size()) {
       throw std::runtime_error("repeat body activation size mismatch");
     }
+    if ((!yaw_activation.empty() && yaw_activation.size() != geometry_.size())
+        || (!pitch_activation.empty() && pitch_activation.size() != geometry_.size())) {
+      throw std::runtime_error("repeat body spatial activation size mismatch");
+    }
+    const auto has_opposed_drive = [](
+        const std::vector<std::array<double, 2>>& values) {
+      return std::any_of(
+          values.begin(), values.end(),
+          [](const std::array<double, 2>& pair) {
+            return std::abs(pair[0] - pair[1]) > 1e-15;
+          });
+    };
+    const bool yaw_drive = active_yaw_curvature_gain > 0.0
+        && has_opposed_drive(yaw_activation);
+    const bool pitch_drive = active_pitch_curvature_gain > 0.0
+        && has_opposed_drive(pitch_activation);
     for (std::size_t index = 0; index < particles_.size(); ++index) {
       Particle& particle = particles_[index];
       const RepeatVec3 velocity = Multiply(
@@ -244,6 +297,8 @@ class RepeatBody {
 
     const double compliance = 1.0 / stiffness_;
     const double alpha = compliance / (dt_s * dt_s);
+    const double bending_alpha = compliance
+        / active_bending_stiffness_ratio / (dt_s * dt_s);
     for (int iteration = 0; iteration < p.body_iterations; ++iteration) {
       for (std::size_t index = 0; index < geometry_.size(); ++index) {
         Particle& left = particles_[index];
@@ -267,10 +322,95 @@ class RepeatBody {
             right.position,
             Multiply(direction, right.inverse_mass * lagrange));
       }
+      if (yaw_drive || pitch_drive) {
+        for (std::size_t index = 1; index + 1 < particles_.size(); ++index) {
+          Particle& left = particles_[index - 1];
+          Particle& middle = particles_[index];
+          Particle& right = particles_[index + 1];
+          const RepeatVec3 tangent = Normalized(
+              Subtract(right.position, left.position));
+          RepeatVec3 lateral = Cross({0.0, 0.0, 1.0}, tangent);
+          if (Norm(lateral) == 0.0) lateral = {0.0, 1.0, 0.0};
+          else lateral = Normalized(lateral);
+          const RepeatVec3 dorsal = Normalized(Cross(tangent, lateral));
+          RepeatVec3 midpoint = Multiply(Add(left.position, right.position), 0.5);
+          const double mean_rest = 0.5 * (
+              geometry_[index - 1].rest_length_m
+              + geometry_[index].rest_length_m);
+          const double denominator = 0.25 * left.inverse_mass
+              + middle.inverse_mass + 0.25 * right.inverse_mass
+              + bending_alpha;
+          if (yaw_drive) {
+            const double differential = 0.5 * (
+                yaw_activation[index - 1][0] - yaw_activation[index - 1][1]
+                + yaw_activation[index][0] - yaw_activation[index][1]);
+            ApplyBendingConstraint(
+                left, middle, right, midpoint, lateral,
+                active_yaw_curvature_gain * mean_rest * differential,
+                denominator);
+            midpoint = Multiply(Add(left.position, right.position), 0.5);
+          }
+          if (pitch_drive) {
+            const double differential = 0.5 * (
+                pitch_activation[index - 1][0] - pitch_activation[index - 1][1]
+                + pitch_activation[index][0] - pitch_activation[index][1]);
+            ApplyBendingConstraint(
+                left, middle, right, midpoint, dorsal,
+                rest_pitch_offsets_[index]
+                    - active_pitch_curvature_gain * mean_rest * differential,
+                denominator);
+          }
+        }
+        for (std::size_t index = 0; index < particles_.size(); ++index) {
+          particles_[index].position.z = std::max(
+              particles_[index].position.z,
+              p.ground_z_m + NodeClearance(index));
+        }
+      }
     }
   }
 
  private:
+  static void ApplyBendingConstraint(
+      Particle& left,
+      Particle& middle,
+      Particle& right,
+      const RepeatVec3& midpoint,
+      const RepeatVec3& normal,
+      double target,
+      double denominator) {
+    const double constraint = Dot(
+        Subtract(middle.position, midpoint), normal) - target;
+    const double lagrange = -constraint / denominator;
+    left.position = Add(
+        left.position, Multiply(normal, -0.5 * left.inverse_mass * lagrange));
+    middle.position = Add(
+        middle.position, Multiply(normal, middle.inverse_mass * lagrange));
+    right.position = Add(
+        right.position, Multiply(normal, -0.5 * right.inverse_mass * lagrange));
+  }
+
+  std::array<RepeatVec3, 2> NodeFrame(std::size_t index) const {
+    const RepeatVec3 tangent = Normalized(NodeTangent3D(index));
+    RepeatVec3 lateral = Cross({0.0, 0.0, 1.0}, tangent);
+    if (Norm(lateral) == 0.0) lateral = {0.0, 1.0, 0.0};
+    else lateral = Normalized(lateral);
+    return {lateral, Normalized(Cross(tangent, lateral))};
+  }
+
+  RepeatVec3 NodeTangent3D(std::size_t index) const {
+    if (index == 0) {
+      return Subtract(particles_[1].position, particles_[0].position);
+    }
+    if (index + 1 == particles_.size()) {
+      return Subtract(
+          particles_.back().position,
+          particles_[particles_.size() - 2].position);
+    }
+    return Subtract(
+        particles_[index + 1].position, particles_[index - 1].position);
+  }
+
   double NodeClearance(std::size_t index) const {
     double clearance = -std::numeric_limits<double>::infinity();
     if (index > 0) {
@@ -307,6 +447,7 @@ class RepeatBody {
   std::vector<RepeatBodySegment> geometry_;
   double stiffness_;
   std::vector<Particle> particles_;
+  std::vector<double> rest_pitch_offsets_;
 };
 
 RepeatVec3 AttachmentPoint(
@@ -654,6 +795,9 @@ struct RepeatSimulation::Impl {
   double dt_s;
   SparseLIFNetwork network;
   RepeatBody body;
+  const SpatialFixture* spatial_fixture;
+  std::unique_ptr<SpatialEnvironmentController> spatial_controller;
+  SpatialControllerFrame spatial_frame;
   std::set<std::size_t> fiber_lesions;
   std::vector<double> sensory_rest;
   std::vector<double> sensory_previous;
@@ -680,7 +824,11 @@ struct RepeatSimulation::Impl {
   std::array<double, 6> decay_by_wave{};
   int step_index = 0;
 
-  Impl(const RepeatFixture& fixture_value, const RepeatOptions& options_value)
+  Impl(
+      const RepeatFixture& fixture_value,
+      const RepeatOptions& options_value,
+      const SpatialFixture* spatial_fixture_value,
+      const SpatialControllerOptions& spatial_options)
       : fixture(fixture_value),
         options(options_value),
         p(fixture.parameters),
@@ -692,6 +840,7 @@ struct RepeatSimulation::Impl {
         body(
             fixture.body_segments,
             fixture.parameters.instantaneous_stiffness_n_m),
+        spatial_fixture(spatial_fixture_value),
         sensory_rest(6),
         sensory_previous(6),
         fiber_rest(fixture.fibers.size()),
@@ -719,6 +868,14 @@ struct RepeatSimulation::Impl {
       body.Step(dt_s, p, no_acceleration, no_activation);
     }
     body.ResetVelocity();
+    if (spatial_fixture != nullptr) {
+      if (std::abs(spatial_fixture->lif_config.dt_s - dt_s) > 1e-15) {
+        throw std::runtime_error("repeat/spatial fixed dt mismatch");
+      }
+      spatial_controller = std::make_unique<SpatialEnvironmentController>(
+          *spatial_fixture, body.SpatialState(), spatial_options);
+      spatial_frame = spatial_controller->Snapshot();
+    }
 
     for (std::size_t segment = 0; segment < 6; ++segment) {
       const double length = body.SegmentLength(
@@ -820,6 +977,13 @@ struct RepeatSimulation::Impl {
           "posterior touch intensity must be finite in [0, 1]");
     }
     const double time_s = static_cast<double>(step_index) * dt_s;
+    if (spatial_controller == nullptr && input.light.enabled) {
+      throw std::runtime_error("light field requires a spatial native fixture");
+    }
+    if (spatial_controller != nullptr) {
+      spatial_frame = spatial_controller->Step(
+          time_s, input.light, body.SpatialState());
+    }
     std::vector<double> strain_rate(6, 0.0);
     std::vector<double> contraction_drive(6, 0.0);
     for (std::size_t segment = 0; segment < 6; ++segment) {
@@ -1116,7 +1280,18 @@ struct RepeatSimulation::Impl {
       body_activation[fixture.wave_segments[segment].body_index] =
           local_tension[segment];
     }
-    body.Step(dt_s, p, accelerations, body_activation);
+    if (spatial_controller != nullptr) {
+      const SpatialParameters& spatial = spatial_fixture->parameters;
+      body.Step(
+          dt_s, p, accelerations, body_activation,
+          spatial_frame.yaw_activation,
+          spatial_frame.pitch_activation,
+          spatial.active_yaw_curvature_gain,
+          spatial.active_pitch_curvature_gain,
+          spatial.active_bending_stiffness_ratio);
+    } else {
+      body.Step(dt_s, p, accelerations, body_activation);
+    }
     last_node_force = node_force;
 
     center_history.push_back(body.CenterX());
@@ -1174,21 +1349,25 @@ struct RepeatSimulation::Impl {
         output.feedback_force_frames,
         output.all_active_forces_traced,
         CycleMetrics(),
-        output.trace_examples};
+        output.trace_examples, spatial_frame};
   }
 };
 
 RepeatSimulation::RepeatSimulation(
     const RepeatFixture& fixture,
-    const RepeatOptions& options)
-    : fixture_(fixture), options_(options) {
+    const RepeatOptions& options,
+    const SpatialFixture* spatial_fixture,
+    const SpatialControllerOptions& spatial_options)
+    : fixture_(fixture), options_(options), spatial_fixture_(spatial_fixture),
+      spatial_options_(spatial_options) {
   Reset();
 }
 
 RepeatSimulation::~RepeatSimulation() = default;
 
 void RepeatSimulation::Reset() {
-  impl_ = std::make_unique<Impl>(fixture_, options_);
+  impl_ = std::make_unique<Impl>(
+      fixture_, options_, spatial_fixture_, spatial_options_);
 }
 
 void RepeatSimulation::Advance(
@@ -1235,7 +1414,7 @@ RepeatOutput RunRepeat(
                 < fixture.parameters.posterior_touch_duration_s
         ? 1.0
         : 0.0;
-    simulation.Advance({touch_intensity});
+    simulation.Advance(RepeatEnvironmentInput{touch_intensity, {}});
   }
   return simulation.Result();
 }

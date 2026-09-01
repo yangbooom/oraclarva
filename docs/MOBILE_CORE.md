@@ -139,3 +139,30 @@ The third non-independent held-out diagnostic passes its rows while
 
 GitHub Actions remains manual-only through `workflow_dispatch`; local
 acceptance is the default during this research phase.
+
+## Stage 9 integrated environment extension
+
+`native/mobile_environment.h` adds three C11 functions without changing the
+Stage 8 ABI layouts. A spatial core owns both the frozen repeat controller and a
+generated 168-neuron/188-synapse light controller. Each 1 ms call samples the
+input scalar field at four current head-surface locations, runs adaptive
+transduction and sparse LIF dynamics, updates segment-resolved yaw/pitch muscle
+activation, advances the same 13-node XPBD body, and exposes the resulting
+samples, spikes, activations, heading, pitch, and 3D displacement.
+
+Uniform light retains the Stage 8 final anatomical displacement of
+467.539285 µm exactly and has zero heading change. Synthetic +Y/-Y gradients
+produce mirrored -3.831016°/+3.830253° headings. A +Z gradient lifts the body
+35.095957 µm with 12.738189° head pitch; the -Z response is ground-limited. A
+right sensory-channel lesion reduces the +Y result to zero heading change.
+
+These are host diagnostic gates, not a phototaxis validation. The field and
+transducer parameters are `MODEL_FITTED`, the reduced spatial topology is
+`ANATOMY_DERIVED`, and only light is native in this extension. Integrated
+spatial proprioception is explicitly disabled because its cross-coupling to the
+axial body has not been calibrated. The synapses remain serialized for future
+calibration, but enabling them is outside this gate.
+
+The checked trajectory, 1:1-scale physical-node GIF, ABI details, parity scope,
+and reproduction commands are in
+`docs/NATIVE_ENVIRONMENT_CLOSED_LOOP_V1.md`.
