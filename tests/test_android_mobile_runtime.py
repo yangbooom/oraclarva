@@ -92,6 +92,7 @@ def test_android_runtime_keeps_native_physics_and_render_projection_separate():
     assert "frame.vertices" in renderer
     assert "frame.state[30 + node * 3]" in renderer
     assert "native organism must stay on its owning GL thread" in organism
+    assert "Thread.currentThread() === ownerThread" in organism
     assert "require(!frame.releaseValidated)" in organism
 
     exposed = (bridge + renderer + organism).lower()
@@ -129,3 +130,21 @@ def test_android_package_targets_mobile_native_runtime_without_automatic_ci():
     assert "workflow_dispatch:" in workflow
     assert "pull_request:" not in workflow
     assert "push:" not in workflow
+    assert "32fd9a750c9edebbbd9faa8426305e1a9936625c3cef466126c86af6ce04fe82" in documentation
+    assert "device_performance_claim=false" in documentation
+
+
+def test_android_ndk_parity_gate_covers_both_abis_without_device_claim():
+    runner = (ROOT / "tools" / "build_android_ndk_parity.py").read_text()
+    native_gate = (ROOT / "tools" / "android_ndk_parity_main.cpp").read_text()
+
+    assert '"arm64-v8a": "aarch64-linux-android26-clang++"' in runner
+    assert '"x86_64": "x86_64-linux-android26-clang++"' in runner
+    assert '"-static"' in runner
+    assert "tolerance = 1e-8" in runner
+    assert 'print("device_performance_claim\\tfalse")' in runner
+    assert "oraclarva_mobile_create_spatial" in native_gate
+    assert "oraclarva_mobile_advance_environment" in native_gate
+    assert "oraclarva_mobile_read_render_mesh" in native_gate
+    assert "reset replay drifted" in native_gate
+    assert 'release_validated\\tfalse' in native_gate

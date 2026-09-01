@@ -40,7 +40,7 @@ internal class NativeOrganism(
     repeatFixturePath: String,
     spatialFixturePath: String,
 ) : Closeable {
-    private val ownerThread = Thread.currentThread().id
+    private val ownerThread = Thread.currentThread()
     private var handle = NativeBridge.nativeCreate(
         repeatFixturePath,
         spatialFixturePath,
@@ -113,7 +113,7 @@ internal class NativeOrganism(
     }
 
     private fun checkThread() {
-        check(Thread.currentThread().id == ownerThread) {
+        check(Thread.currentThread() === ownerThread) {
             "native organism must stay on its owning GL thread"
         }
     }

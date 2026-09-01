@@ -182,8 +182,10 @@ write physics state or issue movement commands. The host JVM loads the same JNI
 bridge and reproduces 467.539285 µm uniform-field forward movement, zero yaw,
 -3.831016° +Y-gradient yaw, and exact reset state/mesh replay. The checked GIF
 comes from 51 actual host-JNI mesh reads, not an Android capture. The Gradle
-wrapper is verified, but APK/device claims remain blocked until an authorized
-user accepts the Android SDK license and a device or emulator is available.
+wrapper is verified, the SDK licenses are accepted, and a signed debug APK
+builds for both `arm64-v8a` and `x86_64`. NDK Bionic parity stays within
+`1e-8` across both ABIs. No physical device is attached to this ARM host, so
+device execution and performance remain a separate gate.
 `release_validated: false` and manual-only Actions remain unchanged. See
 `docs/ANDROID_NATIVE_RUNTIME_V1.md`.
 
@@ -378,13 +380,14 @@ the JNI bridge and is explicitly not Android device/emulator footage.
 python tools/build_android_host_bridge.py
 python tools/render_android_mobile_runtime_gif.py
 pytest -q tests/test_android_mobile_runtime.py
+python tools/build_android_ndk_parity.py --ndk "$ANDROID_NDK_HOME"
 cd android
-./gradlew assembleDebug
+./gradlew :app:assembleDebug --no-daemon
 ```
 
-The final two commands require locally accepted Android SDK licenses and the
-declared SDK/NDK packages. An APK build does not by itself permit a device
-performance claim.
+The Android build and ABI commands require locally accepted SDK licenses and
+the declared SDK/NDK packages. The checked debug APK is a build result; it does
+not by itself permit a device performance claim.
 
 ## Isolated A1 muscle mechanics diagnostic
 
@@ -437,8 +440,9 @@ manifoldness are checked by `tests/test_mobile_core.py`.
 This establishes native numerical parity and a host-tested integration
 boundary for the current research approximations, not a complete L1 brain/VNC,
 measured individual muscle mechanics, held-out biological validation, an
-Android/iOS device validation, or mobile performance claim. The Android shell
-exists at Stage 10, but its APK/device gate is reported separately.
+Android/iOS device validation, or mobile performance claim. The Stage 10
+Android APK builds for both declared ABIs; its device gate is reported
+separately.
 
 ## Non-goals for the reference core
 

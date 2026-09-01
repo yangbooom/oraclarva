@@ -72,14 +72,13 @@ through the exact static methods declared by Kotlin. The regression gate checks:
 | Reset replay | exact state, vertex, and index arrays |
 | Release validation | false |
 
-Separately, all five Kotlin source files compile with Kotlin 2.3.20 against the
-publicly published Android 16 API stub from
-[`org.robolectric:android-all:16-robolectric-13921718`](https://repo1.maven.org/maven2/org/robolectric/android-all/16-robolectric-13921718/).
-The downloaded JAR matched SHA-256
-`8b74a0a137330658d2f33f0dc715d42734f74ba8b2d7014fc2e95aa40d3f682d`
-and produced 11 application classfiles without a compiler diagnostic. This is
-an auxiliary source type check, not an AGP, APK, emulator, or Android device
-build.
+The same parity gate is also cross-built against NDK r28c Bionic for
+`arm64-v8a` and `x86_64`. Both static executables reproduce the checked host
+state, render topology, exact reset replay, spike total, and
+`release_validated=false`. Cross-ABI floating-point drift is at most
+`6.02540239925e-12`, below the declared `1e-8` engineering tolerance. The
+runner prints `device_performance_claim=false`: execution on this ARM host and
+through QEMU is an ABI gate, not an Android runtime or performance result.
 
 This test validates the C++/JNI contract and deterministic data transfer. It
 does not establish device framerate, thermal behavior, battery use, GPU driver
@@ -87,12 +86,25 @@ compatibility, or biological validation.
 
 ## Android build and device boundary
 
-The Gradle project and verified wrapper configure successfully up to Android
-SDK package resolution. In the current environment the required API 36 build
-tools and NDK package cannot be installed until an authorized user accepts the
-Google Android SDK license. Consequently this revision does not yet claim a
-successful APK, emulator launch, physical-device launch, or device performance
-measurement.
+The Android SDK licenses were explicitly accepted on 2026-09-01. With API 36,
+Build Tools 36.0.0, Platform Tools 37.0.1, and NDK 28.2.13676358 installed,
+`./gradlew :app:assembleDebug --no-daemon` completes for both declared ABIs.
+The generated debug artifact is:
+
+| Property | Checked value |
+| --- | --- |
+| Path | `android/app/build/outputs/apk/debug/app-debug.apk` |
+| Size | 3,160,590 bytes |
+| SHA-256 | `32fd9a750c9edebbbd9faa8426305e1a9936625c3cef466126c86af6ce04fe82` |
+| Signature | Android Debug, APK Signature Scheme v2 verified |
+| Alignment | `zipalign -c -P 16 -v 4` successful |
+| Native libraries | `arm64-v8a/liboraclarva_android.so`, `x86_64/liboraclarva_android.so` |
+
+The package declares API 26 minimum/API 36 target, requires OpenGL ES 3, asks
+for no Android permissions, and contains the checked parity fixtures. This is
+a successful APK build and package audit, not evidence of device execution.
+No physical Android device is attached to this host, which is ARM64 and has no
+`/dev/kvm`; runtime and performance claims remain a separate gate below.
 
 `release_validated=false` remains mandatory. GitHub Actions also remains
 manual-only through `workflow_dispatch`; the Android build is not added as an
@@ -108,12 +120,14 @@ pytest -q tests/test_android_mobile_runtime.py
 python tools/render_android_mobile_runtime_gif.py
 ```
 
-After accepting the SDK license and installing API 36, Build Tools 36.0.0,
-Platform Tools, and NDK 28.2.13676358:
+With accepted SDK licenses and API 36, Build Tools 36.0.0, Platform Tools, and
+NDK 28.2.13676358 installed:
 
 ```bash
 cd android
-./gradlew assembleDebug
+./gradlew :app:assembleDebug --no-daemon
+cd ..
+python tools/build_android_ndk_parity.py --ndk "$ANDROID_NDK_HOME"
 ```
 
 An APK build alone must not be reported as device validation. Emulator or
