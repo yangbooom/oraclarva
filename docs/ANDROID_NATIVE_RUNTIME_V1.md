@@ -106,6 +106,17 @@ a successful APK build and package audit, not evidence of device execution.
 No physical Android device is attached to this host, which is ARM64 and has no
 `/dev/kvm`; runtime and performance claims remain a separate gate below.
 
+An Android Emulator 37.1.11 smoke attempt used the API 36 AOSP ATD `x86_64`
+image because the APK contains an `x86_64` library. The official emulator
+binary itself had to run through QEMU user translation on this ARM64 host, and
+the Android guest then ran under unaccelerated TCG. Across an initial two-hour
+first boot and a preserved-data restart, the guest mounted its data partition
+and bootstrap APEX packages, but ADB remained offline. The APK was therefore
+not installed or launched in that unsupported nested setup. This is recorded
+as an environment limitation, not as an emulator pass or a performance
+measurement; a compatible x86_64 emulator host or physical Android device is
+still required for that gate.
+
 `release_validated=false` remains mandatory. GitHub Actions also remains
 manual-only through `workflow_dispatch`; the Android build is not added as an
 automatic CI trigger.

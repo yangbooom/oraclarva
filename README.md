@@ -185,7 +185,9 @@ comes from 51 actual host-JNI mesh reads, not an Android capture. The Gradle
 wrapper is verified, the SDK licenses are accepted, and a signed debug APK
 builds for both `arm64-v8a` and `x86_64`. NDK Bionic parity stays within
 `1e-8` across both ABIs. No physical device is attached to this ARM host, so
-device execution and performance remain a separate gate.
+device execution and performance remain a separate gate. An unsupported
+nested x86_64 software-emulator attempt reached Android bootstrap APEX mounting
+but not online ADB, and is not counted as an emulator pass.
 `release_validated: false` and manual-only Actions remain unchanged. See
 `docs/ANDROID_NATIVE_RUNTIME_V1.md`.
 
