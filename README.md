@@ -175,6 +175,22 @@ cross-coupling is disabled pending calibration, and
 `release_validated: false` remains mandatory. See
 `docs/NATIVE_ENVIRONMENT_CLOSED_LOOP_V1.md`.
 
+Stage 10 places that native state behind an Android NDK/JNI lifecycle. Kotlin
+supplies physical light/contact fields, accumulates fixed 1 ms steps, and draws
+the copied 302-vertex/600-triangle continuous mesh with OpenGL ES 3; it cannot
+write physics state or issue movement commands. The host JVM loads the same JNI
+bridge and reproduces 467.539285 µm uniform-field forward movement, zero yaw,
+-3.831016° +Y-gradient yaw, and exact reset state/mesh replay. The checked GIF
+comes from 51 actual host-JNI mesh reads, not an Android capture. The Gradle
+wrapper is verified, the SDK licenses are accepted, and a signed debug APK
+builds for both `arm64-v8a` and `x86_64`. NDK Bionic parity stays within
+`1e-8` across both ABIs. No physical device is attached to this ARM host, so
+device execution and performance remain a separate gate. An unsupported
+nested x86_64 software-emulator attempt reached Android bootstrap APEX mounting
+but not online ADB, and is not counted as an emulator pass.
+`release_validated: false` and manual-only Actions remain unchanged. See
+`docs/ANDROID_NATIVE_RUNTIME_V1.md`.
+
 The isolated A1 mechanics fixture gives all 29 A1-left fibers normalized
 origins, insertions, rest lengths, lines of action, passive elasticity, damping,
 and activation-driven tension. Stage 4 now reuses the supported subset in the
@@ -352,6 +368,29 @@ python tools/render_native_environment_gif.py
 pytest -q tests/test_native_environment_closed_loop.py
 ```
 
+## Android NDK runtime diagnostic
+
+Stage 10 renders the native continuous surface while keeping the internal
+13-node physics state private and authoritative. The physical +Y light gradient
+is sampled from the moving body on every fixed step; the ring marks the
+anterior end and is not an eye. The animation below is a host JVM execution of
+the JNI bridge and is explicitly not Android device/emulator footage.
+
+![Android NDK runtime through the host JNI boundary](docs/assets/oraclarva_android_mobile_runtime.gif)
+
+```bash
+python tools/build_android_host_bridge.py
+python tools/render_android_mobile_runtime_gif.py
+pytest -q tests/test_android_mobile_runtime.py
+python tools/build_android_ndk_parity.py --ndk "$ANDROID_NDK_HOME"
+cd android
+./gradlew :app:assembleDebug --no-daemon
+```
+
+The Android build and ABI commands require locally accepted SDK licenses and
+the declared SDK/NDK packages. The checked debug APK is a build result; it does
+not by itself permit a device performance claim.
+
 ## Isolated A1 muscle mechanics diagnostic
 
 The Stage 3 artifact shows the 29 schematic A1-left attachment lines, two
@@ -403,7 +442,9 @@ manifoldness are checked by `tests/test_mobile_core.py`.
 This establishes native numerical parity and a host-tested integration
 boundary for the current research approximations, not a complete L1 brain/VNC,
 measured individual muscle mechanics, held-out biological validation, an
-Android/iOS build, or device performance.
+Android/iOS device validation, or mobile performance claim. The Stage 10
+Android APK builds for both declared ABIs; its device gate is reported
+separately.
 
 ## Non-goals for the reference core
 
