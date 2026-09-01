@@ -91,10 +91,10 @@
     "active_tension_gain_model_units": 165.0,
     "passive_stiffness_model_units": 180.0,
     "damping_model_units": 24.0,
-    "acceleration_scale_m_s2_per_model_force": 0.003,
+    "acceleration_scale_m_s2_per_model_force": 0.0003,
     "body_velocity_retention": 0.5,
-    "ground_negative_x_retention": 0.603,
-    "ground_positive_x_retention": 0.397,
+    "ground_negative_x_retention": 1.0,
+    "ground_positive_x_retention": 0.0,
     "parameter_provenance": "MODEL_FITTED",
     "force_unit": "model_unit_not_newton",
     "passive_planar_bending_stiffness_ratio": 25.0,
@@ -111,7 +111,8 @@
     "coverage_balance_equation": "Within each segment, scale each mapped fiber by half the total mapped-fiber count divided by its side count; this removes left/right sampling-count bias without creating unmapped fibers.",
     "force_projection_mode": "local_tangent_axial",
     "force_projection_provenance": "ANATOMY_DERIVED",
-    "force_projection_limitation": "The reduced straight-crawl body executes the axial component of mapped-fiber tension only because individual L1 3D attachments and force vectors are not measured; spatial steering uses separate bilateral and dorsoventral models."
+    "force_projection_limitation": "The reduced straight-crawl body executes the axial component of mapped-fiber tension only because individual L1 3D attachments and force vectors are not measured; spatial steering uses separate bilateral and dorsoventral models.",
+    "directional_contact_interpretation": "MODEL_FITTED one-way bristle/denticle-like substrate approximation: anatomical-forward tangential motion is retained and posterior slip is damped; these are not measured L1-on-agar coefficients."
   },
   "calibration": {
     "partition": "12 Greaney 2026 calibration animals only",
@@ -123,10 +124,10 @@
     ],
     "parameter_provenance": "MODEL_FITTED",
     "release_validated": false,
-    "fit_status": "corrected_after_directional_mechanics_audit",
+    "fit_status": "corrected_after_observed_backslip_audit",
     "selection_used_held_out_values": false,
     "held_out_values_were_present_in_repository": true,
-    "selection_rule": "Correct mechanics defects, then fit only to the 12-animal calibration p10-p90 bands; the already-seen held-out partition is reported as diagnostic and cannot support an independent validation claim.",
+    "selection_rule": "Correct mechanics defects, then fit only to the 12-animal calibration p10-p90 bands and the observer-raised back-slip rejection gate; the already-seen held-out partition is diagnostic only and cannot support an independent validation claim.",
     "calibration_target_snapshot": {
       "cycle_period_s": {
         "p10": 3.751851,
@@ -210,20 +211,20 @@
         165.0
       ],
       "acceleration_scale_m_s2_per_model_force": [
-        0.002,
-        0.01
+        0.00024,
+        0.00075
       ],
       "body_velocity_retention": [
         0.5,
         0.5
       ],
       "ground_negative_x_retention": [
-        0.6,
-        0.61
+        0.8,
+        1.0
       ],
       "ground_positive_x_retention": [
-        0.39,
-        0.4
+        0.0,
+        0.2
       ],
       "muscle_activation_rise_tau_s": [
         0.0003,
@@ -288,26 +289,34 @@
       "standard_run_end": "14.600 s: includes recovery through the 25% threshold for A1 in the third complete cycle while excluding most of the fourth wave; selected from neural/physical event timing, not visual pose."
     },
     "fitted_on": "2026-09-01",
-    "prior_held_out_evaluation_count": 1,
+    "prior_held_out_evaluation_count": 2,
     "model_revision_after_prior_held_out_evaluation": true,
     "independent_held_out_claim_available": false,
     "corrective_candidate_audit": {
       "selection_partition": "12-animal calibration only",
       "rejected_failure_modes": [
         "posteriorward signed displacement",
+        "net-forward trajectory with excessive intra-cycle backward retrace",
         "lateral buckling",
         "collinear node-order reversal",
         "stride outside calibration p10-p90"
       ],
       "selected": {
-        "acceleration_scale_m_s2_per_model_force": 0.003,
-        "ground_negative_x_retention": 0.603,
-        "ground_positive_x_retention": 0.397,
+        "acceleration_scale_m_s2_per_model_force": 0.0003,
+        "ground_negative_x_retention": 1.0,
+        "ground_positive_x_retention": 0.0,
         "sensory_adaptation_fraction": 3.35,
         "maximum_shortening_fraction_A3": 0.523,
         "maximum_shortening_fraction_A5": 0.526
       },
-      "parameter_provenance": "MODEL_FITTED"
+      "parameter_provenance": "MODEL_FITTED",
+      "backslip_search": {
+        "trigger": "Observer reported visible forward/backward rocking in the checked GIF.",
+        "baseline_maximum_backward_retrace_um": 476.201431,
+        "baseline_gif_sampled_maximum_backward_retrace_um": 436.015561,
+        "finding": "The fitted named-fiber force-to-acceleration scale dominated the rocking; changing target shortening alone did not remove it.",
+        "selection_objective": "Minimize maximum backward retrace while retaining all calibration p10-p90 gates; no held-out value was used."
+      }
     }
   },
   "release_validated": false,
@@ -326,6 +335,9 @@
     "minimum_forward_segment_alignment": 0.8,
     "minimum_head_tail_chord_ratio": 0.95,
     "parameter_provenance": "MODEL_FITTED",
-    "purpose": "Reject posteriorward translation, lateral buckling, and collinear node-order reversal; this is an acceptance measurement, not a behavior command."
+    "purpose": "Reject posteriorward translation, visible intra-cycle back-slip, lateral buckling, and collinear node-order reversal; this is an acceptance measurement, not a behavior command.",
+    "maximum_backward_retrace_um": 25.0,
+    "minimum_forward_progress_efficiency": 0.8,
+    "forward_progress_efficiency_equation": "net anatomical-forward displacement / (net anatomical-forward displacement + cumulative backward travel)"
   }
 }

@@ -152,6 +152,9 @@ def load_repeat_crawl_config(path: str | Path | None = None) -> dict[str, Any]:
     movement_gate = raw.get("directional_shape_gate", {})
     if (
         movement_gate.get("parameter_provenance") != "MODEL_FITTED"
+        or float(
+            movement_gate.get("minimum_forward_progress_efficiency", 0.0)
+        ) > 1.0
         or any(
             not isfinite(float(movement_gate.get(name, 0.0)))
             or float(movement_gate.get(name, 0.0)) <= 0.0
@@ -162,6 +165,8 @@ def load_repeat_crawl_config(path: str | Path | None = None) -> dict[str, Any]:
                 "maximum_planar_node_deviation_um",
                 "minimum_forward_segment_alignment",
                 "minimum_head_tail_chord_ratio",
+                "maximum_backward_retrace_um",
+                "minimum_forward_progress_efficiency",
             )
         )
     ):
@@ -212,6 +217,9 @@ class RepeatCrawlResult:
     displacement_x_um: float
     displacement_y_um: float
     forward_displacement_um: float
+    maximum_backward_retrace_um: float
+    cumulative_backward_travel_um: float
+    forward_progress_efficiency: float
     lateral_displacement_um: float
     maximum_lateral_span_um: float
     maximum_planar_deviation_um: float
@@ -978,6 +986,10 @@ class RepeatCrawlLarva:
         length_history = {segment: [] for segment in WAVE_SEGMENTS}
         center_x_history: list[float] = []
         forward_position_history: list[float] = []
+        previous_forward_position = 0.0
+        running_forward_peak = 0.0
+        maximum_backward_retrace = 0.0
+        cumulative_backward_travel = 0.0
         maximum_lateral_span = 0.0
         maximum_planar_deviation = 0.0
         minimum_forward_segment_alignment = 1.0
@@ -1070,7 +1082,17 @@ class RepeatCrawlLarva:
             )
             center = self._center(self.body)
             center_x_history.append(center.x)
-            forward_position_history.append((center - initial_center).dot(forward))
+            forward_position = (center - initial_center).dot(forward)
+            forward_position_history.append(forward_position)
+            forward_step = forward_position - previous_forward_position
+            if forward_step < 0.0:
+                cumulative_backward_travel -= forward_step
+            running_forward_peak = max(running_forward_peak, forward_position)
+            maximum_backward_retrace = max(
+                maximum_backward_retrace,
+                running_forward_peak - forward_position,
+            )
+            previous_forward_position = forward_position
             lateral_positions = [
                 (item.position - initial_center).dot(lateral)
                 for item in self.body.particles
@@ -1119,11 +1141,23 @@ class RepeatCrawlLarva:
                 )
         final_center = self._center(self.body)
         displacement = final_center - initial_center
+        net_forward = displacement.dot(forward)
+        progress_denominator = net_forward + cumulative_backward_travel
+        forward_progress_efficiency = (
+            net_forward / progress_denominator
+            if progress_denominator > 0.0
+            else 0.0
+        )
         return RepeatCrawlResult(
             duration_s=steps * dt,
             displacement_x_um=displacement.x * 1e6,
             displacement_y_um=displacement.y * 1e6,
-            forward_displacement_um=displacement.dot(forward) * 1e6,
+            forward_displacement_um=net_forward * 1e6,
+            maximum_backward_retrace_um=maximum_backward_retrace * 1e6,
+            cumulative_backward_travel_um=(
+                cumulative_backward_travel * 1e6
+            ),
+            forward_progress_efficiency=forward_progress_efficiency,
             lateral_displacement_um=displacement.dot(lateral) * 1e6,
             maximum_lateral_span_um=maximum_lateral_span * 1e6,
             maximum_planar_deviation_um=maximum_planar_deviation * 1e6,

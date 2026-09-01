@@ -104,6 +104,8 @@ def reports() -> tuple[dict[str, Any], dict[str, Any]]:
         generated["config_sha256"] != config_sha256
         or generated["parameter_fit_status"]
         != config["calibration"]["fit_status"]
+        or generated["prior_held_out_evaluation_count"]
+        != config["calibration"]["prior_held_out_evaluation_count"]
         or generated["model_revision_after_prior_held_out_evaluation"]
         is not True
         or generated["independent_held_out_claim_available"] is not False
@@ -160,7 +162,9 @@ def reports() -> tuple[dict[str, Any], dict[str, Any]]:
             else "diagnostic_held_out_failed"
         ),
         "evaluation_protocol": {
-            "evaluation_count": 2,
+            "evaluation_count": (
+                generated["prior_held_out_evaluation_count"] + 1
+            ),
             "evaluated_on": "2026-09-01",
             "parameters_changed_after_prior_evaluation": True,
             "selection_used_held_out_values": False,

@@ -115,6 +115,48 @@ def maximum_error(left: Any, right: Any) -> float:
     return abs(float(left) - float(right))
 
 
+def sampled_progress_metrics(frames: list[dict[str, Any]]) -> dict[str, float]:
+    initial_nodes = frames[0]["nodes_um"]
+    head = initial_nodes[0]
+    tail = initial_nodes[-1]
+    forward_x = head[0] - tail[0]
+    forward_y = head[1] - tail[1]
+    magnitude = math.hypot(forward_x, forward_y)
+    forward_x /= magnitude
+    forward_y /= magnitude
+    centers = [
+        (
+            sum(node[0] for node in frame["nodes_um"]) / len(frame["nodes_um"]),
+            sum(node[1] for node in frame["nodes_um"]) / len(frame["nodes_um"]),
+        )
+        for frame in frames
+    ]
+    origin_x, origin_y = centers[0]
+    positions = [
+        (x - origin_x) * forward_x + (y - origin_y) * forward_y
+        for x, y in centers
+    ]
+    running_peak = positions[0]
+    maximum_retrace = 0.0
+    cumulative_backward = 0.0
+    for left, right in zip(positions, positions[1:], strict=False):
+        delta = right - left
+        if delta < 0.0:
+            cumulative_backward -= delta
+        running_peak = max(running_peak, right)
+        maximum_retrace = max(maximum_retrace, running_peak - right)
+    net = positions[-1] - positions[0]
+    denominator = net + cumulative_backward
+    return {
+        "net_forward_um": net,
+        "maximum_backward_retrace_um": maximum_retrace,
+        "cumulative_backward_travel_um": cumulative_backward,
+        "forward_progress_efficiency": (
+            net / denominator if denominator > 0.0 else 0.0
+        ),
+    }
+
+
 def compile_native(output: Path) -> None:
     compiler = shutil.which("c++")
     if compiler is None:
@@ -242,8 +284,18 @@ def render_report() -> str:
             - model["a1_a6_wave_speed_segments_s"]
         ),
     }
+    python_sampled_progress = sampled_progress_metrics(python_frames)
+    native_sampled_progress = sampled_progress_metrics(native_frames)
+    progress_errors = {
+        key: abs(native_sampled_progress[key] - python_sampled_progress[key])
+        for key in python_sampled_progress
+    }
     if max(summary_errors.values()) > SUMMARY_TOLERANCE:
         raise RuntimeError("native repeat summary exceeds tolerance")
+    if max(progress_errors.values()) > SUMMARY_TOLERANCE:
+        raise RuntimeError("native repeat progress metrics exceed tolerance")
+    if not all(python_summary["movement_gate"].values()):
+        raise RuntimeError("Python repeat movement gate failed")
     if (
         native_summary["feedback_force_frames"]
         != python_summary["feedback_force_frames"]
@@ -346,6 +398,10 @@ def render_report() -> str:
             "segment_activation": max_activation,
             "node_force_model_units": max_force,
             **summary_errors,
+            **{
+                f"sampled_{key}": value
+                for key, value in progress_errors.items()
+            },
         },
         "exact_counts": {
             "neurons": len(native["neurons"]),
@@ -363,8 +419,26 @@ def render_report() -> str:
             ],
         },
         "lesion_gates": lesion_gates,
+        "sampled_progress": {
+            "python": python_sampled_progress,
+            "native": native_sampled_progress,
+            "full_timestep_python": {
+                "maximum_backward_retrace_um": python_summary[
+                    "maximum_backward_retrace_um"
+                ],
+                "cumulative_backward_travel_um": python_summary[
+                    "cumulative_backward_travel_um"
+                ],
+                "forward_progress_efficiency": python_summary[
+                    "forward_progress_efficiency"
+                ],
+            },
+            "movement_gate": python_summary["movement_gate"],
+        },
         "all_active_forces_traced": True,
-        "held_out_behavior_status": "held_out_failed_amplitude_and_duty",
+        "held_out_behavior_status": (
+            "diagnostic_passed_but_non_independent"
+        ),
         "paired_frames": paired_frames,
     }
     return json.dumps(report, indent=2, ensure_ascii=False) + "\n"

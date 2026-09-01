@@ -351,6 +351,28 @@ def test_native_repeat_sampled_nodes_activation_and_force_match_python(
         )
 
 
+def test_native_repeat_normal_sampled_path_rejects_visible_backslip(
+    native_repeat_binary: Path,
+):
+    frames = native_result(native_repeat_binary, "normal").frames
+    centers = [
+        -sum(node[0] for node in frame.nodes_um) / len(frame.nodes_um)
+        for frame in frames
+    ]
+    peak = centers[0]
+    maximum_retrace = 0.0
+    cumulative_backward = 0.0
+    for left, right in zip(centers, centers[1:], strict=False):
+        delta = right - left
+        cumulative_backward += max(0.0, -delta)
+        peak = max(peak, right)
+        maximum_retrace = max(maximum_retrace, peak - right)
+    net = centers[-1] - centers[0]
+    efficiency = net / (net + cumulative_backward)
+    assert maximum_retrace <= 25.0
+    assert efficiency >= 0.8
+
+
 def test_native_repeat_normal_trace_examples_are_ordered_and_identified(
     native_repeat_binary: Path,
 ):

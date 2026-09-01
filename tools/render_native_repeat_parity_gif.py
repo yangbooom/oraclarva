@@ -22,7 +22,7 @@ FONT_BOLD = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 FONT_MONO = Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
 WIDTH, HEIGHT, SS = 1080, 720, 2
 DURATION_MS = 80
-WORLD_X = (-450.0, 1100.0)
+WORLD_X = (-600.0, 1000.0)
 WORLD_Y = (-260.0, 260.0)
 
 
@@ -362,12 +362,18 @@ def render_frame(index, report, body):
         small,
     )
     label(draw, (805, 568), "cycles      3 / 3", (182, 164, 183), small)
-    label(draw, (805, 589), "lesions     5 / 5", (182, 164, 183), small)
+    label(
+        draw,
+        (805, 589),
+        f"max back    {report['sampled_progress']['full_timestep_python']['maximum_backward_retrace_um']:.1f} µm PASS",
+        (116, 215, 167),
+        small,
+    )
     label(
         draw,
         (805, 618),
-        "held-out A5/A6 duty: FAIL",
-        (244, 116, 133),
+        "held-out diagnostic PASS*",
+        (244, 174, 103),
         small,
     )
     label(
@@ -396,6 +402,9 @@ def render(output: Path) -> None:
         or report["release_validated"] is not False
         or len(report["paired_frames"]) != 51
         or not all(report["lesion_gates"].values())
+        or not all(
+            report["sampled_progress"]["movement_gate"].values()
+        )
     ):
         raise RuntimeError("native repeat parity GIF source is invalid")
     frames = [

@@ -97,9 +97,8 @@ all-A6-fiber lesions preserve the expected causal boundaries in both
 implementations.
 
 This is correctness parity for the current `research_approximation`, not
-biological validation or a performance result. The reused held-out diagnostic
-fails A5/A6 duty and cannot support an independent claim;
-`release_validated` remains false. See
+biological validation or a performance result. The third reused held-out diagnostic passes its rows but cannot support an
+independent claim; `release_validated` remains false. See
 `docs/REPEAT_CRAWL_NATIVE_PARITY_V1.md`.
 
 ## Stage 8 mobile integration gate
@@ -123,19 +122,19 @@ every mesh read prove the renderer does not mutate physics.
 
 The complete 14.6 s stepped workload exactly matches the Stage 7 one-shot
 native frames and remains inside the checked Python tolerances. Reset plus the
-same input schedule reproduces canonical digest `e8a2f9fdd37bab30`. Zero input and
+same input schedule reproduces canonical digest `5346167233ab168c`. Zero input and
 all four lesion classes continue to match.
 
 One GCC 13.3.0 `-O3 -DNDEBUG` measurement on the available Linux aarch64 host
-reported 1.021 ms initialization, 564.274 ms for 14.6 simulated seconds
-(25.87x), 16.79 MiB peak process RSS, 12.31 us snapshot reads, and 28.24 us
+reported 1.005 ms initialization, 567.644 ms for 14.6 simulated seconds
+(25.72x), 16.83 MiB peak process RSS, 13.11 us snapshot reads, and 29.01 us
 render-mesh
 reads. These are host process measurements only. Android/iOS compilation,
 device CPU/GPU, thermal, battery, app lifecycle, and shipping readiness remain
 untested and may not be inferred.
 
-The non-independent held-out diagnostic fails A5/A6 duty and
-`release_validated` remains false. See
+The third non-independent held-out diagnostic passes its rows while
+`independent_validation_passed` and `release_validated` remain false. See
 `docs/MOBILE_CORE_INTEGRATION_V1.md`.
 
 GitHub Actions remains manual-only through `workflow_dispatch`; local

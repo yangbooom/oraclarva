@@ -21,7 +21,7 @@ FONT_MONO = Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
 WIDTH, HEIGHT, SS = 1080, 720, 2
 FRAME_COUNT = 51
 FRAME_DURATION_MS = 80
-WORLD_X = (-450.0, 1100.0)
+WORLD_X = (-600.0, 1000.0)
 WORLD_Y = (-260.0, 260.0)
 BODY_RECT = (54.0, 105.0, 1026.0, 435.0)
 WAVE_SEGMENTS = ("A6", "A5", "A4", "A3", "A2", "A1")
@@ -185,7 +185,7 @@ def render_frame(trajectory, body, index):
     label(draw, (42, 25), "ORACLARVA / REPEAT CRAWL", (245, 231, 211), title)
     label(draw, (43, 62), "ONE POSTERIOR TOUCH → SENSORY → LIF → MN → 146 FIBERS → 13-NODE BODY → SENSORY", (168, 145, 169), mono)
     draw.rounded_rectangle((*scaled((36, 92)), *scaled((1044, 450))), radius=18 * SS, fill=(17, 12, 23), outline=(58, 41, 64), width=SS)
-    for tick in range(-250, 1001, 250):
+    for tick in range(-500, 1001, 250):
         x, _ = world_to_screen((tick, 0, 0))
         draw.line((*scaled((x, 115)), *scaled((x, 422))), fill=(34, 25, 41), width=SS)
         label(draw, (x, 430), f"{tick} µm", (96, 80, 102), small, anchor="ms")
@@ -210,7 +210,14 @@ def render_frame(trajectory, body, index):
     time_s = float(frame["time_s"])
     summary = trajectory["result_summary"]
     label(draw, (54, 112), f"t = {time_s:05.2f} s", (238, 216, 193), mono)
-    label(draw, (1024, 112), f"checked forward = {summary['forward_displacement_um']:+.1f} µm", (238, 216, 193), mono, anchor="ra")
+    label(
+        draw,
+        (1024, 112),
+        f"forward {summary['forward_displacement_um']:+.1f} µm · max back {summary['maximum_backward_retrace_um']:.1f} µm",
+        (238, 216, 193),
+        mono,
+        anchor="ra",
+    )
     label(draw, (42, 470), "A6 → A1 named-fiber activation", (224, 205, 187), mono)
     draw_wave_panel(draw, trajectory, index)
     metrics = summary["cycle_metrics"]["median"]
@@ -222,7 +229,7 @@ def render_frame(trajectory, body, index):
     label(draw, (x, 580), f"wave speed   {metrics['a1_a6_wave_speed_segments_s']:.3f} seg/s PASS", (116, 215, 167), small)
     label(draw, (x, 604), "amplitude    PASS", (116, 215, 167), small)
     label(draw, (x, 624), "duty         PASS", (116, 215, 167), small)
-    label(draw, (x, 644), "held-out A5/A6 duty: FAIL", (244, 116, 133), small)
+    label(draw, (x, 644), "held-out diagnostic PASS*", (244, 174, 103), small)
     label(draw, (42, 680), "release_validated = false", (150, 126, 149), small)
     label(draw, (1038, 680), "NO GAIT COMMAND / NO FSM / NO AUTHORED MOTION", (150, 126, 149), small, anchor="rs")
     return canvas.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
