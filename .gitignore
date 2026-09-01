@@ -4,4 +4,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+.gradle/
+.cxx/
+local.properties
 node_modules/
