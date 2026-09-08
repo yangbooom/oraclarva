@@ -1,7 +1,10 @@
 package org.oraclarva.mobile
 
+import android.content.Context
+import android.graphics.BitmapFactory
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
+import android.opengl.GLUtils
 import android.opengl.Matrix
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -14,6 +17,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 internal class OraclarvaRenderer(
+    private val context: Context,
     private val repeatFixturePath: String,
     private val spatialFixturePath: String,
     private val telemetry: (String) -> Unit,
@@ -24,8 +28,14 @@ internal class OraclarvaRenderer(
     @Volatile
     private var verticalGradientWM3 = 0.0
 
+    @Volatile
+    private var simulationPaused = false
+
     private var organism: NativeOrganism? = null
     private var program = 0
+    private var backgroundProgram = 0
+    private var backgroundTexture = 0
+    private var backgroundAspect = 1f
     private var width = 1
     private var height = 1
     private var previousFrameNs = 0L
@@ -40,6 +50,22 @@ internal class OraclarvaRenderer(
     private val mvp = FloatArray(16)
     private var vertexBuffer: FloatBuffer? = null
     private var indexBuffer: IntBuffer? = null
+    private var initialCenter: DoubleArray? = null
+    private val backgroundVertices = ByteBuffer
+        .allocateDirect(16 * Float.SIZE_BYTES)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer()
+        .apply {
+            put(
+                floatArrayOf(
+                    -1f, -1f, 0f, 1f,
+                    1f, -1f, 1f, 1f,
+                    -1f, 1f, 0f, 0f,
+                    1f, 1f, 1f, 0f,
+                ),
+            )
+            position(0)
+        }
 
     fun setPhysicalFieldGradients(lateralWM3: Double, verticalWM3: Double) {
         lateralGradientWM3 = lateralWM3.coerceIn(-6000.0, 6000.0)
@@ -50,12 +76,18 @@ internal class OraclarvaRenderer(
         posteriorContactSteps = 2
     }
 
+    fun setSimulationPaused(paused: Boolean) {
+        simulationPaused = paused
+    }
+
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES30.glClearColor(0.05f, 0.04f, 0.07f, 1.0f)
+        GLES30.glClearColor(0.015f, 0.018f, 0.022f, 1.0f)
         GLES30.glEnable(GLES30.GL_DEPTH_TEST)
         GLES30.glEnable(GLES30.GL_BLEND)
         GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
         program = linkProgram(VERTEX_SHADER, FRAGMENT_SHADER)
+        backgroundProgram = linkProgram(BACKGROUND_VERTEX_SHADER, BACKGROUND_FRAGMENT_SHADER)
+        backgroundTexture = loadBackgroundTexture()
         ensureOrganism()
         previousFrameNs = 0L
         accumulatorS = 0.0
@@ -76,7 +108,12 @@ internal class OraclarvaRenderer(
         val elapsedS = min(0.05, (now - previousFrameNs) * 1e-9)
         previousFrameNs = now
         accumulatorS += elapsedS
-        val steps = min(MAX_STEPS_PER_FRAME, (accumulatorS / FIXED_DT_S).toInt())
+        val steps = if (simulationPaused) {
+            accumulatorS = 0.0
+            0
+        } else {
+            min(MAX_STEPS_PER_FRAME, (accumulatorS / FIXED_DT_S).toInt())
+        }
         val field = PhysicalLightField(
             gradientYWM3 = lateralGradientWM3,
             gradientZWM3 = verticalGradientWM3,
@@ -100,6 +137,7 @@ internal class OraclarvaRenderer(
         organism = null
         vertexBuffer = null
         indexBuffer = null
+        initialCenter = null
         previousFrameNs = 0L
     }
 
@@ -121,15 +159,8 @@ internal class OraclarvaRenderer(
     }
 
     private fun draw(frame: NativeFrame) {
-        val lateralTint = (lateralGradientWM3 / 6000.0).toFloat()
-        val verticalTint = (verticalGradientWM3 / 6000.0).toFloat()
-        GLES30.glClearColor(
-            0.045f + max(0f, -lateralTint) * 0.025f,
-            0.035f + max(0f, verticalTint) * 0.025f,
-            0.065f + max(0f, lateralTint) * 0.025f,
-            1.0f,
-        )
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
+        drawBackground()
 
         var centerX = 0.0
         var centerY = 0.0
@@ -142,13 +173,22 @@ internal class OraclarvaRenderer(
         centerX /= 13.0
         centerY /= 13.0
         centerZ /= 13.0
+        val origin = initialCenter ?: doubleArrayOf(centerX, centerY, centerZ).also {
+            initialCenter = it
+        }
 
         val vertices = vertexBuffer ?: return
         vertices.clear()
         for (offset in frame.vertices.indices step NativeOrganism.VERTEX_STRIDE) {
-            vertices.put(((frame.vertices[offset] - centerX) * WORLD_SCALE).toFloat())
-            vertices.put(((frame.vertices[offset + 1] - centerY) * WORLD_SCALE).toFloat())
-            vertices.put(((frame.vertices[offset + 2] - centerZ) * WORLD_SCALE).toFloat())
+            vertices.put(
+                ((frame.vertices[offset] - origin[0]) * WORLD_SCALE * BODY_AXIAL_SCALE).toFloat(),
+            )
+            vertices.put(
+                ((frame.vertices[offset + 1] - origin[1]) * WORLD_SCALE * BODY_RADIAL_SCALE).toFloat(),
+            )
+            vertices.put(
+                ((frame.vertices[offset + 2] - origin[2]) * WORLD_SCALE * BODY_RADIAL_SCALE).toFloat(),
+            )
             vertices.put(frame.vertices[offset + 3])
             vertices.put(frame.vertices[offset + 4])
             vertices.put(frame.vertices[offset + 5])
@@ -164,6 +204,8 @@ internal class OraclarvaRenderer(
         Matrix.orthoM(projection, 0, -1.35f * aspect, 1.35f * aspect, -1.35f, 1.35f, 0.1f, 10f)
         Matrix.setLookAtM(view, 0, 0f, 2.8f, 1.7f, 0f, 0f, 0f, 0f, 0f, 1f)
         Matrix.setIdentityM(model, 0)
+        Matrix.translateM(model, 0, -0.55f, 0f, -0.45f)
+        Matrix.rotateM(model, 0, -10f, 0f, 1f, 0f)
         Matrix.multiplyMM(viewModel, 0, view, 0, model, 0)
         Matrix.multiplyMM(mvp, 0, projection, 0, viewModel, 0)
 
@@ -189,6 +231,71 @@ internal class OraclarvaRenderer(
         GLES30.glDisableVertexAttribArray(0)
         GLES30.glDisableVertexAttribArray(1)
         GLES30.glDisableVertexAttribArray(2)
+    }
+
+    private fun drawBackground() {
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST)
+        GLES30.glUseProgram(backgroundProgram)
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, backgroundTexture)
+        GLES30.glUniform1i(
+            GLES30.glGetUniformLocation(backgroundProgram, "uTexture"),
+            0,
+        )
+        GLES30.glUniform1f(
+            GLES30.glGetUniformLocation(backgroundProgram, "uViewportAspect"),
+            width.toFloat() / height.toFloat(),
+        )
+        GLES30.glUniform1f(
+            GLES30.glGetUniformLocation(backgroundProgram, "uTextureAspect"),
+            backgroundAspect,
+        )
+        backgroundVertices.position(0)
+        GLES30.glEnableVertexAttribArray(0)
+        GLES30.glVertexAttribPointer(0, 2, GLES30.GL_FLOAT, false, 16, backgroundVertices)
+        backgroundVertices.position(2)
+        GLES30.glEnableVertexAttribArray(1)
+        GLES30.glVertexAttribPointer(1, 2, GLES30.GL_FLOAT, false, 16, backgroundVertices)
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4)
+        GLES30.glDisableVertexAttribArray(0)
+        GLES30.glDisableVertexAttribArray(1)
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST)
+    }
+
+    private fun loadBackgroundTexture(): Int {
+        val textureIds = IntArray(1)
+        GLES30.glGenTextures(1, textureIds, 0)
+        val texture = textureIds[0]
+        check(texture != 0) { "cannot allocate habitat texture" }
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture)
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_MIN_FILTER,
+            GLES30.GL_LINEAR,
+        )
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_MAG_FILTER,
+            GLES30.GL_LINEAR,
+        )
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_WRAP_S,
+            GLES30.GL_CLAMP_TO_EDGE,
+        )
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_WRAP_T,
+            GLES30.GL_CLAMP_TO_EDGE,
+        )
+        val bitmap = checkNotNull(
+            BitmapFactory.decodeResource(context.resources, R.drawable.habitat_plate),
+        ) { "cannot decode habitat background" }
+        backgroundAspect = bitmap.width.toFloat() / bitmap.height.toFloat()
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0)
+        bitmap.recycle()
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
+        return texture
     }
 
     private fun updateTelemetry(now: Long, frame: NativeFrame) {
@@ -232,7 +339,9 @@ internal class OraclarvaRenderer(
 
     private fun compileShader(type: Int, source: String): Int {
         val shader = GLES30.glCreateShader(type)
-        GLES30.glShaderSource(shader, source)
+        // Some GLES drivers require #version to be the first byte, while Kotlin
+        // multiline literals include a leading newline and indentation.
+        GLES30.glShaderSource(shader, source.trimIndent())
         GLES30.glCompileShader(shader)
         val status = IntArray(1)
         GLES30.glGetShaderiv(shader, GLES30.GL_COMPILE_STATUS, status, 0)
@@ -246,6 +355,8 @@ internal class OraclarvaRenderer(
         private const val FIXED_DT_S = 0.001
         private const val MAX_STEPS_PER_FRAME = 50
         private const val WORLD_SCALE = 0.002
+        private const val BODY_AXIAL_SCALE = 0.73
+        private const val BODY_RADIAL_SCALE = 1.20
         private const val VERTEX_SHADER = """
             #version 300 es
             layout(location = 0) in vec3 aPosition;
@@ -268,10 +379,38 @@ internal class OraclarvaRenderer(
             out vec4 color;
             void main() {
                 vec3 teal = vec3(0.28, 0.79, 0.72);
-                vec3 active = vec3(0.96, 0.25, 0.48);
+                vec3 activeColor = vec3(0.96, 0.25, 0.48);
                 vec3 lightDirection = normalize(vec3(-0.4, 0.3, 1.0));
-                float diffuse = 0.38 + 0.62 * max(dot(normalize(vNormal), lightDirection), 0.0);
-                color = vec4(mix(teal, active, vActivation) * diffuse, 0.97);
+                float diffuse = 0.48 + 0.52 * max(dot(normalize(vNormal), lightDirection), 0.0);
+                color = vec4(mix(teal, activeColor, vActivation) * diffuse, 0.68);
+            }
+        """
+        private const val BACKGROUND_VERTEX_SHADER = """
+            #version 300 es
+            layout(location = 0) in vec2 aPosition;
+            layout(location = 1) in vec2 aTexCoord;
+            out vec2 vTexCoord;
+            void main() {
+                gl_Position = vec4(aPosition, 0.99, 1.0);
+                vTexCoord = aTexCoord;
+            }
+        """
+        private const val BACKGROUND_FRAGMENT_SHADER = """
+            #version 300 es
+            precision mediump float;
+            uniform sampler2D uTexture;
+            uniform float uViewportAspect;
+            uniform float uTextureAspect;
+            in vec2 vTexCoord;
+            out vec4 color;
+            void main() {
+                vec2 uv = vTexCoord;
+                if (uViewportAspect > uTextureAspect) {
+                    uv.y = 0.5 + (uv.y - 0.5) * (uTextureAspect / uViewportAspect);
+                } else {
+                    uv.x = 0.5 + (uv.x - 0.5) * (uViewportAspect / uTextureAspect);
+                }
+                color = texture(uTexture, uv);
             }
         """
     }

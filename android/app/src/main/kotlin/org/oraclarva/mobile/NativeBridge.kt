@@ -19,6 +19,9 @@ internal class NativeBridge private constructor() {
         external fun nativeReset(handle: Long)
 
         @JvmStatic
+        external fun nativeMaximumSteps(handle: Long): Int
+
+        @JvmStatic
         external fun nativeAdvance(
             handle: Long,
             posteriorTouchIntensity: Double,

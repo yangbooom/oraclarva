@@ -80,6 +80,8 @@ def test_android_runtime_keeps_native_physics_and_render_projection_separate():
     assert "oraclarva_mobile_advance_environment" in bridge
     assert "oraclarva_mobile_read_environment_snapshot" in bridge
     assert "oraclarva_mobile_read_render_mesh" in bridge
+    assert "oraclarva_mobile_read_metadata" in bridge
+    assert "metadata.maximum_steps" in bridge
     assert "jdoubleArray state_values" in bridge
     assert "jfloatArray render_vertices" in bridge
     assert "jintArray render_indices" in bridge
@@ -94,6 +96,10 @@ def test_android_runtime_keeps_native_physics_and_render_projection_separate():
     assert "native organism must stay on its owning GL thread" in organism
     assert "Thread.currentThread() === ownerThread" in organism
     assert "require(!frame.releaseValidated)" in organism
+    assert "private val maximumSteps = NativeBridge.nativeMaximumSteps(handle)" in organism
+    assert "val available = maximumSteps - currentStep" in organism
+    assert "if (available == 0)" in organism
+    assert "reset()" in organism
 
     exposed = (bridge + renderer + organism).lower()
     for forbidden in ("crawl(", "turnleft", "turnright", "behavior tree", "fsm"):
@@ -130,7 +136,7 @@ def test_android_package_targets_mobile_native_runtime_without_automatic_ci():
     assert "workflow_dispatch:" in workflow
     assert "pull_request:" not in workflow
     assert "push:" not in workflow
-    assert "32fd9a750c9edebbbd9faa8426305e1a9936625c3cef466126c86af6ce04fe82" in documentation
+    assert "222bf163b293dd45be8fd62b029cc077f6032f7861ec63e9907c5f95ab900a6e" in documentation
     assert "device_performance_claim=false" in documentation
 
 

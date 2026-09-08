@@ -45,16 +45,19 @@ internal class NativeOrganism(
         repeatFixturePath,
         spatialFixturePath,
     )
+    private val maximumSteps = NativeBridge.nativeMaximumSteps(handle)
     private val counts = NativeBridge.nativeRenderCounts(handle)
     private val stateValues = DoubleArray(STATE_VALUE_COUNT)
     private val renderVertices = FloatArray(counts[0] * VERTEX_STRIDE)
     private val renderIndices = IntArray(counts[1] * 3)
     private val frame = NativeFrame(stateValues, renderVertices, renderIndices)
+    private var currentStep = 0
 
     init {
         require(counts.contentEquals(intArrayOf(302, 600))) {
             "native render topology drifted: ${counts.contentToString()}"
         }
+        require(maximumSteps > 0) { "native fixture must contain simulation steps" }
         readFrame()
         require(frame.extensionAbi == 1) { "unexpected environment ABI" }
         require(!frame.releaseValidated) { "research core cannot be release validated" }
@@ -67,22 +70,34 @@ internal class NativeOrganism(
     ) {
         checkThread()
         check(handle != 0L) { "native organism is closed" }
-        NativeBridge.nativeAdvance(
-            handle,
-            posteriorTouchIntensity,
-            field.enabled,
-            field.originXM,
-            field.originYM,
-            field.originZM,
-            field.valueAtOriginWM2,
-            field.gradientXWM3,
-            field.gradientYWM3,
-            field.gradientZWM3,
-            field.temporalRateWM2S,
-            field.lowerBoundWM2,
-            field.upperBoundWM2,
-            steps,
-        )
+        require(steps >= 0) { "advance steps cannot be negative" }
+        var remaining = steps
+        while (remaining > 0) {
+            val available = maximumSteps - currentStep
+            if (available == 0) {
+                reset()
+                continue
+            }
+            val chunk = minOf(remaining, available)
+            NativeBridge.nativeAdvance(
+                handle,
+                posteriorTouchIntensity,
+                field.enabled,
+                field.originXM,
+                field.originYM,
+                field.originZM,
+                field.valueAtOriginWM2,
+                field.gradientXWM3,
+                field.gradientYWM3,
+                field.gradientZWM3,
+                field.temporalRateWM2S,
+                field.lowerBoundWM2,
+                field.upperBoundWM2,
+                chunk,
+            )
+            currentStep += chunk
+            remaining -= chunk
+        }
     }
 
     fun readFrame(): NativeFrame {
@@ -94,6 +109,7 @@ internal class NativeOrganism(
             renderVertices,
             renderIndices,
         )
+        currentStep = frame.stepIndex
         return frame
     }
 
@@ -101,6 +117,7 @@ internal class NativeOrganism(
         checkThread()
         check(handle != 0L) { "native organism is closed" }
         NativeBridge.nativeReset(handle)
+        currentStep = 0
         readFrame()
     }
 

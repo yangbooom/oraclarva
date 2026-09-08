@@ -41,6 +41,10 @@ is printed in the image itself.
 - JNI rejects calls larger than 1,000 steps and invalid or undersized output
   arrays. Java/Kotlin allocate state, vertex, and index arrays once and reuse
   them.
+- Android reads the native `maximum_steps` metadata and resets before the next
+  fixed step would exceed the fixture's 14,600-step validation horizon. This
+  keeps the observation loop alive without weakening the native fail-closed
+  boundary or adding a movement policy.
 - `oraclarva_mobile_read_render_mesh` is the sole body geometry source. Kotlin
   recenters copied render positions for the camera but does not mutate C++
   state.
@@ -94,19 +98,17 @@ The generated debug artifact is:
 | Property | Checked value |
 | --- | --- |
 | Path | `android/app/build/outputs/apk/debug/app-debug.apk` |
-| Size | 3,160,590 bytes |
-| SHA-256 | `32fd9a750c9edebbbd9faa8426305e1a9936625c3cef466126c86af6ce04fe82` |
+| Size | 6,683,716 bytes |
+| SHA-256 | `222bf163b293dd45be8fd62b029cc077f6032f7861ec63e9907c5f95ab900a6e` |
 | Signature | Android Debug, APK Signature Scheme v2 verified |
 | Alignment | `zipalign -c -P 16 -v 4` successful |
 | Native libraries | `arm64-v8a/liboraclarva_android.so`, `x86_64/liboraclarva_android.so` |
 
 The package declares API 26 minimum/API 36 target, requires OpenGL ES 3, asks
-for no Android permissions, and contains the checked parity fixtures. This is
-a successful APK build and package audit, not evidence of device execution.
-No physical Android device is attached to this host, which is ARM64 and has no
-`/dev/kvm`; runtime and performance claims remain a separate gate below.
+for no Android permissions, and contains the checked parity fixtures. Build,
+signature, and package checks remain distinct from the Android runtime gate.
 
-An Android Emulator 37.1.11 smoke attempt used the API 36 AOSP ATD `x86_64`
+A prior Android Emulator 37.1.11 smoke attempt used the API 36 AOSP ATD `x86_64`
 image because the APK contains an `x86_64` library. The official emulator
 binary itself had to run through QEMU user translation on this ARM64 host, and
 the Android guest then ran under unaccelerated TCG. Across an initial two-hour
@@ -116,6 +118,18 @@ not installed or launched in that unsupported nested setup. This is recorded
 as an environment limitation, not as an emulator pass or a performance
 measurement; a compatible x86_64 emulator host or physical Android device is
 still required for that gate.
+
+The current ARM64 host now supplies a separate Android execution gate through
+an Android 13 ReDroid container. ADB is bound to loopback only. The debug APK
+installed and launched at 1280 × 592/160 dpi with ANGLE/SwiftShader. The
+Habitat screen was captured to `docs/assets/habitat-ui-redroid.png`; its
+SHA-256 is
+`fe31639597dfe4127ad90079e259f59f40e0181fb9c80d459702b6be7c25f02c`.
+Pause, Observe, physical light-field drag, and posterior contact controls were
+exercised through ADB. The Activity remained resumed after crossing the finite
+14,600-step fixture boundary, and the Android runtime log contained no fatal
+app exception. This is Android-container functional evidence, not a Google
+Emulator, physical-device, GPU-performance, thermal, or battery claim.
 
 `release_validated=false` remains mandatory. GitHub Actions also remains
 manual-only through `workflow_dispatch`; the Android build is not added as an
@@ -143,3 +157,14 @@ python tools/build_android_ndk_parity.py --ndk "$ANDROID_NDK_HOME"
 
 An APK build alone must not be reported as device validation. Emulator or
 physical-device execution and measurements require a separate recorded gate.
+
+For the checked ReDroid container, installation, launch, and capture use the
+normal ADB boundary:
+
+```bash
+adb connect 127.0.0.1:5555
+adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -W -n org.oraclarva.mobile/.MainActivity
+adb shell screencap -p /sdcard/habitat-ui-redroid.png
+adb pull /sdcard/habitat-ui-redroid.png docs/assets/habitat-ui-redroid.png
+```
