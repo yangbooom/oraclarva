@@ -155,6 +155,24 @@ Java_org_oraclarva_mobile_NativeBridge_nativeReset(
 }
 
 JNIEXPORT jint JNICALL
+Java_org_oraclarva_mobile_NativeBridge_nativeMaximumSteps(
+    JNIEnv* environment, jclass, jlong handle) {
+  try {
+    AndroidCore& state = Resolve(handle);
+    OraclarvaMobileMetadata metadata{};
+    std::array<char, 512> error{};
+    CheckStatus(
+        oraclarva_mobile_read_metadata(
+            state.core, &metadata, error.data(), error.size()),
+        error);
+    return static_cast<jint>(metadata.maximum_steps);
+  } catch (const std::exception& error) {
+    ThrowState(environment, error);
+    return 0;
+  }
+}
+
+JNIEXPORT jint JNICALL
 Java_org_oraclarva_mobile_NativeBridge_nativeAdvance(
     JNIEnv* environment,
     jclass,
