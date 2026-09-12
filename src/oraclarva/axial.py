@@ -471,6 +471,9 @@ class AxialLocomotionProtocol:
         self.pending_motor_trace: dict[
             tuple[str, float], AxialCausalTrace
         ] = {}
+        self.additional_motor_origin_by_source: dict[
+            str, Mapping[str, object]
+        ] = {}
         self.last_force_trace_by_source: dict[str, dict[str, object]] = {}
         self.spike_counts = dict.fromkeys(self.labels, 0)
         self.first_spike_s: dict[str, float | None] = dict.fromkeys(
@@ -637,6 +640,10 @@ class AxialLocomotionProtocol:
         posterior_touch: bool,
         anterior_touch: bool,
         local_tension_drive: Mapping[str, float],
+        additional_motor_current_by_source: Mapping[str, float] | None = None,
+        additional_motor_origin_by_source: Mapping[
+            str, Mapping[str, object]
+        ] | None = None,
     ) -> NeuralMuscleActivationFrame:
         p = self.parameters
         dt = float(p["dt_s"])
@@ -653,6 +660,38 @@ class AxialLocomotionProtocol:
             anterior_touch,
             local_tension_drive,
         )
+        additional_current = additional_motor_current_by_source or {}
+        additional_origins = additional_motor_origin_by_source or {}
+        if set(additional_current) != set(additional_origins):
+            raise ValueError(
+                "every additional MN current requires exactly one causal origin"
+            )
+        unknown_additional = set(additional_current) - self.projection.source_node_ids
+        if unknown_additional:
+            raise ValueError(
+                "additional MN current targets are not mapped identities: "
+                f"{sorted(unknown_additional)}"
+            )
+        for node_id, current in additional_current.items():
+            value = float(current)
+            origin = additional_origins[node_id]
+            if (
+                not isfinite(value)
+                or value <= 0.0
+                or origin.get("motor_node_id") != node_id
+                or not isinstance(origin.get("sensor_spike_time_s"), (int, float))
+                or not isinstance(origin.get("premotor_spike_time_s"), (int, float))
+                or not (
+                    float(origin["body_state_time_s"])
+                    <= float(origin["sensor_spike_time_s"])
+                    < float(origin["premotor_spike_time_s"])
+                    < time_s
+                )
+            ):
+                raise ValueError("additional MN current lacks an ordered neural origin")
+            index = self.index_by_id[node_id]
+            external[index] = external.get(index, 0.0) + value
+            self.additional_motor_origin_by_source[node_id] = origin
         spikes = self.network.step(external)
         spiked_labels = tuple(self.labels[index] for index in spikes)
         self.last_spiked_labels = spiked_labels
@@ -846,12 +885,33 @@ class AxialLocomotionProtocol:
             for segment, nodes in self.source_nodes_by_segment.items()
             for node_id in nodes
         }
-        motor_spikes = tuple(
+        axial_motor_spikes = tuple(
             label for label in spiked_labels if label in source_segment
         )
-        for node_id in motor_spikes:
+        for node_id in axial_motor_spikes:
             segment = source_segment[node_id]
             self.motor_spike_times[segment].append(time_s)
+            steering_origin = self.additional_motor_origin_by_source.get(node_id)
+            if (
+                steering_origin is not None
+                and float(steering_origin["premotor_spike_time_s"]) < time_s
+                and time_s - float(steering_origin["premotor_spike_time_s"]) <= window
+            ):
+                self.pending_motor_trace[(node_id, time_s)] = AxialCausalTrace(
+                    direction=str(steering_origin["direction"]),
+                    body_state_time_s=float(steering_origin["body_state_time_s"]),
+                    sensor_node_id=str(steering_origin["sensor_node_id"]),
+                    sensor_spike_time_s=float(steering_origin["sensor_spike_time_s"]),
+                    premotor_node_id=str(steering_origin["premotor_node_id"]),
+                    premotor_spike_time_s=float(
+                        steering_origin["premotor_spike_time_s"]
+                    ),
+                    motor_node_id=node_id,
+                    motor_spike_time_s=time_s,
+                    segment_id=segment,
+                    path_provenance=str(steering_origin["path_provenance"]),
+                )
+                continue
             origins = [
                 value
                 for (direction, origin_segment), value in self.last_origin.items()
@@ -889,7 +949,7 @@ class AxialLocomotionProtocol:
             )
 
         events = self.projection.emit(
-            motor_spikes, lesioned_fiber_ids=self.lesion_fiber_ids
+            axial_motor_spikes, lesioned_fiber_ids=self.lesion_fiber_ids
         )
         activation = self._apply_relaxation(
             self.activation_model.step(time_s, events)

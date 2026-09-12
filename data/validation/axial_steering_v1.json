@@ -1,0 +1,82 @@
+{
+  "causal_gates": {
+    "negative_active_forces_exist": true,
+    "negative_all_steering_forces_traced": true,
+    "negative_ordered_trace": true,
+    "positive_active_forces_exist": true,
+    "positive_all_steering_forces_traced": true,
+    "positive_ordered_trace": true
+  },
+  "claim_limit": "Axial-v1-integrated bilateral steering research approximation; not an independently validated L1 steering connectome or measured muscle moment-arm model.",
+  "comparisons": {
+    "mirror_axial_position": true,
+    "mirror_heading": true,
+    "mirror_lateral_position": true,
+    "negative_forward_progress": true,
+    "negative_gradient_yaw": true,
+    "positive_forward_progress": true,
+    "positive_gradient_yaw": true,
+    "uniform_activation_trajectory": true,
+    "uniform_contact_trajectory": true,
+    "uniform_heading": true,
+    "uniform_node_trajectory": true
+  },
+  "generated_from": {
+    "config_sha256": "a872babb3622fe53f0af7e142cf395f6e4404ec7ca249aebf0d0c27cfe82a54d",
+    "trajectory": "data/trajectories/l1_axial_steering_v1.json",
+    "trajectory_sha256": "2d8228587f351a41da45890dff7e0d01cc901dd98c443ad945b7af058533e272"
+  },
+  "independent_biological_validation": false,
+  "invariant_gates": {
+    "no_action_command": true,
+    "no_behavior_fsm": true,
+    "no_external_policy": true,
+    "no_target_heading_input": true,
+    "no_yaw_input_to_body": true,
+    "release_not_validated": true,
+    "shared_MN_nodes_not_duplicated": true,
+    "shared_axial_config_is_frozen": true,
+    "shared_axial_trajectory_is_frozen": true
+  },
+  "lesion_gates": {
+    "motor_lesion_attenuates_yaw": true,
+    "motor_lesion_preserves_premotor_spikes": true,
+    "motor_lesion_preserves_sensory_spikes": true,
+    "motor_lesion_removes_shared_MN_spikes": true,
+    "motor_lesion_removes_steering_force": true,
+    "muscle_lesion_attenuates_yaw": true,
+    "muscle_lesion_preserves_premotor_spikes": true,
+    "muscle_lesion_preserves_sensory_spikes": true,
+    "muscle_lesion_preserves_shared_MN_spikes": true,
+    "muscle_lesion_removes_steering_force": true,
+    "sensory_lesion_preserves_axial": true,
+    "sensory_lesion_removes_yaw": true
+  },
+  "model_id": "dmel_l1_axial_steering_v1",
+  "observed": {
+    "mirror_heading_error_deg": 0.20267488194875227,
+    "mirror_x_error_um": 16.10165027771987,
+    "mirror_y_error_um": 0.7757023392342628,
+    "negative_heading_change_deg": 6.755931883134167,
+    "positive_heading_change_deg": -6.553257001185415,
+    "uniform_axial_regression": {
+      "maximum_contact_retention_error": 0.0,
+      "maximum_node_position_error_um": 4.6361492422875017e-10,
+      "maximum_segment_activation_error": 0.0
+    }
+  },
+  "passed": true,
+  "release_validated": false,
+  "schema": "oraclarva.axial_steering_validation.v1",
+  "shape_gates": {
+    "negative_head_tail_chord": true,
+    "negative_integrated_lateral_slip": true,
+    "negative_local_bend": true,
+    "negative_segment_extension": true,
+    "positive_head_tail_chord": true,
+    "positive_integrated_lateral_slip": true,
+    "positive_local_bend": true,
+    "positive_segment_extension": true
+  },
+  "status": "engineering_gates_passed"
+}
