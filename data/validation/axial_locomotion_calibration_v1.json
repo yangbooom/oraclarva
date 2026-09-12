@@ -1,0 +1,405 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_axial_locomotion_v1",
+  "release_validated": false,
+  "target_dataset": "greaney_2026_l1_kinematics_v0",
+  "frozen_config_sha256": "245e0ec9d7d4adee6ef2a2f6329796e8d4ce4799800001330fcf5fce798564f0",
+  "trajectory": "data/trajectories/l1_axial_locomotion_v1.json",
+  "sample_interval_s": 0.005,
+  "model_metrics": {
+    "start_s": 0.003,
+    "end_s": 5.325,
+    "cycle_period_s": 5.322,
+    "cycle_frequency_hz": 0.18789928598271327,
+    "stride_um": 140.64863173669232,
+    "crawl_speed_um_s": 26.42777747777007,
+    "a1_a6_wave_speed_segments_s": 1.6718220606478147,
+    "segments": {
+      "A6": {
+        "contraction_amplitude_percent": 51.99560062894142,
+        "shortening_rate_um_s": 72.09904077393219,
+        "contraction_duration_s": 2.3994931678463063,
+        "duty_cycle_percent": 45.08630529587197,
+        "onset_s": 0.17053630380861887
+      },
+      "A5": {
+        "contraction_amplitude_percent": 50.30965729571255,
+        "shortening_rate_um_s": 65.35880571069868,
+        "contraction_duration_s": 2.517369826826075,
+        "duty_cycle_percent": 47.3011993015046,
+        "onset_s": 0.7886768624274789,
+        "adjacent_onset_delay_cycle_fraction": 0.11614816960143932
+      },
+      "A4": {
+        "contraction_amplitude_percent": 49.478262738073866,
+        "shortening_rate_um_s": 62.05029127496857,
+        "contraction_duration_s": 2.5507144278959286,
+        "duty_cycle_percent": 47.92774197474499,
+        "onset_s": 1.4038069293058708,
+        "adjacent_onset_delay_cycle_fraction": 0.1155825003529485
+      },
+      "A3": {
+        "contraction_amplitude_percent": 49.89842445459152,
+        "shortening_rate_um_s": 66.91086502000303,
+        "contraction_duration_s": 2.3015823483204088,
+        "duty_cycle_percent": 43.246567987982125,
+        "onset_s": 1.9860158878012841,
+        "adjacent_onset_delay_cycle_fraction": 0.1093966475940273
+      },
+      "A2": {
+        "contraction_amplitude_percent": 50.18508140819684,
+        "shortening_rate_um_s": 75.37684542203635,
+        "contraction_duration_s": 2.1742236852833416,
+        "duty_cycle_percent": 40.85350780314434,
+        "onset_s": 2.567090418457745,
+        "adjacent_onset_delay_cycle_fraction": 0.10918348941308927
+      },
+      "A1": {
+        "contraction_amplitude_percent": 49.56582795401967,
+        "shortening_rate_um_s": 69.3822292793044,
+        "contraction_duration_s": 1.9591621018798153,
+        "duty_cycle_percent": 36.8125160067609,
+        "onset_s": 3.16128521046113,
+        "adjacent_onset_delay_cycle_fraction": 0.11164877715208286
+      }
+    },
+    "shape": {
+      "maximum_opposite_retrace_um": 21.03183060092306,
+      "cumulative_opposite_travel_um": 30.73108933315376,
+      "progress_efficiency": 0.8206842143206123,
+      "maximum_lateral_span_um": 0.0,
+      "maximum_planar_deviation_um": 0.0,
+      "minimum_axial_segment_alignment": 1.0,
+      "minimum_head_tail_chord_ratio": 0.9999999999999998,
+      "maximum_segment_extension_fraction": 0.0010762093191238886,
+      "node_order_violation_count": 0
+    }
+  },
+  "partition": "calibration",
+  "animal_count": 12,
+  "status": "calibration_passed",
+  "comparisons": [
+    {
+      "metric": "crawl_speed_um_s",
+      "model_value": 26.42777747777007,
+      "target_p10": 23.543647,
+      "target_median": 31.784312,
+      "target_p90": 48.630977,
+      "passed": true
+    },
+    {
+      "metric": "stride_um",
+      "model_value": 140.64863173669232,
+      "target_p10": 140.327238,
+      "target_median": 153.1691,
+      "target_p90": 179.485254,
+      "passed": true
+    },
+    {
+      "metric": "cycle_period_s",
+      "model_value": 5.322,
+      "target_p10": 3.751851,
+      "target_median": 5.044003,
+      "target_p90": 6.1246,
+      "passed": true
+    },
+    {
+      "metric": "cycle_frequency_hz",
+      "model_value": 0.18789928598271327,
+      "target_p10": 0.166397,
+      "target_median": 0.200622,
+      "target_p90": 0.269039,
+      "passed": true
+    },
+    {
+      "metric": "a1_a6_wave_speed_segments_s",
+      "model_value": 1.6718220606478147,
+      "target_p10": 1.467566,
+      "target_median": 1.682623,
+      "target_p90": 2.121631,
+      "passed": true
+    },
+    {
+      "metric": "A1.contraction_amplitude_percent",
+      "model_value": 49.56582795401967,
+      "target_p10": 41.193602,
+      "target_median": 49.017928,
+      "target_p90": 52.021047,
+      "passed": true
+    },
+    {
+      "metric": "A1.shortening_rate_um_s",
+      "model_value": 69.3822292793044,
+      "target_p10": 64.27633,
+      "target_median": 74.945787,
+      "target_p90": 97.989944,
+      "passed": true
+    },
+    {
+      "metric": "A1.contraction_duration_s",
+      "model_value": 1.9591621018798153,
+      "target_p10": 1.304611,
+      "target_median": 1.646132,
+      "target_p90": 2.019265,
+      "passed": true
+    },
+    {
+      "metric": "A1.duty_cycle_percent",
+      "model_value": 36.8125160067609,
+      "target_p10": 29.931515,
+      "target_median": 32.172585,
+      "target_p90": 38.463793,
+      "passed": true
+    },
+    {
+      "metric": "A2.contraction_amplitude_percent",
+      "model_value": 50.18508140819684,
+      "target_p10": 46.306662,
+      "target_median": 48.953133,
+      "target_p90": 54.761841,
+      "passed": true
+    },
+    {
+      "metric": "A2.shortening_rate_um_s",
+      "model_value": 75.37684542203635,
+      "target_p10": 56.075207,
+      "target_median": 68.624087,
+      "target_p90": 85.234853,
+      "passed": true
+    },
+    {
+      "metric": "A2.contraction_duration_s",
+      "model_value": 2.1742236852833416,
+      "target_p10": 1.470534,
+      "target_median": 1.788859,
+      "target_p90": 2.204813,
+      "passed": true
+    },
+    {
+      "metric": "A2.duty_cycle_percent",
+      "model_value": 40.85350780314434,
+      "target_p10": 34.54961,
+      "target_median": 37.222758,
+      "target_p90": 43.060404,
+      "passed": true
+    },
+    {
+      "metric": "A3.contraction_amplitude_percent",
+      "model_value": 49.89842445459152,
+      "target_p10": 49.225866,
+      "target_median": 52.386038,
+      "target_p90": 56.226349,
+      "passed": true
+    },
+    {
+      "metric": "A3.shortening_rate_um_s",
+      "model_value": 66.91086502000303,
+      "target_p10": 50.923567,
+      "target_median": 59.982517,
+      "target_p90": 76.86651,
+      "passed": true
+    },
+    {
+      "metric": "A3.contraction_duration_s",
+      "model_value": 2.3015823483204088,
+      "target_p10": 1.543375,
+      "target_median": 1.952009,
+      "target_p90": 2.343118,
+      "passed": true
+    },
+    {
+      "metric": "A3.duty_cycle_percent",
+      "model_value": 43.246567987982125,
+      "target_p10": 35.910444,
+      "target_median": 39.168371,
+      "target_p90": 44.228109,
+      "passed": true
+    },
+    {
+      "metric": "A4.contraction_amplitude_percent",
+      "model_value": 49.478262738073866,
+      "target_p10": 49.279175,
+      "target_median": 51.854769,
+      "target_p90": 54.166228,
+      "passed": true
+    },
+    {
+      "metric": "A4.shortening_rate_um_s",
+      "model_value": 62.05029127496857,
+      "target_p10": 45.888309,
+      "target_median": 52.983028,
+      "target_p90": 62.595468,
+      "passed": true
+    },
+    {
+      "metric": "A4.contraction_duration_s",
+      "model_value": 2.5507144278959286,
+      "target_p10": 1.82846,
+      "target_median": 2.239824,
+      "target_p90": 2.599856,
+      "passed": true
+    },
+    {
+      "metric": "A4.duty_cycle_percent",
+      "model_value": 47.92774197474499,
+      "target_p10": 41.367616,
+      "target_median": 45.686161,
+      "target_p90": 48.966813,
+      "passed": true
+    },
+    {
+      "metric": "A5.contraction_amplitude_percent",
+      "model_value": 50.30965729571255,
+      "target_p10": 48.090213,
+      "target_median": 50.260593,
+      "target_p90": 52.050819,
+      "passed": true
+    },
+    {
+      "metric": "A5.shortening_rate_um_s",
+      "model_value": 65.35880571069868,
+      "target_p10": 43.930628,
+      "target_median": 55.45814,
+      "target_p90": 68.256217,
+      "passed": true
+    },
+    {
+      "metric": "A5.contraction_duration_s",
+      "model_value": 2.517369826826075,
+      "target_p10": 1.99887,
+      "target_median": 2.290991,
+      "target_p90": 2.73627,
+      "passed": true
+    },
+    {
+      "metric": "A5.duty_cycle_percent",
+      "model_value": 47.3011993015046,
+      "target_p10": 43.821195,
+      "target_median": 47.777204,
+      "target_p90": 53.704309,
+      "passed": true
+    },
+    {
+      "metric": "A6.contraction_amplitude_percent",
+      "model_value": 51.99560062894142,
+      "target_p10": 47.595298,
+      "target_median": 52.117372,
+      "target_p90": 54.554931,
+      "passed": true
+    },
+    {
+      "metric": "A6.shortening_rate_um_s",
+      "model_value": 72.09904077393219,
+      "target_p10": 57.796853,
+      "target_median": 66.323428,
+      "target_p90": 85.72359,
+      "passed": true
+    },
+    {
+      "metric": "A6.contraction_duration_s",
+      "model_value": 2.3994931678463063,
+      "target_p10": 1.862666,
+      "target_median": 2.127839,
+      "target_p90": 2.423015,
+      "passed": true
+    },
+    {
+      "metric": "A6.duty_cycle_percent",
+      "model_value": 45.08630529587197,
+      "target_p10": 38.306409,
+      "target_median": 42.449695,
+      "target_p90": 50.123582,
+      "passed": true
+    }
+  ],
+  "directional_shape_gates": {
+    "maximum_opposite_retrace": true,
+    "progress_efficiency": true,
+    "lateral_span": true,
+    "planar_deviation": true,
+    "axial_segment_alignment": true,
+    "head_tail_chord_ratio": true,
+    "segment_extension": true,
+    "node_order": true
+  },
+  "full_response_progress": {
+    "forward": {
+      "directional_displacement_um": 142.57155638926372,
+      "maximum_opposite_retrace_um": 21.03183060092306,
+      "cumulative_opposite_travel_um": 30.837121181659313,
+      "progress_efficiency": 0.8221708301244203
+    },
+    "backward": {
+      "directional_displacement_um": 101.98735295889014,
+      "maximum_opposite_retrace_um": 20.8531039749231,
+      "cumulative_opposite_travel_um": 22.90547078076918,
+      "progress_efficiency": 0.8165989838734375
+    }
+  },
+  "full_response_progress_gates": {
+    "forward": {
+      "directional_displacement": true,
+      "maximum_opposite_retrace": true,
+      "progress_efficiency": true
+    },
+    "backward": {
+      "directional_displacement": true,
+      "maximum_opposite_retrace": true,
+      "progress_efficiency": true
+    }
+  },
+  "causal_gates": {
+    "forward_neural_order": true,
+    "backward_neural_order": true,
+    "forward_force_trace_complete": true,
+    "backward_force_trace_complete": true,
+    "contact_has_no_direction_input": true,
+    "shared_mapped_fibers": true,
+    "forward_does_not_activate_t3_backward_proxy": true,
+    "backward_t3_proxy_is_active_and_neural_traced": true
+  },
+  "adjacent_delay_diagnostic_not_acceptance_gate": [
+    {
+      "metric": "A1.adjacent_onset_delay_cycle_fraction",
+      "model_value": 0.11164877715208286,
+      "target_p10": 0.044197,
+      "target_median": 0.072701,
+      "target_p90": 0.082692,
+      "passed": false
+    },
+    {
+      "metric": "A2.adjacent_onset_delay_cycle_fraction",
+      "model_value": 0.10918348941308927,
+      "target_p10": 0.111539,
+      "target_median": 0.119905,
+      "target_p90": 0.14244,
+      "passed": false
+    },
+    {
+      "metric": "A3.adjacent_onset_delay_cycle_fraction",
+      "model_value": 0.1093966475940273,
+      "target_p10": 0.113877,
+      "target_median": 0.131757,
+      "target_p90": 0.143946,
+      "passed": false
+    },
+    {
+      "metric": "A4.adjacent_onset_delay_cycle_fraction",
+      "model_value": 0.1155825003529485,
+      "target_p10": 0.13376,
+      "target_median": 0.161451,
+      "target_p90": 0.195518,
+      "passed": false
+    },
+    {
+      "metric": "A5.adjacent_onset_delay_cycle_fraction",
+      "model_value": 0.11614816960143932,
+      "target_p10": 0.096823,
+      "target_median": 0.111953,
+      "target_p90": 0.145185,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "interpretation": "Forward L1 calibration accepts speed, stride, period, frequency, A1-A6 wave speed, contraction amplitude/rate/duration/duty, causal traceability, and distortion/backslip gates together. Nonuniform adjacent delays remain diagnostic because fitting them broke the closed-loop shape gates."
+}

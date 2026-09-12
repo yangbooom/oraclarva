@@ -229,6 +229,18 @@ The motor crosswalk, its exact evidence boundary, and remaining blockers are in
 The public-source manifest can be checked with `oraclarva-source-audit data/sources/source_manifest_v0.yaml`; the current file audit and exclusion decisions are in `docs/PUBLIC_SOURCE_AUDIT_2026-08-29.md`.
 The kinematic screening protocol is in `docs/L1_KINEMATIC_VALIDATION.md`; the
 muscle identity and geometry boundary is in `docs/L1_BODY_WALL_MUSCLE_ATLAS.md`.
+The paper-by-paper evidence audit and implementation boundary for axial forward
+and backward locomotion are in
+`docs/AXIAL_LOCOMOTION_EVIDENCE_REVIEW_2026-09-11.md`.
+The implemented bidirectional Python reference, continuous contact equation,
+L1 calibration/held-out reports, lesion gates, and remaining native-validation
+boundary are in
+`docs/AXIAL_LOCOMOTION_V1.md`.
+Its checked 5 ms trajectory is
+`data/trajectories/l1_axial_locomotion_v1.json`; the 12-animal calibration
+report passes while the previously visible six-animal held-out diagnostic is
+kept fail-closed. Android integration is intentionally unchanged while this
+Python baseline and the next left-right steering stage are stabilized.
 
 ## Interactive L1 body viewer
 

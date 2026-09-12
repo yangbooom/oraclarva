@@ -351,6 +351,7 @@ class ScientificBody3D:
         iterations: int = 12,
         velocity_retention: float = 0.98,
         ground_velocity_retention_x: tuple[float, float] | None = None,
+        ground_velocity_retention_by_node: Mapping[int, float] | None = None,
         active_curvature_gain: float = 0.0,
         active_pitch_curvature_gain: float = 0.0,
         active_bending_stiffness_ratio: float = 0.25,
@@ -373,6 +374,18 @@ class ScientificBody3D:
             not 0 <= value <= 1 for value in ground_velocity_retention_x
         ):
             raise ValueError("ground tangential retention must be in [0, 1]")
+        node_retention = ground_velocity_retention_by_node or {}
+        if set(node_retention) - set(range(len(self.particles))):
+            raise ValueError("ground retention references an unknown body node")
+        if any(
+            not isfinite(float(value)) or not 0.0 <= float(value) <= 1.0
+            for value in node_retention.values()
+        ):
+            raise ValueError("node ground retention must be finite in [0, 1]")
+        if ground_velocity_retention_x is not None and node_retention:
+            raise ValueError(
+                "provide directional or continuous node ground retention, not both"
+            )
         if active_curvature_gain < 0 or active_pitch_curvature_gain < 0:
             raise ValueError("active curvature gain must be non-negative")
         if active_bending_stiffness_ratio <= 0:
@@ -396,6 +409,7 @@ class ScientificBody3D:
                 continue
             velocity = (particle.position - particle.previous_position) * velocity_retention
             deferred_planar_frame: tuple[Vec3, Vec3] | None = None
+            deferred_node_retention: tuple[Vec3, Vec3, float] | None = None
             clearance = self._node_clearance(index)
             contact_margin = max(1e-15, gravity.norm() * dt_s * dt_s * 1.1)
             surface_contact = (
@@ -454,6 +468,15 @@ class ScientificBody3D:
                             velocity.y * min(negative_x, positive_x),
                             velocity.z,
                         )
+            elif ground_z is not None and index in node_retention:
+                if particle.position.z <= ground_z + clearance + 1e-15:
+                    tangent = self._node_tangent_xy(index)
+                    lateral = Vec3(-tangent.y, tangent.x, 0.0)
+                    deferred_node_retention = (
+                        tangent,
+                        lateral,
+                        float(node_retention[index]),
+                    )
             particle_gravity = gravity
             if contact_friction_coefficient and surface_contact is not None:
                 normal = surface_contact.normal.normalized()
@@ -486,6 +509,13 @@ class ScientificBody3D:
                     tangent * (tangential * tangential_retention)
                     + lateral
                     * (lateral_value * min(negative_x, positive_x))
+                )
+                displacement = Vec3(planar.x, planar.y, displacement.z)
+            elif deferred_node_retention is not None:
+                tangent, lateral, retention = deferred_node_retention
+                planar = (
+                    tangent * (displacement.dot(tangent) * retention)
+                    + lateral * (displacement.dot(lateral) * retention)
                 )
                 displacement = Vec3(planar.x, planar.y, displacement.z)
             particle.position = particle.position + displacement
@@ -528,9 +558,13 @@ class ScientificBody3D:
                 lagrange = -constraint / denominator
                 direction = delta * (1.0 / distance)
                 if left.inverse_mass:
-                    left.position = left.position - direction * (left.inverse_mass * lagrange)
+                    left.position = left.position - direction * (
+                        left.inverse_mass * lagrange
+                    )
                 if right.inverse_mass:
-                    right.position = right.position + direction * (right.inverse_mass * lagrange)
+                    right.position = right.position + direction * (
+                        right.inverse_mass * lagrange
+                    )
             if (
                 (active_curvature_gain or passive_planar_bending_stiffness_ratio)
                 and not active_pitch_curvature_gain
