@@ -115,10 +115,12 @@ class NamedFiberBodyCoupling:
                     f"fiber force scale references unknown fibers: {sorted(unknown)}"
                 )
             if any(
-                not isfinite(float(value)) or float(value) <= 0.0
+                not isfinite(float(value)) or float(value) < 0.0
                 for value in self.fiber_force_scale_by_id.values()
             ):
-                raise ValueError("fiber force projection scales must be positive")
+                raise ValueError(
+                    "fiber force projection scales must be non-negative"
+                )
         self.rest_lengths_m = {}
         for geometry in self.geometries:
             origin, insertion = self._attachment_points(geometry)

@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_axial_locomotion_v1",
+  "status": "research_approximation",
+  "stage": "L1",
+  "release_validated": false,
+  "forward_wave_posterior_to_anterior": ["A6", "A5", "A4", "A3", "A2", "A1"],
+  "backward_wave_anterior_to_posterior": ["A1", "A2", "A3", "A4", "A5", "A6"],
+  "causal_contract": [
+    "environment",
+    "sensory_transduction",
+    "neural_dynamics",
+    "motor_neurons",
+    "muscle_activation",
+    "body_physics",
+    "environment"
+  ],
+  "topology": {
+    "provenance": "ANATOMY_DERIVED",
+    "action_command": false,
+    "behavior_fsm": false,
+    "external_policy": false,
+    "shared_motor_and_muscle_atlas": true,
+    "description": "Posterior touch enters a reduced A27h forward path; anterior touch enters an MDN-to-A18b backward path while Pair1 suppresses the forward path. Both paths converge on the same named motor identities and A1-A6 muscle fibers.",
+    "connections": [
+      {
+        "edge": "A27h -> forward motor pool",
+        "stage": "L3",
+        "provenance": "ANATOMY_DERIVED",
+        "evidence": "Fushiki et al. 2016, eLife 5:e13253",
+        "allowed_use": "relative forward circuit topology only"
+      },
+      {
+        "edge": "MDN -> A18b backward premotor path",
+        "stage": "L3",
+        "provenance": "ANATOMY_DERIVED",
+        "evidence": "Carreira-Rosario et al. 2018, eLife 7:e38554",
+        "allowed_use": "relative backward circuit topology only"
+      },
+      {
+        "edge": "MDN -> Pair1 -| forward path",
+        "stage": "L3",
+        "provenance": "ANATOMY_DERIVED",
+        "evidence": "Carreira-Rosario et al. 2018, eLife 7:e38554",
+        "allowed_use": "forward-path suppression topology only"
+      },
+      {
+        "edge": "GDL / Ifb-Bwd / Canon-A18g -> relaxation timing",
+        "stage": "mixed_or_unknown",
+        "provenance": "MODEL_FITTED",
+        "evidence": "Zarin et al. 2019, Nature Communications 10:2650; axial-locomotion literature audit",
+        "allowed_use": "reduced inhibitory timing hypothesis"
+      }
+    ],
+    "limitations": [
+      "The named circuit evidence is primarily later-instar anatomy and physiology; it is not asserted as a complete L1 whole-body connectome.",
+      "Intersegmental edges, delays, currents, Pair1 persistence, and relaxation gains are fitted reduced-model parameters.",
+      "Forward and backward paths change neural timing; they do not select separate muscle identities.",
+      "T3, A7, and A8 remain outside the named-fiber force projection because the present attachment atlas covers A1-A6."
+    ]
+  },
+  "parameters": {
+    "dt_s": 0.001,
+    "duration_s": 5.5,
+    "touch_current_a": 4e-09,
+    "touch_duration_s": 0.002,
+    "premotor_current_a": 1.8e-09,
+    "motor_current_a": 1.8e-09,
+    "inhibitory_current_a": 4e-09,
+    "intersegmental_delay_s": 0.59,
+    "forward_recovery_delay_s": 0.6,
+    "backward_recovery_delay_s": 2.0,
+    "gdl_delay_s": 0.05,
+    "ifb_backward_delay_s": 0.05,
+    "canon_delay_s": 0.30,
+    "forward_transverse_motor_delay_s": 0.04,
+    "backward_transverse_motor_delay_s": 0.59,
+    "backward_longitudinal_motor_delay_s": 0.001,
+    "sensory_maximum_current_a": 4e-09,
+    "sensory_adaptation_tau_s": 4.0,
+    "sensory_adaptation_fraction": 3.35,
+    "recovery_adaptation_fraction": 3.0,
+    "recovery_rate_threshold_s_1": 1e-05,
+    "recovery_rate_gain_s": 100000.0,
+    "local_tension_gate_gain": 1000.0,
+    "trace_arrival_window_s": 0.10,
+    "pair1_gate_tau_s": 4.0,
+    "relaxation_decay_tau_s": 0.6,
+    "gdl_relaxation_impulse": 0.35,
+    "ifb_relaxation_impulse": 0.25,
+    "canon_relaxation_impulse": 1.0,
+    "relaxation_gain_s_1": 2.0,
+    "muscle_activation_rise_tau_s": 0.6,
+    "muscle_activation_decay_tau_s": 1.5,
+    "muscle_event_target": 1.0,
+    "muscle_excitation_decay_tau_s": 0.25,
+    "muscle_event_excitation": 1500.0,
+    "muscle_activation_rise_tau_s_by_segment": {
+      "A1": 0.65,
+      "A2": 0.65,
+      "A3": 0.72,
+      "A4": 0.78,
+      "A5": 0.70,
+      "A6": 0.60
+    },
+    "muscle_activation_decay_tau_s_by_segment": {
+      "A1": 0.05,
+      "A2": 0.15,
+      "A3": 0.22,
+      "A4": 0.35,
+      "A5": 0.38,
+      "A6": 0.28
+    },
+    "muscle_excitation_decay_tau_s_by_segment": {
+      "A1": 0.235,
+      "A2": 0.245,
+      "A3": 0.25,
+      "A4": 0.26,
+      "A5": 0.25,
+      "A6": 0.25
+    }
+  },
+  "body_state_transduction": {
+    "model_id": "dmel_l1_axial_body_state_v1",
+    "provenance": "MODEL_FITTED",
+    "dt_s": 0.001,
+    "stretch_strain_threshold": 0.005,
+    "stretch_rate_threshold_s_1": 0.1,
+    "stretch_strain_gain": 20.0,
+    "stretch_rate_gain_s": 0.05,
+    "shortening_strain_threshold": 1e-08,
+    "shortening_rate_threshold_s_1": 0.0,
+    "shortening_strain_gain": 100000000.0,
+    "shortening_rate_gain_s": 1000.0,
+    "maximum_external_current_a": 4e-09,
+    "contact_sensing_range_m": 2e-06,
+    "contact_touch_drive": 0.25
+  },
+  "named_fiber_body_coupling": {
+    "dt_s": 0.001,
+    "active_tension_gain_model_units": 165.0,
+    "passive_stiffness_model_units": 180.0,
+    "damping_model_units": 24.0,
+    "acceleration_scale_m_s2_per_model_force": 0.000586,
+    "body_velocity_retention": 0.5,
+    "parameter_provenance": "MODEL_FITTED",
+    "force_unit": "model_unit_not_newton",
+    "passive_planar_bending_stiffness_ratio": 25.0,
+    "maximum_shortening_fraction_by_segment": {
+      "A1": 0.563,
+      "A2": 0.563,
+      "A3": 0.57,
+      "A4": 0.57,
+      "A5": 0.57,
+      "A6": 0.57
+    },
+    "balance_mapped_fiber_side_coverage": true,
+    "coverage_balance_provenance": "ANATOMY_DERIVED",
+    "force_projection_mode": "local_tangent_axial",
+    "force_projection_provenance": "ANATOMY_DERIVED",
+    "transverse_axial_force_projection_scale": 0.0,
+    "transverse_force_role": "Contact-release drive only; T-group activation is excluded from segment axial shortening and axial node force.",
+    "force_projection_limitation": "The reduced straight-crawl body executes only the axial component of mapped-fiber tension because individual L1 3D attachment vectors are not measured."
+  },
+  "continuous_ground_contact": {
+    "model_id": "transverse_phase_contact_v1",
+    "provenance": "MODEL_FITTED",
+    "evidence_stage": "L2",
+    "evidence_source": "Booth et al. 2015, Journal of Neurophysiology 113:3322-3336",
+    "movement_direction_input": false,
+    "finite_state_machine": false,
+    "phase_labels_diagnostic_only": true,
+    "planted_velocity_retention": 0.01,
+    "released_velocity_retention": 0.99,
+    "contact_activation_gain": 3.0,
+    "body_iterations": 3,
+    "equation": "q_i=clamp(g*a_transverse,anterior(i),0,1); retention_i=r_planted+(r_released-r_planted)*q_i",
+    "t3_backward_contact_proxy": {
+      "node_id": "motor_proxy:T3_transverse_backward",
+      "body_segment": "T3",
+      "neural_source": "premotor:A18b:A1",
+      "topology_provenance": "ANATOMY_DERIVED",
+      "timing_provenance": "MODEL_FITTED",
+      "axial_force": false,
+      "measured_l1_identity": false,
+      "limitation": "This contact-only T3 transverse activation proxy closes the anterior boundary missing from the A1-A6 atlas. It is not a reconstructed L1 motor neuron or measured T3 muscle identity."
+    },
+    "limitations": [
+      "Contact retention is a continuous fitted proxy for attachment and release; it is not a measured friction coefficient.",
+      "The model consumes local transverse-fiber activation only and never receives requested or observed movement direction.",
+      "Forward and backward premotor paths use fitted, different transverse-fiber timing; this phase relation is a hypothesis, not a measured L1 delay.",
+      "Published L2 protopod normal forces are not transferred as L1 axial forces."
+    ]
+  },
+  "validation": {
+    "release_validated": false,
+    "calibration_partition": "Greaney 2026 L1 calibration animals for forward kinematics only",
+    "backward_quantitative_target": "not yet available",
+    "fit_status": "MODEL_FITTED against the 12-animal calibration partition",
+    "selection_used_held_out_values": false,
+    "independent_held_out_claim_available": false,
+    "directional_shape_gate": {
+      "minimum_directional_displacement_um": 10.0,
+      "maximum_opposite_retrace_um": 25.0,
+      "minimum_progress_efficiency": 0.8,
+      "maximum_lateral_span_um": 1.0,
+      "maximum_planar_deviation_um": 1.0,
+      "minimum_axial_segment_alignment": 0.8,
+      "minimum_head_tail_chord_ratio": 0.95,
+      "maximum_segment_extension_fraction": 0.05,
+      "node_order_violation_count": 0,
+      "provenance": "MODEL_FITTED",
+      "note": "The backslip and shape thresholds are engineering rejection gates, not measured L1 constants."
+    },
+    "fitting_record": {
+      "selected_parameters": [
+        "muscle activation rise/decay/excitation time constants",
+        "maximum shortening fractions within the declared body-model upper bound",
+        "force-to-acceleration scale",
+        "continuous contact activation gain",
+        "forward recovery delay"
+      ],
+      "rejected_candidates": [
+        "Contact-weighted XPBD inverse mass: produced discontinuous segment jumps.",
+        "A1-A6 contact interpolation into unobserved head/tail regions: reduced stride.",
+        "Calibration-median nonuniform adjacent wave delays: matched local timing but failed stride, efficiency, and retrace gates."
+      ],
+      "selection_rule": "Use calibration values and causal/shape gates together; do not use the six-animal diagnostic held-out values for selection."
+    },
+    "required_gates": [
+      "posterior touch yields posterior-to-anterior A27h order and anatomical-forward displacement",
+      "anterior touch yields MDN-to-A18b anterior-to-posterior order and anatomical-backward displacement",
+      "all active forces trace to a preceding sensory and neural event",
+      "directional contact coefficients are absent",
+      "forward calibration kinematics and distortion/backslip gates pass",
+      "Python and native C++ parity remains a future gate before mobile integration"
+    ],
+    "claim_limit": "Bidirectional embodied neural research approximation; not independently validated L1 locomotion."
+  }
+}

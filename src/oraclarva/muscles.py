@@ -73,16 +73,26 @@ class NeuralMuscleActivationFrame:
 
 @dataclass(slots=True)
 class NeuralMuscleActivationModel:
-    """One-step-delayed, bounded activation for mapped muscle identities."""
+    """One-step-delayed, bounded activation for mapped muscle identities.
+
+    The default preserves the original event/decay behavior. When an
+    excitation decay time is supplied, each motor event raises a continuous
+    dimensionless excitation state. Activation follows that state with the
+    configured rise/decay constants instead of jumping in one time step.
+    """
 
     projection: "NeuralMuscleIdentityProjection"
     dt_s: float
     rise_tau_s: float
     decay_tau_s: float
     event_target: float
+    excitation_decay_tau_s: float | None = None
+    event_excitation: float = 1.0
+    excitation_decay_tau_s_by_segment: Mapping[str, float] | None = None
     rise_tau_s_by_segment: Mapping[str, float] | None = None
     decay_tau_s_by_segment: Mapping[str, float] | None = None
     activations: dict[str, float] = field(init=False)
+    excitations: dict[str, float] = field(init=False)
     _segment_by_fiber: dict[str, str] = field(init=False, repr=False)
     first_activation_s: dict[str, float | None] = field(init=False)
     last_applied_spike_s: dict[str, float | None] = field(init=False)
@@ -103,10 +113,28 @@ class NeuralMuscleActivationModel:
                 raise ValueError(f"muscle activation {name} must be positive")
         if self.event_target > 1.0:
             raise ValueError("muscle activation event target cannot exceed one")
+        if (
+            not isfinite(float(self.event_excitation))
+            or self.event_excitation <= 0.0
+        ):
+            raise ValueError("muscle event excitation must be positive")
+        if self.excitation_decay_tau_s is not None and (
+            not isfinite(float(self.excitation_decay_tau_s))
+            or self.excitation_decay_tau_s <= 0.0
+        ):
+            raise ValueError("muscle excitation decay tau must be positive")
+        if (
+            self.excitation_decay_tau_s_by_segment is not None
+            and self.excitation_decay_tau_s is None
+        ):
+            raise ValueError(
+                "segment excitation decay taus require a fallback tau"
+            )
         mapped_segments = {item.segment_id for item in self.projection.mappings}
         for label, values in (
             ("rise", self.rise_tau_s_by_segment),
             ("decay", self.decay_tau_s_by_segment),
+            ("excitation decay", self.excitation_decay_tau_s_by_segment),
         ):
             if values is None:
                 continue
@@ -128,6 +156,7 @@ class NeuralMuscleActivationModel:
         }
         fiber_ids = self.projection.mapped_fiber_ids
         self.activations = {fiber_id: 0.0 for fiber_id in fiber_ids}
+        self.excitations = {fiber_id: 0.0 for fiber_id in fiber_ids}
         self.first_activation_s = {fiber_id: None for fiber_id in fiber_ids}
         self.last_applied_spike_s = {fiber_id: None for fiber_id in fiber_ids}
         self.last_applied_source = {fiber_id: None for fiber_id in fiber_ids}
@@ -146,30 +175,66 @@ class NeuralMuscleActivationModel:
         applied = dict(self._pending_event)
         for fiber_id, activation in self.activations.items():
             segment = self._segment_by_fiber[fiber_id]
-            if fiber_id in applied:
-                target = self.event_target
-                tau = (
-                    self.rise_tau_s
-                    if self.rise_tau_s_by_segment is None
-                    else self.rise_tau_s_by_segment.get(segment, self.rise_tau_s)
-                )
-                rise_fraction = 1.0 - exp(-self.dt_s / tau)
-                updated = activation + (target - activation) * rise_fraction
-                source, spike_time_s, _ = applied[fiber_id]
+            event = applied.get(fiber_id)
+            if event is not None:
+                source, spike_time_s, _ = event
                 if not spike_time_s < time_s:
                     raise ValueError(
                         "muscle activation input spike must precede activation"
                     )
                 self.last_applied_spike_s[fiber_id] = spike_time_s
                 self.last_applied_source[fiber_id] = source
+            if self.excitation_decay_tau_s is None:
+                if event is not None:
+                    target = self.event_target
+                    tau = (
+                        self.rise_tau_s
+                        if self.rise_tau_s_by_segment is None
+                        else self.rise_tau_s_by_segment.get(
+                            segment, self.rise_tau_s
+                        )
+                    )
+                    fraction = 1.0 - exp(-self.dt_s / tau)
+                    updated = activation + (target - activation) * fraction
+                else:
+                    tau = (
+                        self.decay_tau_s
+                        if self.decay_tau_s_by_segment is None
+                        else self.decay_tau_s_by_segment.get(
+                            segment, self.decay_tau_s
+                        )
+                    )
+                    fraction = 1.0 - exp(-self.dt_s / tau)
+                    updated = activation + (0.0 - activation) * fraction
             else:
-                tau = (
-                    self.decay_tau_s
-                    if self.decay_tau_s_by_segment is None
-                    else self.decay_tau_s_by_segment.get(segment, self.decay_tau_s)
+                excitation = self.excitations[fiber_id]
+                if event is not None:
+                    excitation = max(excitation, self.event_excitation)
+                target = self.event_target * min(1.0, excitation)
+                rising = target > activation
+                values = (
+                    self.rise_tau_s_by_segment
+                    if rising
+                    else self.decay_tau_s_by_segment
                 )
-                decay_fraction = 1.0 - exp(-self.dt_s / tau)
-                updated = activation + (0.0 - activation) * decay_fraction
+                fallback = self.rise_tau_s if rising else self.decay_tau_s
+                tau = (
+                    fallback
+                    if values is None
+                    else values.get(segment, fallback)
+                )
+                fraction = 1.0 - exp(-self.dt_s / tau)
+                updated = activation + (target - activation) * fraction
+                excitation_tau = (
+                    self.excitation_decay_tau_s
+                    if self.excitation_decay_tau_s_by_segment is None
+                    else self.excitation_decay_tau_s_by_segment.get(
+                        segment, self.excitation_decay_tau_s
+                    )
+                )
+                self.excitations[fiber_id] = excitation * exp(
+                    -self.dt_s / excitation_tau
+                )
             bounded = min(1.0, max(0.0, updated))
             self.activations[fiber_id] = bounded
             if bounded > 0.0 and self.first_activation_s[fiber_id] is None:

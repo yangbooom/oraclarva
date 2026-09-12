@@ -309,6 +309,55 @@ def test_activation_decay_can_be_model_fitted_per_segment():
     assert 0.0 < frame.activations[a1] < frame.activations[a6] < 1.0
 
 
+def test_continuous_excitation_uses_segment_specific_decay_without_changing_default():
+    projection = load_neural_muscle_identity_projection()
+    a1_source = next(
+        item.source_node_id
+        for item in projection.mappings
+        if item.segment_id == "A1"
+    )
+    a6_source = next(
+        item.source_node_id
+        for item in projection.mappings
+        if item.segment_id == "A6"
+    )
+    a1 = next(
+        item.fiber_id
+        for item in projection.mappings
+        if item.segment_id == "A1" and item.source_node_id == a1_source
+    )
+    a6 = next(
+        item.fiber_id
+        for item in projection.mappings
+        if item.segment_id == "A6" and item.source_node_id == a6_source
+    )
+    model = NeuralMuscleActivationModel(
+        projection=projection,
+        dt_s=0.001,
+        rise_tau_s=0.01,
+        decay_tau_s=0.01,
+        event_target=1.0,
+        excitation_decay_tau_s=0.1,
+        event_excitation=1.0,
+        excitation_decay_tau_s_by_segment={"A1": 0.005, "A6": 0.1},
+    )
+    model.step(0.0, projection.emit((a1_source, a6_source)))
+    model.step(0.001, projection.emit(()))
+    for step in range(2, 42):
+        frame = model.step(step * 0.001, projection.emit(()))
+
+    assert 0.0 <= frame.activations[a1] < frame.activations[a6] <= 1.0
+    with pytest.raises(ValueError, match="require a fallback"):
+        NeuralMuscleActivationModel(
+            projection=projection,
+            dt_s=0.001,
+            rise_tau_s=0.01,
+            decay_tau_s=0.01,
+            event_target=1.0,
+            excitation_decay_tau_s_by_segment={"A1": 0.005},
+        )
+
+
 def test_fiber_event_lesion_prevents_activation_without_geometry_fallback():
     projection = load_neural_muscle_identity_projection()
     model = NeuralMuscleActivationModel(

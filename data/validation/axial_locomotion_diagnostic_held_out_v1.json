@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_axial_locomotion_v1",
+  "release_validated": false,
+  "target_dataset": "greaney_2026_l1_kinematics_v0",
+  "frozen_config_sha256": "245e0ec9d7d4adee6ef2a2f6329796e8d4ce4799800001330fcf5fce798564f0",
+  "trajectory": "data/trajectories/l1_axial_locomotion_v1.json",
+  "sample_interval_s": 0.005,
+  "model_metrics": {
+    "start_s": 0.003,
+    "end_s": 5.325,
+    "cycle_period_s": 5.322,
+    "cycle_frequency_hz": 0.18789928598271327,
+    "stride_um": 140.64863173669232,
+    "crawl_speed_um_s": 26.42777747777007,
+    "a1_a6_wave_speed_segments_s": 1.6718220606478147,
+    "segments": {
+      "A6": {
+        "contraction_amplitude_percent": 51.99560062894142,
+        "shortening_rate_um_s": 72.09904077393219,
+        "contraction_duration_s": 2.3994931678463063,
+        "duty_cycle_percent": 45.08630529587197,
+        "onset_s": 0.17053630380861887
+      },
+      "A5": {
+        "contraction_amplitude_percent": 50.30965729571255,
+        "shortening_rate_um_s": 65.35880571069868,
+        "contraction_duration_s": 2.517369826826075,
+        "duty_cycle_percent": 47.3011993015046,
+        "onset_s": 0.7886768624274789,
+        "adjacent_onset_delay_cycle_fraction": 0.11614816960143932
+      },
+      "A4": {
+        "contraction_amplitude_percent": 49.478262738073866,
+        "shortening_rate_um_s": 62.05029127496857,
+        "contraction_duration_s": 2.5507144278959286,
+        "duty_cycle_percent": 47.92774197474499,
+        "onset_s": 1.4038069293058708,
+        "adjacent_onset_delay_cycle_fraction": 0.1155825003529485
+      },
+      "A3": {
+        "contraction_amplitude_percent": 49.89842445459152,
+        "shortening_rate_um_s": 66.91086502000303,
+        "contraction_duration_s": 2.3015823483204088,
+        "duty_cycle_percent": 43.246567987982125,
+        "onset_s": 1.9860158878012841,
+        "adjacent_onset_delay_cycle_fraction": 0.1093966475940273
+      },
+      "A2": {
+        "contraction_amplitude_percent": 50.18508140819684,
+        "shortening_rate_um_s": 75.37684542203635,
+        "contraction_duration_s": 2.1742236852833416,
+        "duty_cycle_percent": 40.85350780314434,
+        "onset_s": 2.567090418457745,
+        "adjacent_onset_delay_cycle_fraction": 0.10918348941308927
+      },
+      "A1": {
+        "contraction_amplitude_percent": 49.56582795401967,
+        "shortening_rate_um_s": 69.3822292793044,
+        "contraction_duration_s": 1.9591621018798153,
+        "duty_cycle_percent": 36.8125160067609,
+        "onset_s": 3.16128521046113,
+        "adjacent_onset_delay_cycle_fraction": 0.11164877715208286
+      }
+    },
+    "shape": {
+      "maximum_opposite_retrace_um": 21.03183060092306,
+      "cumulative_opposite_travel_um": 30.73108933315376,
+      "progress_efficiency": 0.8206842143206123,
+      "maximum_lateral_span_um": 0.0,
+      "maximum_planar_deviation_um": 0.0,
+      "minimum_axial_segment_alignment": 1.0,
+      "minimum_head_tail_chord_ratio": 0.9999999999999998,
+      "maximum_segment_extension_fraction": 0.0010762093191238886,
+      "node_order_violation_count": 0
+    }
+  },
+  "partition": "diagnostic_held_out",
+  "animal_count": 6,
+  "status": "diagnostic_held_out_failed",
+  "comparisons": [
+    {
+      "metric": "crawl_speed_um_s",
+      "model_value": 26.42777747777007,
+      "target_p10": 25.70222,
+      "target_median": 31.195702,
+      "target_p90": 38.21379,
+      "passed": true
+    },
+    {
+      "metric": "stride_um",
+      "model_value": 140.64863173669232,
+      "target_p10": 129.765479,
+      "target_median": 149.494665,
+      "target_p90": 159.674513,
+      "passed": true
+    },
+    {
+      "metric": "cycle_period_s",
+      "model_value": 5.322,
+      "target_p10": 4.103751,
+      "target_median": 4.838044,
+      "target_p90": 5.38379,
+      "passed": true
+    },
+    {
+      "metric": "cycle_frequency_hz",
+      "model_value": 0.18789928598271327,
+      "target_p10": 0.189015,
+      "target_median": 0.209786,
+      "target_p90": 0.249091,
+      "passed": false
+    },
+    {
+      "metric": "a1_a6_wave_speed_segments_s",
+      "model_value": 1.6718220606478147,
+      "target_p10": 1.577967,
+      "target_median": 1.760268,
+      "target_p90": 2.345083,
+      "passed": true
+    },
+    {
+      "metric": "A1.contraction_amplitude_percent",
+      "model_value": 49.56582795401967,
+      "target_p10": 38.983933,
+      "target_median": 46.286338,
+      "target_p90": 52.688294,
+      "passed": true
+    },
+    {
+      "metric": "A1.shortening_rate_um_s",
+      "model_value": 69.3822292793044,
+      "target_p10": 53.091146,
+      "target_median": 61.595537,
+      "target_p90": 85.742804,
+      "passed": true
+    },
+    {
+      "metric": "A1.contraction_duration_s",
+      "model_value": 1.9591621018798153,
+      "target_p10": 1.496439,
+      "target_median": 1.85335,
+      "target_p90": 2.053212,
+      "passed": true
+    },
+    {
+      "metric": "A1.duty_cycle_percent",
+      "model_value": 36.8125160067609,
+      "target_p10": 32.546023,
+      "target_median": 37.099573,
+      "target_p90": 44.774428,
+      "passed": true
+    },
+    {
+      "metric": "A2.contraction_amplitude_percent",
+      "model_value": 50.18508140819684,
+      "target_p10": 44.761929,
+      "target_median": 48.863233,
+      "target_p90": 52.117961,
+      "passed": true
+    },
+    {
+      "metric": "A2.shortening_rate_um_s",
+      "model_value": 75.37684542203635,
+      "target_p10": 54.138431,
+      "target_median": 62.536832,
+      "target_p90": 78.391186,
+      "passed": true
+    },
+    {
+      "metric": "A2.contraction_duration_s",
+      "model_value": 2.1742236852833416,
+      "target_p10": 1.62467,
+      "target_median": 1.99978,
+      "target_p90": 2.292144,
+      "passed": true
+    },
+    {
+      "metric": "A2.duty_cycle_percent",
+      "model_value": 40.85350780314434,
+      "target_p10": 35.320823,
+      "target_median": 41.054033,
+      "target_p90": 48.959418,
+      "passed": true
+    },
+    {
+      "metric": "A3.contraction_amplitude_percent",
+      "model_value": 49.89842445459152,
+      "target_p10": 45.75669,
+      "target_median": 49.032858,
+      "target_p90": 53.757393,
+      "passed": true
+    },
+    {
+      "metric": "A3.shortening_rate_um_s",
+      "model_value": 66.91086502000303,
+      "target_p10": 48.430744,
+      "target_median": 55.079728,
+      "target_p90": 66.701862,
+      "passed": false
+    },
+    {
+      "metric": "A3.contraction_duration_s",
+      "model_value": 2.3015823483204088,
+      "target_p10": 1.757127,
+      "target_median": 2.024304,
+      "target_p90": 2.389762,
+      "passed": true
+    },
+    {
+      "metric": "A3.duty_cycle_percent",
+      "model_value": 43.246567987982125,
+      "target_p10": 38.200747,
+      "target_median": 42.72637,
+      "target_p90": 49.579573,
+      "passed": true
+    },
+    {
+      "metric": "A4.contraction_amplitude_percent",
+      "model_value": 49.478262738073866,
+      "target_p10": 48.054715,
+      "target_median": 50.114183,
+      "target_p90": 54.028676,
+      "passed": true
+    },
+    {
+      "metric": "A4.shortening_rate_um_s",
+      "model_value": 62.05029127496857,
+      "target_p10": 47.944195,
+      "target_median": 53.651538,
+      "target_p90": 58.134439,
+      "passed": false
+    },
+    {
+      "metric": "A4.contraction_duration_s",
+      "model_value": 2.5507144278959286,
+      "target_p10": 1.829474,
+      "target_median": 2.293721,
+      "target_p90": 2.589438,
+      "passed": true
+    },
+    {
+      "metric": "A4.duty_cycle_percent",
+      "model_value": 47.92774197474499,
+      "target_p10": 43.24567,
+      "target_median": 46.04734,
+      "target_p90": 52.128491,
+      "passed": true
+    },
+    {
+      "metric": "A5.contraction_amplitude_percent",
+      "model_value": 50.30965729571255,
+      "target_p10": 46.70728,
+      "target_median": 51.109866,
+      "target_p90": 53.191775,
+      "passed": true
+    },
+    {
+      "metric": "A5.shortening_rate_um_s",
+      "model_value": 65.35880571069868,
+      "target_p10": 48.642166,
+      "target_median": 53.737783,
+      "target_p90": 70.791604,
+      "passed": true
+    },
+    {
+      "metric": "A5.contraction_duration_s",
+      "model_value": 2.517369826826075,
+      "target_p10": 1.869605,
+      "target_median": 2.426083,
+      "target_p90": 2.647013,
+      "passed": true
+    },
+    {
+      "metric": "A5.duty_cycle_percent",
+      "model_value": 47.3011993015046,
+      "target_p10": 45.824507,
+      "target_median": 47.237778,
+      "target_p90": 52.537783,
+      "passed": true
+    },
+    {
+      "metric": "A6.contraction_amplitude_percent",
+      "model_value": 51.99560062894142,
+      "target_p10": 48.585417,
+      "target_median": 50.412102,
+      "target_p90": 53.859117,
+      "passed": true
+    },
+    {
+      "metric": "A6.shortening_rate_um_s",
+      "model_value": 72.09904077393219,
+      "target_p10": 58.811563,
+      "target_median": 63.120049,
+      "target_p90": 74.18274,
+      "passed": true
+    },
+    {
+      "metric": "A6.contraction_duration_s",
+      "model_value": 2.3994931678463063,
+      "target_p10": 1.782658,
+      "target_median": 2.155595,
+      "target_p90": 2.364636,
+      "passed": false
+    },
+    {
+      "metric": "A6.duty_cycle_percent",
+      "model_value": 45.08630529587197,
+      "target_p10": 41.628197,
+      "target_median": 43.845541,
+      "target_p90": 47.306006,
+      "passed": true
+    }
+  ],
+  "passed": false,
+  "independent_validation_passed": false,
+  "selection_used_held_out_values": false,
+  "fail_closed": true,
+  "interpretation": "The six-animal values were already visible in the repository. They are reported only as a diagnostic and cannot release-validate this model. No quantitative L1 backward target is available."
+}
