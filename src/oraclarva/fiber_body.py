@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from math import cos, isfinite, sin
-from typing import Mapping
+from typing import Iterable, Mapping
 
 from .body3d import ContactSurface, ScientificBody3D, Vec3
 from .body_sensing import BodyStateSensoryFrame, BodyStateSensoryTransducer
@@ -76,6 +76,23 @@ class NamedFiberBodyForceFrame:
     parallel_fitted_bridge_executed: bool = False
     force_unit: str = "model_unit_not_newton"
     acceleration_parameter_provenance: str = "MODEL_FITTED"
+
+
+@dataclass(frozen=True, slots=True)
+class DifferentialAttachmentForceFrame:
+    """Replace paired activation-excess axial proxies with 3D line forces."""
+
+    time_s: float
+    excess_tension_model_units_by_fiber: Mapping[str, float]
+    replaced_axial_source_forces_model_units: Mapping[int, Vec3]
+    spatial_node_forces_model_units: Mapping[int, Vec3]
+    active_fiber_count: int
+    traced_active_fiber_count: int
+    net_force_model_units: Vec3
+    net_torque_model_units_m: Vec3
+    coordinate_provenance: str = "ANATOMY_DERIVED"
+    mechanics_provenance: str = "MODEL_FITTED"
+    force_unit: str = "model_unit_not_newton"
 
 
 @dataclass(slots=True)
@@ -234,6 +251,142 @@ class NamedFiberBodyCoupling:
     @staticmethod
     def _add_force(forces: dict[int, Vec3], node: int, value: Vec3) -> None:
         forces[node] = forces[node] + value
+
+    def paired_active_excess_forces(
+        self,
+        frame: NamedFiberBodyForceFrame,
+        fiber_pairs: Iterable[tuple[str, str]],
+        *,
+        spatial_force_scale: float,
+        lesioned_fiber_ids: Iterable[str] = (),
+    ) -> DifferentialAttachmentForceFrame:
+        """Build full 3D line forces for activation above the weaker side.
+
+        The axial runtime already projects every mapped-fiber tension onto the
+        local tangent. The caller subtracts the returned axial source proxy and
+        replaces it with the corresponding full spatial attachment force.
+        """
+        if (
+            not isfinite(float(spatial_force_scale))
+            or float(spatial_force_scale) <= 0.0
+        ):
+            raise ValueError("spatial attachment force scale must be positive")
+        geometry_by_id = {item.fiber_id: item for item in self.geometries}
+        pairs = tuple(fiber_pairs)
+        if len(pairs) != len(set(pairs)):
+            raise ValueError("attachment fiber pairs must be unique")
+        lesions = tuple(lesioned_fiber_ids)
+        if len(lesions) != len(set(lesions)):
+            raise ValueError("attachment fiber lesions must be unique")
+        unknown_lesions = set(lesions) - set(geometry_by_id)
+        if unknown_lesions:
+            raise ValueError(
+                "attachment lesion references unknown fibers: "
+                f"{sorted(unknown_lesions)}"
+            )
+        lesioned = set(lesions)
+        replaced = {
+            index: Vec3(0.0, 0.0, 0.0)
+            for index in range(len(self.body.particles))
+        }
+        spatial = dict(replaced)
+        excess_by_fiber: dict[str, float] = {}
+        traced = 0
+        for left_id, right_id in pairs:
+            if left_id not in geometry_by_id or right_id not in geometry_by_id:
+                raise ValueError("attachment pair references unknown fiber")
+            left_geometry = geometry_by_id[left_id]
+            right_geometry = geometry_by_id[right_id]
+            if (
+                left_geometry.side != "left"
+                or right_geometry.side != "right"
+                or left_geometry.segment_id != right_geometry.segment_id
+                or left_geometry.muscle_number != right_geometry.muscle_number
+            ):
+                raise ValueError(
+                    "attachment pair must be a mirrored muscle identity"
+                )
+            left_output = frame.fibers[left_id]
+            right_output = frame.fibers[right_id]
+            difference = (
+                left_output.active_tension_model_units
+                - right_output.active_tension_model_units
+            )
+            if difference == 0.0:
+                continue
+            if difference > 0.0:
+                geometry = left_geometry
+                output = left_output
+            else:
+                geometry = right_geometry
+                output = right_output
+            if geometry.fiber_id in lesioned:
+                continue
+            excess = abs(difference)
+            if (
+                output.source_node_id is None
+                or output.source_spike_time_s is None
+                or not output.source_spike_time_s < frame.time_s
+            ):
+                raise ValueError(
+                    "differential attachment force lacks an earlier MN spike"
+                )
+            traced += 1
+            excess_by_fiber[geometry.fiber_id] = excess
+            origin, insertion = self._attachment_points(geometry)
+            direction = (insertion - origin).normalized()
+            projection_scale = (
+                1.0
+                if self.fiber_force_scale_by_id is None
+                else float(
+                    self.fiber_force_scale_by_id.get(geometry.fiber_id, 1.0)
+                )
+            )
+            for target, tension in (
+                (replaced, excess * projection_scale),
+                (spatial, excess * float(spatial_force_scale)),
+            ):
+                force = direction * tension
+                left_node = geometry.segment_index
+                right_node = left_node + 1
+                self._add_force(
+                    target,
+                    left_node,
+                    force * (1.0 - geometry.origin.s),
+                )
+                self._add_force(
+                    target, right_node, force * geometry.origin.s
+                )
+                self._add_force(
+                    target,
+                    left_node,
+                    force * (-(1.0 - geometry.insertion.s)),
+                )
+                self._add_force(
+                    target, right_node, force * (-geometry.insertion.s)
+                )
+        net_force = Vec3(0.0, 0.0, 0.0)
+        net_torque = Vec3(0.0, 0.0, 0.0)
+        center = Vec3(0.0, 0.0, 0.0)
+        for particle in self.body.particles:
+            center = center + particle.position
+        center = center * (1.0 / len(self.body.particles))
+        for node, value in spatial.items():
+            net_force = net_force + value
+            arm = self.body.particles[node].position - center
+            net_torque = net_torque + arm.cross(value)
+        if traced != len(excess_by_fiber):
+            raise ValueError("every differential attachment force must be traced")
+        return DifferentialAttachmentForceFrame(
+            time_s=frame.time_s,
+            excess_tension_model_units_by_fiber=excess_by_fiber,
+            replaced_axial_source_forces_model_units=replaced,
+            spatial_node_forces_model_units=spatial,
+            active_fiber_count=len(excess_by_fiber),
+            traced_active_fiber_count=traced,
+            net_force_model_units=net_force,
+            net_torque_model_units_m=net_torque,
+        )
 
     def step(
         self,
