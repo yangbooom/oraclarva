@@ -28,6 +28,7 @@ oraclarva-pitch = "oraclarva.dorsoventral:main"
 oraclarva-spatial = "oraclarva.spatial:main"
 oraclarva-environment-input = "oraclarva.environment_inputs:main"
 oraclarva-visual = "oraclarva.visual:main"
+oraclarva-steering = "oraclarva.steering:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

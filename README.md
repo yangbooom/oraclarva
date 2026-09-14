@@ -220,6 +220,7 @@ oraclarva-pitch --dorsal 1 --ventral 0 --free
 oraclarva-spatial --left 1 --right 0 --dorsal 1 --ventral 0 --free
 oraclarva-environment-input --modality light --free
 oraclarva-visual --duration 1.5
+oraclarva-steering --gradient-y 5000 --duration 4
 oraclarva-audit neurons.csv synapses.csv
 ```
 
@@ -240,7 +241,31 @@ Its checked 5 ms trajectory is
 `data/trajectories/l1_axial_locomotion_v1.json`; the 12-animal calibration
 report passes while the previously visible six-animal held-out diagnostic is
 kept fail-closed. Android integration is intentionally unchanged while this
-Python baseline and the next left-right steering stage are stabilized.
+Python baseline is stabilized.
+
+The next Python reference stage now samples one bounded world scalar field at
+the moving left and right head surfaces. Rectified contrast drives mirrored
+sensory and A1/A2/A3 premotor LIF channels, which supply current to a bilaterally
+paired subset of the existing side-resolved axial motor-neuron nodes. Their
+actual spikes drive the same named-fiber activation state as axial v1; no
+steering-only MN copy exists. There is no turn command, target heading, yaw
+input, FSM, or authored translation. A uniform field matches the frozen 4 s
+axial trajectory within `4.64e-10 um`; reversed gradients yield
+`-7.14/+8.15 deg` yaw. Steering-excess bend spans the four joints from T3-A1
+through A3-A4: the dominant A1-A2 joint accounts for 28.03%, below the 35%
+single-hinge rejection limit. The A1-centered relative support comes from an
+L2 head-sweep study and does not supply an L1 numeric curvature profile; all
+segment scales remain `MODEL_FITTED`. Sensory, MN, and muscle lesions intervene
+at their real layer and attenuate the downstream response. All engineering
+gates pass, but incomplete A1 bilateral coverage, generic field modality, and
+fitted curvature keep
+`release_validated: false`.
+See `docs/AXIAL_STEERING_V1.md`.
+
+![Axial-v1 bilateral field steering](docs/assets/oraclarva_axial_steering_v1.gif)
+
+Native and Android integration remain intentionally unchanged until this
+Python steering baseline is accepted.
 
 ## Interactive L1 body viewer
 

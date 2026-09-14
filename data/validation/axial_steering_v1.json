@@ -1,0 +1,115 @@
+{
+  "bend_distribution_gates": {
+    "adjacent_pivot_bend_is_smooth": true,
+    "all_pivot_joints_active": true,
+    "bend_confined_to_anterior_pivot": true,
+    "dominant_joint_adjacent_to_A1": true,
+    "mirrored_joint_bend_distribution": true,
+    "no_single_joint_hinge": true
+  },
+  "causal_gates": {
+    "negative_active_forces_exist": true,
+    "negative_all_steering_forces_traced": true,
+    "negative_ordered_trace": true,
+    "positive_active_forces_exist": true,
+    "positive_all_steering_forces_traced": true,
+    "positive_ordered_trace": true
+  },
+  "claim_limit": "Axial-v1-integrated bilateral steering research approximation; not an independently validated L1 steering connectome or measured muscle moment-arm model.",
+  "comparisons": {
+    "mirror_axial_position": true,
+    "mirror_heading": true,
+    "mirror_lateral_position": true,
+    "negative_forward_progress": true,
+    "negative_gradient_yaw": true,
+    "positive_forward_progress": true,
+    "positive_gradient_yaw": true,
+    "uniform_activation_trajectory": true,
+    "uniform_contact_trajectory": true,
+    "uniform_heading": true,
+    "uniform_node_trajectory": true
+  },
+  "generated_from": {
+    "config_sha256": "7fd37004c4bf1174280dde7c6228f53bd2c8a766ef63b65410a14f5485730566",
+    "trajectory": "data/trajectories/l1_axial_steering_v1.json",
+    "trajectory_sha256": "d4def82403d32bbb6293941b3bcfb0230aa93ce7a541bc108d1ce9864b3a05e0"
+  },
+  "independent_biological_validation": false,
+  "invariant_gates": {
+    "anterior_pivot_contract_current": true,
+    "no_action_command": true,
+    "no_behavior_fsm": true,
+    "no_external_policy": true,
+    "no_target_heading_input": true,
+    "no_yaw_input_to_body": true,
+    "release_not_validated": true,
+    "shared_MN_nodes_not_duplicated": true,
+    "shared_axial_config_is_frozen": true,
+    "shared_axial_trajectory_is_frozen": true
+  },
+  "lesion_gates": {
+    "motor_lesion_attenuates_yaw": true,
+    "motor_lesion_preserves_premotor_spikes": true,
+    "motor_lesion_preserves_sensory_spikes": true,
+    "motor_lesion_removes_shared_MN_spikes": true,
+    "motor_lesion_removes_steering_force": true,
+    "muscle_lesion_attenuates_yaw": true,
+    "muscle_lesion_preserves_premotor_spikes": true,
+    "muscle_lesion_preserves_sensory_spikes": true,
+    "muscle_lesion_preserves_shared_MN_spikes": true,
+    "muscle_lesion_removes_steering_force": true,
+    "sensory_lesion_preserves_axial": true,
+    "sensory_lesion_removes_yaw": true
+  },
+  "model_id": "dmel_l1_axial_steering_v1",
+  "observed": {
+    "active_pivot_joints": [
+      "T3-A1",
+      "A1-A2",
+      "A2-A3",
+      "A3-A4"
+    ],
+    "dominant_pivot_joint": "A1-A2",
+    "maximum_adjacent_pivot_bend_jump_fraction": 0.33288530133878336,
+    "maximum_mirror_integrated_bend_error_deg_s": 0.03411646343912089,
+    "mirror_heading_error_deg": 1.0179970785095804,
+    "mirror_x_error_um": 36.26610914371608,
+    "mirror_y_error_um": 3.2854009156579407,
+    "negative_heading_change_deg": 8.154221918484268,
+    "outside_pivot_bend_fraction": 0.09314818377639153,
+    "positive_heading_change_deg": -7.1362248399746875,
+    "single_joint_bend_fraction": 0.2802720239186268,
+    "steering_excess_integrated_bend_deg_s_by_joint": {
+      "A1-A2": 18.529037650618253,
+      "A2-A3": 15.95110459778472,
+      "A3-A4": 13.111660282342365,
+      "A4-A5": 0.0,
+      "A5-A6": 5.991312009192924,
+      "A6-A7": 0.0,
+      "A7-A8": 0.14391005867084417,
+      "PSC-T1": 0.0,
+      "T1-T2": 0.001012394848181053,
+      "T2-T3": 0.021876433081816415,
+      "T3-A1": 12.360993368774533
+    },
+    "uniform_axial_regression": {
+      "maximum_contact_retention_error": 0.0,
+      "maximum_node_position_error_um": 4.6361492422875017e-10,
+      "maximum_segment_activation_error": 0.0
+    }
+  },
+  "passed": true,
+  "release_validated": false,
+  "schema": "oraclarva.axial_steering_validation.v1",
+  "shape_gates": {
+    "negative_head_tail_chord": true,
+    "negative_integrated_lateral_slip": true,
+    "negative_local_bend": true,
+    "negative_segment_extension": true,
+    "positive_head_tail_chord": true,
+    "positive_integrated_lateral_slip": true,
+    "positive_local_bend": true,
+    "positive_segment_extension": true
+  },
+  "status": "engineering_gates_passed"
+}
