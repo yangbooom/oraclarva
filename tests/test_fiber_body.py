@@ -27,6 +27,41 @@ def activation_model(projection):
     return NeuralMuscleActivationModel(projection, 0.001, 0.020, 0.080, 1.0)
 
 
+def paired_force(*active_sides: str):
+    model = coupling()
+    pair = tuple(
+        next(
+            geometry.fiber_id
+            for geometry in model.geometries
+            if geometry.segment_id == "A1"
+            and geometry.side == side
+            and geometry.muscle_number == "1"
+        )
+        for side in ("left", "right")
+    )
+    sources = tuple(
+        mapping.source_node_id
+        for mapping in model.projection.mappings
+        if mapping.fiber_id in {
+            pair[("left", "right").index(side)] for side in active_sides
+        }
+    )
+    activation = activation_model(model.projection)
+    initial = activation.step(0.0, model.projection.emit(sources))
+    model.step(
+        initial,
+        last_source_by_fiber=activation.last_applied_source,
+        last_spike_time_s_by_fiber=activation.last_applied_spike_s,
+    )
+    frame = activation.step(0.001, model.projection.emit(()))
+    force = model.step(
+        frame,
+        last_source_by_fiber=activation.last_applied_source,
+        last_spike_time_s_by_fiber=activation.last_applied_spike_s,
+    )
+    return model, force, pair
+
+
 def test_geometry_expands_only_146_mapped_a1_a6_fibers():
     model = coupling()
 
@@ -182,4 +217,78 @@ def test_body_accepts_finite_node_acceleration_and_rejects_unknown_node():
             gravity=Vec3(0.0, 0.0, 0.0),
             ground_z=None,
             external_accelerations_m_s2={99: Vec3(0.0, 1.0, 0.0)},
+        )
+
+
+def test_equal_mirrored_activation_has_no_attachment_excess_force():
+    model, force, pair = paired_force("left", "right")
+    differential = model.paired_active_excess_forces(
+        force, (pair,), spatial_force_scale=0.3
+    )
+
+    assert differential.active_fiber_count == 0
+    assert differential.traced_active_fiber_count == 0
+    assert differential.net_force_model_units == Vec3(0.0, 0.0, 0.0)
+    assert differential.net_torque_model_units_m == Vec3(0.0, 0.0, 0.0)
+
+
+def test_unilateral_attachment_force_is_traced_equal_opposite_and_mirrored():
+    left_model, left_force, pair = paired_force("left")
+    left = left_model.paired_active_excess_forces(
+        left_force, (pair,), spatial_force_scale=0.3
+    )
+    right_model, right_force, right_pair = paired_force("right")
+    right = right_model.paired_active_excess_forces(
+        right_force, (right_pair,), spatial_force_scale=0.3
+    )
+
+    assert set(left.excess_tension_model_units_by_fiber) == {pair[0]}
+    assert set(right.excess_tension_model_units_by_fiber) == {right_pair[1]}
+    assert left.active_fiber_count == left.traced_active_fiber_count == 1
+    assert right.active_fiber_count == right.traced_active_fiber_count == 1
+    assert left.net_force_model_units.norm() == pytest.approx(0.0, abs=1e-12)
+    assert right.net_force_model_units.norm() == pytest.approx(0.0, abs=1e-12)
+    assert left.net_torque_model_units_m.z == pytest.approx(
+        -right.net_torque_model_units_m.z, abs=1e-18
+    )
+    assert left.net_torque_model_units_m.z != 0.0
+    assert any(
+        value.norm() > 0.0
+        for value in left.replaced_axial_source_forces_model_units.values()
+    )
+    assert any(
+        value.norm() > 0.0
+        for value in left.spatial_node_forces_model_units.values()
+    )
+
+
+def test_attachment_lesion_blocks_force_without_erasing_muscle_activation():
+    model, force, pair = paired_force("right")
+    assert force.fibers[pair[1]].activation > 0.0
+    differential = model.paired_active_excess_forces(
+        force,
+        (pair,),
+        spatial_force_scale=0.3,
+        lesioned_fiber_ids=(pair[1],),
+    )
+    assert differential.active_fiber_count == 0
+    assert differential.net_force_model_units.norm() == 0.0
+
+
+def test_attachment_force_rejects_bad_pair_scale_and_lesion_identity():
+    model, force, pair = paired_force("left")
+    with pytest.raises(ValueError, match="positive"):
+        model.paired_active_excess_forces(
+            force, (pair,), spatial_force_scale=0.0
+        )
+    with pytest.raises(ValueError, match="mirrored"):
+        model.paired_active_excess_forces(
+            force, ((pair[1], pair[0]),), spatial_force_scale=0.3
+        )
+    with pytest.raises(ValueError, match="unknown fibers"):
+        model.paired_active_excess_forces(
+            force,
+            (pair,),
+            spatial_force_scale=0.3,
+            lesioned_fiber_ids=("unknown:fiber",),
         )

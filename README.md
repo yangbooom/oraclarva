@@ -264,6 +264,35 @@ See `docs/AXIAL_STEERING_V1.md`.
 
 ![Axial-v1 bilateral field steering](docs/assets/oraclarva_axial_steering_v1.gif)
 
+The following named-fiber mechanics stage removes that reference's reduced
+active-curvature constraint. It preserves the same field, sensory, premotor,
+shared MN, activation, axial, and contact paths, but compares each of 17
+mirrored non-transverse A1-A3 fiber pairs and replaces only the stronger-side
+active-tension excess with its full anatomy-derived attachment-line force.
+Uniform input therefore remains the frozen axial trajectory; no curve, yaw, or
+heading target enters the body. The one spatial force scale is
+`MODEL_FITTED`, coordinates are `ANATOMY_DERIVED`, force stays in model units,
+and no CSA/Fmax/newton claim is made.
+
+The checked 4 s gradients yield `+0.724/-0.726 deg` mirrored heading with a
+`0.00179 deg` mirror error. All 67,236 attachment-force samples per gradient
+retain an earlier field-to-sensory-to-premotor-to-MN trace, the maximum net
+force residual is `1.14e-13` model units, and planar bend is nonzero across
+T3-A1 through A3-A4 instead of being applied at one central hinge. A dedicated
+attachment lesion preserves the complete upstream neural/muscle response while
+removing the spatial force and heading change. Active curvature is verified
+off in every scenario, and `release_validated: false` remains mandatory. See
+`docs/NAMED_FIBER_STEERING_V1.md`.
+
+![Named-fiber attachment steering](docs/assets/oraclarva_named_fiber_steering_v1.gif)
+
+```bash
+python tools/export_named_fiber_steering_trajectory.py --check
+python tools/evaluate_named_fiber_steering.py --check
+python tools/render_named_fiber_steering_gif.py
+pytest -q tests/test_fiber_body.py tests/test_named_fiber_steering.py
+```
+
 Native and Android integration remain intentionally unchanged until this
 Python steering baseline is accepted.
 

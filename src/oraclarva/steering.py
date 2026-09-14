@@ -456,7 +456,15 @@ class AxialSteeringResult:
     minimum_head_tail_chord_ratio: float
     maximum_local_bend_deg: float
     integrated_local_bend_deg_s_by_joint: Mapping[str, float]
+    integrated_planar_bend_deg_s_by_joint: Mapping[str, float]
     integrated_lateral_slip_um: float
+    attachment_active_force_samples: int
+    attachment_traced_force_samples: int
+    maximum_attachment_net_force_model_units: float
+    maximum_abs_attachment_torque_model_units_m: float
+    attachment_torque_impulse_model_units_m_s: float
+    attachment_force_trace_examples: Mapping[str, Mapping[str, object]]
+    active_curvature_constraint_executed: bool
     trajectory_samples: tuple[dict[str, Any], ...]
     release_validated: bool = False
 
@@ -472,10 +480,32 @@ class AxialSteeringLarva:
         lesion_premotor_channels: Iterable[tuple[str, str]] = (),
         lesion_motor_channels: Iterable[tuple[str, str]] = (),
         lesion_muscle_channels: Iterable[tuple[str, str]] = (),
+        lesion_attachment_channels: Iterable[tuple[str, str]] = (),
         lesion_axial_node_ids: Iterable[str] = (),
     ) -> None:
         self.config = config or load_axial_steering_config()
         self.axial_config = load_axial_locomotion_config()
+        self.force_projection_mode = str(
+            self.config["mechanics"].get(
+                "force_projection_mode",
+                "local_tangent_axial_plus_active_curvature",
+            )
+        )
+        self.active_curvature_gain = float(
+            self.config["parameters"]["active_curvature_gain"]
+        )
+        if self.force_projection_mode not in {
+            "local_tangent_axial_plus_active_curvature",
+            "paired_activation_excess_attachment_3d",
+        }:
+            raise ValueError("unknown steering force projection mode")
+        if (
+            self.force_projection_mode == "paired_activation_excess_attachment_3d"
+            and self.active_curvature_gain != 0.0
+        ):
+            raise ValueError(
+                "named-attachment steering forbids active curvature"
+            )
         steering_segments = tuple(self.config["parameters"]["steering_segments"])
 
         def validate_sides(values: Iterable[str]) -> tuple[str, ...]:
@@ -508,6 +538,17 @@ class AxialSteeringLarva:
             lesion_motor_channels, "motor"
         )
         muscle_lesions = validate_channels(lesion_muscle_channels, "muscle")
+        attachment_lesions = validate_channels(
+            lesion_attachment_channels, "attachment"
+        )
+        if (
+            attachment_lesions
+            and self.force_projection_mode
+            != "paired_activation_excess_attachment_3d"
+        ):
+            raise ValueError(
+                "attachment lesions require named-attachment steering"
+            )
 
         projection = load_neural_muscle_identity_projection()
         mapping_circuit = BilateralSteeringCircuit(self.config, projection)
@@ -576,6 +617,42 @@ class AxialSteeringLarva:
         }
         if any(not values for values in self.axial_fibers_by_channel.values()):
             raise ValueError("steering requires paired non-transverse fibers")
+        geometry_by_identity = {
+            (item.segment_id, item.side, item.muscle_number): item
+            for item in self.coupling.geometries
+        }
+        geometry_by_id = {
+            item.fiber_id: item for item in self.coupling.geometries
+        }
+        attachment_pairs = []
+        for segment in steering_segments:
+            for muscle_number in sorted(
+                self.circuit.paired_muscle_numbers_by_segment[segment], key=int
+            ):
+                left = geometry_by_identity[(segment, "left", muscle_number)]
+                right = geometry_by_identity[(segment, "right", muscle_number)]
+                if left.spatial_group == "T":
+                    continue
+                attachment_pairs.append((left.fiber_id, right.fiber_id))
+        self.attachment_fiber_pairs = tuple(attachment_pairs)
+        if len(self.attachment_fiber_pairs) != 17:
+            raise ValueError(
+                "named-attachment steering requires 17 mirrored A1-A3 pairs"
+            )
+        attachment_channels = set(attachment_lesions)
+        self.attachment_fiber_lesions = tuple(
+            fiber_id
+            for pair in self.attachment_fiber_pairs
+            for fiber_id in pair
+            if (
+                geometry_by_id[fiber_id].segment_id,
+                geometry_by_id[fiber_id].side,
+            )
+            in attachment_channels
+        )
+        self.last_field_trace_by_fiber: dict[
+            str, Mapping[str, object]
+        ] = {}
 
     @staticmethod
     def _center(body: ScientificBody3D) -> Vec3:
@@ -594,7 +671,12 @@ class AxialSteeringLarva:
 
     def _shape_metrics(
         self,
-    ) -> tuple[float, float, Mapping[str, float]]:
+    ) -> tuple[
+        float,
+        float,
+        Mapping[str, float],
+        Mapping[str, float],
+    ]:
         lengths = [
             self.body.segment_length_m(index)
             for index in range(len(self.body.geometry))
@@ -609,6 +691,7 @@ class AxialSteeringLarva:
         ).norm()
         chord_ratio = chord / sum(lengths)
         local_bends = {}
+        planar_bends = {}
         for index in range(1, len(self.body.particles) - 1):
             first = (
                 self.body.particles[index].position
@@ -621,8 +704,25 @@ class AxialSteeringLarva:
             angle = degrees(acos(min(1.0, max(-1.0, first.dot(second)))))
             left_segment = self.body.geometry[index - 1].id
             right_segment = self.body.geometry[index].id
-            local_bends[f"{left_segment}-{right_segment}"] = angle
-        return maximum_extension, chord_ratio, local_bends
+            joint = f"{left_segment}-{right_segment}"
+            local_bends[joint] = angle
+            first_xy = Vec3(first.x, first.y, 0.0)
+            second_xy = Vec3(second.x, second.y, 0.0)
+            if first_xy.norm() <= 1e-12 or second_xy.norm() <= 1e-12:
+                planar_bends[joint] = 0.0
+            else:
+                first_xy = first_xy.normalized()
+                second_xy = second_xy.normalized()
+                planar_bends[joint] = abs(
+                    degrees(
+                        atan2(
+                            first_xy.x * second_xy.y
+                            - first_xy.y * second_xy.x,
+                            first_xy.dot(second_xy),
+                        )
+                    )
+                )
+        return maximum_extension, chord_ratio, local_bends, planar_bends
 
     def run(
         self,
@@ -669,6 +769,10 @@ class AxialSteeringLarva:
             f"{self.body.geometry[index - 1].id}-{self.body.geometry[index].id}": 0.0
             for index in range(1, len(self.body.geometry))
         }
+        integrated_planar_bend = {
+            f"{self.body.geometry[index - 1].id}-{self.body.geometry[index].id}": 0.0
+            for index in range(1, len(self.body.geometry))
+        }
         integrated_slip = 0.0
         all_traced = True
         steering_active_force_samples = 0
@@ -678,6 +782,13 @@ class AxialSteeringLarva:
             segment: {side: 0.0 for side in SIDES}
             for segment in AXIAL_SEGMENTS
         }
+        attachment_active_force_samples = 0
+        attachment_traced_force_samples = 0
+        maximum_attachment_net_force = 0.0
+        maximum_abs_attachment_torque = 0.0
+        attachment_torque_impulse = 0.0
+        attachment_trace_examples: dict[str, Mapping[str, object]] = {}
+        last_attachment_frame = None
         steering_motor_counts = dict.fromkeys(
             self.circuit.motor_source_ids, 0
         )
@@ -692,7 +803,7 @@ class AxialSteeringLarva:
         ) -> dict[str, Any]:
             forward = self._anatomical_forward_xy(self.body)
             heading = degrees(atan2(forward.y, forward.x))
-            return {
+            sample = {
                 "time_s": round(time_s, 9),
                 "nodes_um": [
                     [
@@ -720,6 +831,24 @@ class AxialSteeringLarva:
                     for segment in AXIAL_SEGMENTS
                 },
             }
+            if (
+                self.force_projection_mode
+                == "paired_activation_excess_attachment_3d"
+            ):
+                sample.update(
+                    {
+                        "attachment_active_fiber_count": (
+                            0 if last_attachment_frame is None
+                            else last_attachment_frame.active_fiber_count
+                        ),
+                        "attachment_torque_z_model_units_m": round(
+                            0.0 if last_attachment_frame is None
+                            else last_attachment_frame.net_torque_model_units_m.z,
+                            15,
+                        ),
+                    }
+                )
+            return sample
 
         first_sample = BilateralFieldSample.from_body(self.body, field, 0.0)
         if stride is not None:
@@ -786,9 +915,64 @@ class AxialSteeringLarva:
                             output.source_node_id
                         )
                         if trace is not None:
+                            self.last_field_trace_by_fiber[
+                                output.fiber_id
+                            ] = trace
                             side = str(trace["direction"]).removeprefix("steering_")
                             key = f"{side}:{trace['segment_id']}"
                             trace_examples.setdefault(key, trace)
+
+            last_attachment_frame = None
+            if (
+                self.force_projection_mode
+                == "paired_activation_excess_attachment_3d"
+            ):
+                last_attachment_frame = (
+                    self.coupling.paired_active_excess_forces(
+                        force,
+                        self.attachment_fiber_pairs,
+                        spatial_force_scale=float(
+                            self.config["parameters"][
+                                "spatial_attachment_force_scale"
+                            ]
+                        ),
+                        lesioned_fiber_ids=self.attachment_fiber_lesions,
+                    )
+                )
+                attachment_active_force_samples += (
+                    last_attachment_frame.active_fiber_count
+                )
+                maximum_attachment_net_force = max(
+                    maximum_attachment_net_force,
+                    last_attachment_frame.net_force_model_units.norm(),
+                )
+                attachment_torque = (
+                    last_attachment_frame.net_torque_model_units_m.z
+                )
+                maximum_abs_attachment_torque = max(
+                    maximum_abs_attachment_torque, abs(attachment_torque)
+                )
+                attachment_torque_impulse += attachment_torque * dt
+                for fiber_id in (
+                    last_attachment_frame.excess_tension_model_units_by_fiber
+                ):
+                    output = force.fibers[fiber_id]
+                    trace = self.last_field_trace_by_fiber.get(fiber_id)
+                    if (
+                        trace is not None
+                        and str(trace["sensor_node_id"]).startswith(
+                            "field_sensory:"
+                        )
+                        and float(trace["body_state_time_s"])
+                        <= float(trace["sensor_spike_time_s"])
+                        < float(trace["premotor_spike_time_s"])
+                        < float(trace["motor_spike_time_s"])
+                        < time_s
+                    ):
+                        attachment_traced_force_samples += 1
+                        attachment_trace_examples.setdefault(
+                            fiber_id, {**trace, "fiber_id": fiber_id}
+                        )
 
             side_activation: dict[str, tuple[float, float]] = {}
             for segment in AXIAL_SEGMENTS:
@@ -829,7 +1013,17 @@ class AxialSteeringLarva:
             for index, raw_force in force.node_forces_model_units.items():
                 tangent = self.body.node_tangent_xy(index)
                 axial_force = tangent * raw_force.dot(tangent)
-                accelerations[index] = axial_force * acceleration_scale
+                applied_force = axial_force
+                if last_attachment_frame is not None:
+                    replaced = last_attachment_frame.replaced_axial_source_forces_model_units[
+                        index
+                    ]
+                    replaced_axial = tangent * replaced.dot(tangent)
+                    spatial = last_attachment_frame.spatial_node_forces_model_units[
+                        index
+                    ]
+                    applied_force = axial_force - replaced_axial + spatial
+                accelerations[index] = applied_force * acceleration_scale
             last_retention, _ = self.axial._contact_retention(contact_activation)
             self.body.step(
                 dt,
@@ -838,9 +1032,7 @@ class AxialSteeringLarva:
                 external_accelerations_m_s2=accelerations,
                 velocity_retention=float(coupling["body_velocity_retention"]),
                 ground_velocity_retention_by_node=last_retention,
-                active_curvature_gain=float(
-                    self.config["parameters"]["active_curvature_gain"]
-                ),
+                active_curvature_gain=self.active_curvature_gain,
                 passive_planar_bending_stiffness_ratio=float(
                     coupling["passive_planar_bending_stiffness_ratio"]
                 ),
@@ -871,12 +1063,13 @@ class AxialSteeringLarva:
             )
             minimum_retention = min(minimum_retention, *last_retention.values())
             maximum_retention = max(maximum_retention, *last_retention.values())
-            extension, chord_ratio, local_bends = self._shape_metrics()
+            extension, chord_ratio, local_bends, planar_bends = self._shape_metrics()
             maximum_extension = max(maximum_extension, extension)
             minimum_chord_ratio = min(minimum_chord_ratio, chord_ratio)
             maximum_bend = max(maximum_bend, *local_bends.values())
             for joint, bend in local_bends.items():
                 integrated_local_bend[joint] += bend * dt
+                integrated_planar_bend[joint] += planar_bends[joint] * dt
             if stride is not None and (
                 (step + 1) % stride == 0 or step + 1 == steps
             ):
@@ -915,7 +1108,11 @@ class AxialSteeringLarva:
             },
             axial_spike_counts=dict(self.protocol.spike_counts),
             contact_retention_range=(minimum_retention, maximum_retention),
-            all_active_forces_sensory_traced=all_traced,
+            all_active_forces_sensory_traced=(
+                all_traced
+                and attachment_active_force_samples
+                == attachment_traced_force_samples
+            ),
             steering_active_force_samples=steering_active_force_samples,
             steering_traced_force_samples=steering_traced_force_samples,
             steering_causal_trace_examples=trace_examples,
@@ -923,7 +1120,19 @@ class AxialSteeringLarva:
             minimum_head_tail_chord_ratio=minimum_chord_ratio,
             maximum_local_bend_deg=maximum_bend,
             integrated_local_bend_deg_s_by_joint=integrated_local_bend,
+            integrated_planar_bend_deg_s_by_joint=integrated_planar_bend,
             integrated_lateral_slip_um=integrated_slip,
+            attachment_active_force_samples=attachment_active_force_samples,
+            attachment_traced_force_samples=attachment_traced_force_samples,
+            maximum_attachment_net_force_model_units=(
+                maximum_attachment_net_force
+            ),
+            maximum_abs_attachment_torque_model_units_m=(
+                maximum_abs_attachment_torque
+            ),
+            attachment_torque_impulse_model_units_m_s=attachment_torque_impulse,
+            attachment_force_trace_examples=attachment_trace_examples,
+            active_curvature_constraint_executed=(self.active_curvature_gain > 0.0),
             trajectory_samples=tuple(samples),
         )
 

@@ -1,0 +1,127 @@
+{
+  "bend_distribution_gates": {
+    "adjacent_pivot_bend_is_bounded": true,
+    "all_four_pivot_joints_active": true,
+    "dominant_joint_is_T3_A1": true,
+    "mirrored_planar_bend_distribution": true,
+    "no_single_joint_hinge": true,
+    "passive_propagation_is_bounded": true
+  },
+  "causal_gates": {
+    "negative_all_17_fiber_pairs_witnessed": true,
+    "negative_all_attachment_forces_traced": true,
+    "negative_attachment_forces_exist": true,
+    "positive_all_17_fiber_pairs_witnessed": true,
+    "positive_all_attachment_forces_traced": true,
+    "positive_attachment_forces_exist": true
+  },
+  "claim_limit": "Connectome-driven embodied steering research approximation with anatomy-derived normalized attachment lines and model-fitted force scale; not measured L1 attachment mechanics or independently validated biological steering.",
+  "comparisons": {
+    "mirror_axial_position": true,
+    "mirror_heading": true,
+    "mirror_lateral_position": true,
+    "negative_forward_progress": true,
+    "negative_gradient_heading": true,
+    "positive_forward_progress": true,
+    "positive_gradient_heading": true,
+    "uniform_activation_trajectory": true,
+    "uniform_contact_trajectory": true,
+    "uniform_heading": true,
+    "uniform_node_trajectory": true
+  },
+  "force_gates": {
+    "mirrored_attachment_moment": true,
+    "negative_attachment_moment_exists": true,
+    "negative_equal_opposite_net_force": true,
+    "positive_attachment_moment_exists": true,
+    "positive_equal_opposite_net_force": true,
+    "uniform_has_no_attachment_excess": true
+  },
+  "generated_from": {
+    "config_sha256": "80b492dc02bb753f81688a7e06e2d7179b12ec5204b67a92504507cbd4948054",
+    "trajectory": "data/trajectories/l1_named_fiber_steering_v1.json",
+    "trajectory_sha256": "08ae91e59b5a1294edfa69805016f808a836d89798896c4b76e4936f0589628e"
+  },
+  "independent_biological_validation": false,
+  "invariant_gates": {
+    "all_17_attachment_pairs_present": true,
+    "attachment_coordinates_are_not_measured": true,
+    "attachment_force_is_not_newtons": true,
+    "no_action_command": true,
+    "no_active_curvature_constraint": true,
+    "no_authored_translation": true,
+    "no_behavior_fsm": true,
+    "no_curvature_input_to_body": true,
+    "no_external_policy": true,
+    "no_target_heading_input": true,
+    "no_yaw_input_to_body": true,
+    "release_not_validated": true,
+    "shared_MN_nodes_not_duplicated": true,
+    "source_hashes_current": true
+  },
+  "lesion_gates": {
+    "attachment_lesion_preserves_field_driven_muscle_force": true,
+    "attachment_lesion_removes_heading_change": true,
+    "attachment_lesion_removes_spatial_force": true,
+    "motor_lesion_changes_mechanical_response": true,
+    "motor_lesion_preserves_premotor_spikes": true,
+    "motor_lesion_preserves_sensory_spikes": true,
+    "motor_lesion_removes_field_driven_muscle_force": true,
+    "motor_lesion_removes_target_MN_spikes": true,
+    "sensory_lesion_removes_spatial_force": true,
+    "sensory_lesion_restores_uniform_axial_path": true,
+    "sensory_lesion_restores_uniform_heading": true
+  },
+  "model_id": "dmel_l1_named_fiber_steering_v1",
+  "observed": {
+    "active_pivot_joints": [
+      "T3-A1",
+      "A1-A2",
+      "A2-A3",
+      "A3-A4"
+    ],
+    "dominant_pivot_joint": "T3-A1",
+    "maximum_adjacent_pivot_bend_jump_fraction": 0.4635921904734616,
+    "maximum_attachment_net_force_model_units": 1.1413006294140622e-13,
+    "maximum_mirror_planar_bend_error_deg_s": 2.570848604660416e-05,
+    "mirror_heading_error_deg": 0.0017854340535166102,
+    "negative_attachment_torque_impulse_model_units_m_s": -0.005880189586968076,
+    "negative_heading_change_deg": -0.7260949648425878,
+    "outside_pivot_bend_fraction": 0.47802121426027055,
+    "positive_attachment_torque_impulse_model_units_m_s": 0.005880189544512855,
+    "positive_heading_change_deg": 0.7243095307890712,
+    "single_joint_bend_fraction": 0.4006156735115679,
+    "steering_excess_planar_bend_deg_s_by_joint": {
+      "A1-A2": 0.011636271340106145,
+      "A2-A3": 0.011033326530876627,
+      "A3-A4": 0.009786491718234407,
+      "A4-A5": 0.006953354236423534,
+      "A5-A6": 0.004993297894849876,
+      "A6-A7": 0.0017990455110836723,
+      "A7-A8": 0.00024417879461981673,
+      "PSC-T1": 0.011527333619872685,
+      "T1-T2": 0.00674923854923345,
+      "T2-T3": 0.017322526127788326,
+      "T3-A1": 0.021692956615185985
+    },
+    "uniform_axial_regression": {
+      "maximum_contact_retention_error": 0.0,
+      "maximum_node_position_error_um": 4.6361492422875017e-10,
+      "maximum_segment_activation_error": 0.0
+    }
+  },
+  "passed": true,
+  "release_validated": false,
+  "schema": "oraclarva.named_fiber_steering_validation.v1",
+  "shape_gates": {
+    "negative_head_tail_chord": true,
+    "negative_integrated_lateral_slip": true,
+    "negative_local_bend": true,
+    "negative_segment_extension": true,
+    "positive_head_tail_chord": true,
+    "positive_integrated_lateral_slip": true,
+    "positive_local_bend": true,
+    "positive_segment_extension": true
+  },
+  "status": "engineering_gates_passed"
+}
