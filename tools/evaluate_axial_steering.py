@@ -106,7 +106,10 @@ def build_evaluation() -> dict[str, Any]:
             and scenario["all_active_forces_sensory_traced"] is True
         )
         causal_gates[f"{name}_ordered_trace"] = (
-            len(traces) == 2 and all(ordered_trace(trace) for trace in traces.values())
+            len(traces) == len(config["parameters"]["steering_segments"])
+            and all(
+                ordered_trace(trace) for trace in traces.values()
+            )
         )
 
     shape_gates = {}
@@ -126,10 +129,68 @@ def build_evaluation() -> dict[str, Any]:
             "integrated_lateral_slip_um"
         ] <= gates["maximum_integrated_lateral_slip_um"]
 
+    pivot = artifact["anterior_pivot"]
+    joint_maps = {
+        name: scenario["integrated_local_bend_deg_s_by_joint"]
+        for name, scenario in (
+            ("uniform", uniform),
+            ("positive", positive),
+            ("negative", negative),
+        )
+    }
+    if len({frozenset(values) for values in joint_maps.values()}) != 1:
+        raise RuntimeError("steering joint-bend labels differ by scenario")
+    excess_bend = {
+        joint: max(
+            0.0,
+            0.5
+            * (joint_maps["positive"][joint] + joint_maps["negative"][joint])
+            - joint_maps["uniform"][joint],
+        )
+        for joint in joint_maps["uniform"]
+    }
+    total_excess_bend = sum(excess_bend.values())
+    if total_excess_bend <= 0.0:
+        raise RuntimeError("steering artifact lacks excess lateral bending")
+    peak_excess_bend = max(excess_bend.values())
+    dominant_joint = max(excess_bend, key=excess_bend.__getitem__)
+    pivot_joints = tuple(pivot["mechanical_joint_support"])
+    active_pivot_joints = list(
+        joint
+        for joint in pivot_joints
+        if excess_bend[joint]
+        >= gates["bend_activity_relative_threshold"] * peak_excess_bend
+    )
+    outside_fraction = sum(
+        value for joint, value in excess_bend.items() if joint not in pivot_joints
+    ) / total_excess_bend
+    adjacent_jump_fraction = max(
+        abs(excess_bend[left] - excess_bend[right])
+        for left, right in zip(pivot_joints[:-1], pivot_joints[1:], strict=True)
+    ) / peak_excess_bend
+    mirror_bend_error = max(
+        abs(joint_maps["positive"][joint] - joint_maps["negative"][joint])
+        for joint in joint_maps["uniform"]
+    )
+    bend_distribution_gates = {
+        "all_pivot_joints_active": len(active_pivot_joints)
+        >= gates["minimum_active_pivot_joint_count"],
+        "dominant_joint_adjacent_to_A1": dominant_joint
+        in pivot["allowed_dominant_joints"],
+        "no_single_joint_hinge": peak_excess_bend / total_excess_bend
+        <= gates["maximum_single_joint_bend_fraction"],
+        "bend_confined_to_anterior_pivot": outside_fraction
+        <= gates["maximum_outside_pivot_bend_fraction"],
+        "adjacent_pivot_bend_is_smooth": adjacent_jump_fraction
+        <= gates["maximum_adjacent_pivot_bend_jump_fraction"],
+        "mirrored_joint_bend_distribution": mirror_bend_error
+        <= gates["maximum_mirror_integrated_bend_error_deg_s"],
+    }
+
     intact_heading = abs(positive["heading_change_deg"])
     sensory = lesions["right_sensory"]
-    motor = lesions["right_A1_A2_motor"]
-    muscle = lesions["right_A1_A2_muscle"]
+    motor = lesions["right_A1_A3_motor"]
+    muscle = lesions["right_A1_A3_muscle"]
     intact_steering_motor_ids = {
         node_id
         for node_id, count in positive["steering_spike_counts"].items()
@@ -188,6 +249,9 @@ def build_evaluation() -> dict[str, Any]:
         "shared_MN_nodes_not_duplicated": (
             artifact["duplicated_motor_neuron_nodes"] is False
         ),
+        "anterior_pivot_contract_current": (
+            pivot == config["topology"]["anterior_pivot"]
+        ),
         "release_not_validated": artifact["release_validated"] is False,
         "shared_axial_config_is_frozen": (
             generated["axial_config_sha256"] == sha256(axial_config)
@@ -202,6 +266,7 @@ def build_evaluation() -> dict[str, Any]:
             comparisons,
             causal_gates,
             shape_gates,
+            bend_distribution_gates,
             lesion_gates,
             invariant_gates,
         )
@@ -231,10 +296,23 @@ def build_evaluation() -> dict[str, Any]:
                 positive["displacement_y_um"] + negative["displacement_y_um"]
             ),
             "uniform_axial_regression": regression,
+            "steering_excess_integrated_bend_deg_s_by_joint": excess_bend,
+            "active_pivot_joints": active_pivot_joints,
+            "dominant_pivot_joint": dominant_joint,
+            "single_joint_bend_fraction": peak_excess_bend
+            / total_excess_bend,
+            "outside_pivot_bend_fraction": outside_fraction,
+            "maximum_adjacent_pivot_bend_jump_fraction": (
+                adjacent_jump_fraction
+            ),
+            "maximum_mirror_integrated_bend_error_deg_s": (
+                mirror_bend_error
+            ),
         },
         "comparisons": comparisons,
         "causal_gates": causal_gates,
         "shape_gates": shape_gates,
+        "bend_distribution_gates": bend_distribution_gates,
         "lesion_gates": lesion_gates,
         "invariant_gates": invariant_gates,
         "claim_limit": config["validation"]["claim_limit"],

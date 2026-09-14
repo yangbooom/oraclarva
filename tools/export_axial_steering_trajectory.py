@@ -59,6 +59,9 @@ def result_mapping(result, *, include_trajectory: bool) -> dict[str, Any]:
         ),
         "minimum_head_tail_chord_ratio": result.minimum_head_tail_chord_ratio,
         "maximum_local_bend_deg": result.maximum_local_bend_deg,
+        "integrated_local_bend_deg_s_by_joint": (
+            result.integrated_local_bend_deg_s_by_joint
+        ),
         "integrated_lateral_slip_um": result.integrated_lateral_slip_um,
         "release_validated": result.release_validated,
     }
@@ -142,11 +145,19 @@ def build_artifact() -> dict[str, Any]:
         "right_sensory": {
             "lesion_sensory_sides": ("right",),
         },
-        "right_A1_A2_motor": {
-            "lesion_motor_channels": (("A1", "right"), ("A2", "right")),
+        "right_A1_A3_motor": {
+            "lesion_motor_channels": (
+                ("A1", "right"),
+                ("A2", "right"),
+                ("A3", "right"),
+            ),
         },
-        "right_A1_A2_muscle": {
-            "lesion_muscle_channels": (("A1", "right"), ("A2", "right")),
+        "right_A1_A3_muscle": {
+            "lesion_muscle_channels": (
+                ("A1", "right"),
+                ("A2", "right"),
+                ("A3", "right"),
+            ),
         },
     }
     lesions = {}
@@ -189,6 +200,7 @@ def build_artifact() -> dict[str, Any]:
         "target_heading_input": False,
         "yaw_input_to_body": False,
         "duplicated_motor_neuron_nodes": False,
+        "anterior_pivot": config["topology"]["anterior_pivot"],
         "body_segment_ids": [
             item.id for item in larvae["uniform"].body.geometry
         ],

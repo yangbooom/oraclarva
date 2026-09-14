@@ -210,7 +210,7 @@ def render_frame(artifact, body, frame_index):
     label(
         draw,
         (41, 60),
-        "WORLD FIELD -> L/R HEAD SENSORS -> LIF -> SIDE MNs -> NAMED FIBERS -> 3D BODY + CONTACT",
+        "WORLD FIELD -> L/R HEAD SENSORS -> LIF -> A1-A3 MNs -> NAMED FIBERS -> 3D BODY + CONTACT",
         (151, 174, 172),
         font(FONT_MONO, 9),
     )
@@ -255,6 +255,14 @@ def render_frame(artifact, body, frame_index):
     label(draw, (40, 590), f"t = {time_s:04.2f} s", (230, 213, 190), font(FONT_MONO, 10))
     label(
         draw,
+        (640, 590),
+        "DISTRIBUTED PIVOT T3-A3 / L2 RELATIVE SUPPORT ONLY",
+        (154, 205, 193),
+        font(FONT_MONO, 9),
+        anchor="ma",
+    )
+    label(
+        draw,
         (40, 623),
         f"final mirrored yaw  {positive['heading_change_deg']:+.2f} / {negative['heading_change_deg']:+.2f} deg",
         (226, 187, 128),
@@ -296,6 +304,9 @@ def render(output: Path) -> None:
         or artifact["action_command"] is not False
         or artifact["target_heading_input"] is not False
         or artifact["yaw_input_to_body"] is not False
+        or artifact["anterior_pivot"]["mechanical_joint_support"]
+        != ["T3-A1", "A1-A2", "A2-A3", "A3-A4"]
+        or artifact["anterior_pivot"]["published_stage"] != "L2"
         or positive["heading_change_deg"] >= 0.0
         or negative["heading_change_deg"] <= 0.0
         or positive["all_active_forces_sensory_traced"] is not True

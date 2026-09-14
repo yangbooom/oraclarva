@@ -66,6 +66,7 @@ def load_axial_steering_config(
         "environment_scalar_field",
     ]
     topology = raw.get("topology", {})
+    pivot = topology.get("anterior_pivot", {})
     if (
         raw.get("causal_contract") != expected_contract
         or topology.get("provenance") != "ANATOMY_DERIVED"
@@ -77,6 +78,19 @@ def load_axial_steering_config(
         or topology.get("shared_axial_protocol") is not True
         or topology.get("shared_motor_and_muscle_atlas") is not True
         or topology.get("duplicated_motor_neuron_nodes") is not False
+        or pivot.get("published_stage") != "L2"
+        or tuple(pivot.get("published_segment_support", ()))
+        != ("T3", "A1", "A2", "A3")
+        or pivot.get("published_peak_segment") != "A1"
+        or pivot.get("published_support_provenance")
+        != "MEASURED_PUBLISHED"
+        or tuple(pivot.get("modeled_motor_segments", ()))
+        != ("A1", "A2", "A3")
+        or tuple(pivot.get("mechanical_joint_support", ()))
+        != ("T3-A1", "A1-A2", "A2-A3", "A3-A4")
+        or tuple(pivot.get("allowed_dominant_joints", ()))
+        != ("T3-A1", "A1-A2")
+        or pivot.get("numeric_profile_provenance") != "MODEL_FITTED"
     ):
         raise ValueError("axial-steering causal topology is invalid")
     parameters = raw.get("parameters", {})
@@ -95,14 +109,22 @@ def load_axial_steering_config(
         for name in positive
     ):
         raise ValueError("axial-steering parameters must be finite and positive")
+    expected_segments = ("A1", "A2", "A3")
+    current_scales = parameters.get("motor_current_scale_by_segment", {})
     if (
         not 0.0 <= float(parameters.get("contrast_threshold", -1.0)) < 1.0
         or not 0.0 <= float(parameters.get("default_field_baseline", -1.0)) <= 1.0
-        or tuple(parameters.get("steering_segments", ())) != ("A1", "A2")
-        or set(parameters.get("premotor_delay_s_by_segment", {})) != {"A1", "A2"}
+        or tuple(parameters.get("steering_segments", ())) != expected_segments
+        or set(parameters.get("premotor_delay_s_by_segment", {}))
+        != set(expected_segments)
+        or set(current_scales) != set(expected_segments)
         or any(
             float(value) < 0.0
             for value in parameters["premotor_delay_s_by_segment"].values()
+        )
+        or any(
+            not isfinite(float(value)) or not 0.0 < float(value) <= 1.0
+            for value in current_scales.values()
         )
     ):
         raise ValueError("axial-steering bounded parameters are invalid")
@@ -333,8 +355,12 @@ class BilateralSteeringCircuit:
         ]
         motor_current: dict[str, float] = {}
         motor_origins: dict[str, Mapping[str, object]] = {}
+        current_scales = p["motor_current_scale_by_segment"]
         for _, source, origin in due:
-            motor_current[source] = float(p["motor_current_a"])
+            segment = str(origin["segment_id"])
+            motor_current[source] = (
+                float(p["motor_current_a"]) * float(current_scales[segment])
+            )
             motor_origins[source] = origin
 
         threshold = float(p["contrast_threshold"])
@@ -429,6 +455,7 @@ class AxialSteeringResult:
     maximum_segment_extension_fraction: float
     minimum_head_tail_chord_ratio: float
     maximum_local_bend_deg: float
+    integrated_local_bend_deg_s_by_joint: Mapping[str, float]
     integrated_lateral_slip_um: float
     trajectory_samples: tuple[dict[str, Any], ...]
     release_validated: bool = False
@@ -565,7 +592,9 @@ class AxialSteeringLarva:
         planar = Vec3(vector.x, vector.y, 0.0)
         return planar.normalized()
 
-    def _shape_metrics(self) -> tuple[float, float, float]:
+    def _shape_metrics(
+        self,
+    ) -> tuple[float, float, Mapping[str, float]]:
         lengths = [
             self.body.segment_length_m(index)
             for index in range(len(self.body.geometry))
@@ -579,7 +608,7 @@ class AxialSteeringLarva:
             - self.body.particles[-1].position
         ).norm()
         chord_ratio = chord / sum(lengths)
-        maximum_bend = 0.0
+        local_bends = {}
         for index in range(1, len(self.body.particles) - 1):
             first = (
                 self.body.particles[index].position
@@ -590,8 +619,10 @@ class AxialSteeringLarva:
                 - self.body.particles[index].position
             ).normalized()
             angle = degrees(acos(min(1.0, max(-1.0, first.dot(second)))))
-            maximum_bend = max(maximum_bend, angle)
-        return maximum_extension, chord_ratio, maximum_bend
+            left_segment = self.body.geometry[index - 1].id
+            right_segment = self.body.geometry[index].id
+            local_bends[f"{left_segment}-{right_segment}"] = angle
+        return maximum_extension, chord_ratio, local_bends
 
     def run(
         self,
@@ -634,6 +665,10 @@ class AxialSteeringLarva:
         maximum_extension = 0.0
         minimum_chord_ratio = 1.0
         maximum_bend = 0.0
+        integrated_local_bend = {
+            f"{self.body.geometry[index - 1].id}-{self.body.geometry[index].id}": 0.0
+            for index in range(1, len(self.body.geometry))
+        }
         integrated_slip = 0.0
         all_traced = True
         steering_active_force_samples = 0
@@ -836,10 +871,12 @@ class AxialSteeringLarva:
             )
             minimum_retention = min(minimum_retention, *last_retention.values())
             maximum_retention = max(maximum_retention, *last_retention.values())
-            extension, chord_ratio, bend = self._shape_metrics()
+            extension, chord_ratio, local_bends = self._shape_metrics()
             maximum_extension = max(maximum_extension, extension)
             minimum_chord_ratio = min(minimum_chord_ratio, chord_ratio)
-            maximum_bend = max(maximum_bend, bend)
+            maximum_bend = max(maximum_bend, *local_bends.values())
+            for joint, bend in local_bends.items():
+                integrated_local_bend[joint] += bend * dt
             if stride is not None and (
                 (step + 1) % stride == 0 or step + 1 == steps
             ):
@@ -885,6 +922,7 @@ class AxialSteeringLarva:
             maximum_segment_extension_fraction=maximum_extension,
             minimum_head_tail_chord_ratio=minimum_chord_ratio,
             maximum_local_bend_deg=maximum_bend,
+            integrated_local_bend_deg_s_by_joint=integrated_local_bend,
             integrated_lateral_slip_um=integrated_slip,
             trajectory_samples=tuple(samples),
         )

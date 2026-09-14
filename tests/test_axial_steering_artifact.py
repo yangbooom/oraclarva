@@ -31,6 +31,18 @@ def test_checked_trajectory_hashes_sources_and_preserves_claim_boundary():
     assert artifact["target_heading_input"] is False
     assert artifact["yaw_input_to_body"] is False
     assert artifact["duplicated_motor_neuron_nodes"] is False
+    assert artifact["anterior_pivot"] == {
+        "published_stage": "L2",
+        "published_segment_support": ["T3", "A1", "A2", "A3"],
+        "published_peak_segment": "A1",
+        "published_support_provenance": "MEASURED_PUBLISHED",
+        "modeled_motor_segments": ["A1", "A2", "A3"],
+        "mechanical_joint_support": [
+            "T3-A1", "A1-A2", "A2-A3", "A3-A4",
+        ],
+        "allowed_dominant_joints": ["T3-A1", "A1-A2"],
+        "numeric_profile_provenance": "MODEL_FITTED",
+    }
     assert generated["config_sha256"] == sha256(default_axial_steering_path())
     assert generated["axial_config_sha256"] == sha256(
         default_axial_locomotion_path()
@@ -39,6 +51,10 @@ def test_checked_trajectory_hashes_sources_and_preserves_claim_boundary():
     assert artifact["mapped_fiber_count"] == 146
     assert artifact["paired_muscle_numbers_by_segment"]["A1"] == [
         "1", "10", "20"
+    ]
+    assert artifact["paired_muscle_numbers_by_segment"]["A3"] == [
+        "1", "5", "8", "9", "10", "11", "18",
+        "19", "20", "21", "22", "23", "24",
     ]
     assert set(artifact["steering_motor_source_count_by_channel"].values()) == {
         3, 13
@@ -52,7 +68,7 @@ def test_checked_trajectory_contains_closed_loop_and_lesion_evidence():
         "uniform", "positive_y_gradient", "negative_y_gradient"
     }
     assert set(artifact["lesions"]) == {
-        "right_sensory", "right_A1_A2_motor", "right_A1_A2_muscle"
+        "right_sensory", "right_A1_A3_motor", "right_A1_A3_muscle"
     }
     assert artifact["uniform_axial_regression"][
         "maximum_node_position_error_um"
@@ -74,6 +90,10 @@ def test_checked_trajectory_contains_closed_loop_and_lesion_evidence():
         ]
         assert scenario["all_active_forces_sensory_traced"] is True
         assert len(scenario["trajectory_samples"]) == 401
+        assert set(scenario["integrated_local_bend_deg_s_by_joint"]) == {
+            "PSC-T1", "T1-T2", "T2-T3", "T3-A1", "A1-A2", "A2-A3",
+            "A3-A4", "A4-A5", "A5-A6", "A6-A7", "A7-A8",
+        }
 
 
 def test_checked_validation_is_current_and_every_engineering_gate_passes():
@@ -88,7 +108,7 @@ def test_checked_validation_is_current_and_every_engineering_gate_passes():
     assert report["independent_biological_validation"] is False
     for group in (
         "comparisons", "causal_gates", "shape_gates",
-        "lesion_gates", "invariant_gates",
+        "bend_distribution_gates", "lesion_gates", "invariant_gates",
     ):
         assert all(report[group].values()), group
 

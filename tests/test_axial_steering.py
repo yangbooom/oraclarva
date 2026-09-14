@@ -62,14 +62,22 @@ def sensory_lesion_result():
 @lru_cache(maxsize=1)
 def motor_lesion_result():
     return AxialSteeringLarva(
-        lesion_motor_channels=(("A1", "right"), ("A2", "right"))
+        lesion_motor_channels=(
+            ("A1", "right"),
+            ("A2", "right"),
+            ("A3", "right"),
+        )
     ).run(field(GRADIENT), duration_s=DURATION_S, record_trajectory_interval_s=None)
 
 
 @lru_cache(maxsize=1)
 def muscle_lesion_result():
     return AxialSteeringLarva(
-        lesion_muscle_channels=(("A1", "right"), ("A2", "right"))
+        lesion_muscle_channels=(
+            ("A1", "right"),
+            ("A2", "right"),
+            ("A3", "right"),
+        )
     ).run(field(GRADIENT), duration_s=DURATION_S, record_trajectory_interval_s=None)
 
 
@@ -86,6 +94,16 @@ def test_config_fails_closed_on_behavior_and_claim_boundary():
     assert topology["yaw_input_to_body"] is False
     assert topology["shared_axial_protocol"] is True
     assert topology["duplicated_motor_neuron_nodes"] is False
+    assert topology["anterior_pivot"] == {
+        "published_stage": "L2",
+        "published_segment_support": ["T3", "A1", "A2", "A3"],
+        "published_peak_segment": "A1",
+        "published_support_provenance": "MEASURED_PUBLISHED",
+        "modeled_motor_segments": ["A1", "A2", "A3"],
+        "mechanical_joint_support": ["T3-A1", "A1-A2", "A2-A3", "A3-A4"],
+        "allowed_dominant_joints": ["T3-A1", "A1-A2"],
+        "numeric_profile_provenance": "MODEL_FITTED",
+    }
     assert mechanics["yaw_angle_input"] is False
     assert mechanics["authored_translation"] is False
 
@@ -111,8 +129,12 @@ def test_circuit_uses_only_mirror_paired_named_muscle_outputs():
             "1", "5", "8", "9", "10", "11", "18",
             "19", "20", "21", "22", "23", "24",
         ),
+        "A3": (
+            "1", "5", "8", "9", "10", "11", "18",
+            "19", "20", "21", "22", "23", "24",
+        ),
     }
-    for segment in ("A1", "A2"):
+    for segment in ("A1", "A2", "A3"):
         assert len(circuit.motor_sources_by_channel[(segment, "left")]) == len(
             circuit.motor_sources_by_channel[(segment, "right")]
         )
@@ -190,7 +212,8 @@ def test_all_steering_forces_have_ordered_field_to_muscle_trace(result):
     assert value.steering_traced_force_samples == value.steering_active_force_samples
     expected_side = "right" if value.heading_change_deg < 0.0 else "left"
     assert set(value.steering_causal_trace_examples) == {
-        f"{expected_side}:A1", f"{expected_side}:A2"
+        f"{expected_side}:A1", f"{expected_side}:A2",
+        f"{expected_side}:A3",
     }
     for trace in value.steering_causal_trace_examples.values():
         assert (
@@ -217,6 +240,52 @@ def test_steering_passes_distortion_and_slip_rejection_gates(result):
     assert value.integrated_lateral_slip_um <= gates[
         "maximum_integrated_lateral_slip_um"
     ]
+
+
+def test_steering_bend_is_distributed_across_the_anterior_pivot():
+    config = load_axial_steering_config()
+    gates = config["validation"]["gates"]
+    pivot = config["topology"]["anterior_pivot"]
+    values = {
+        "uniform": uniform_result().integrated_local_bend_deg_s_by_joint,
+        "positive": positive_result().integrated_local_bend_deg_s_by_joint,
+        "negative": negative_result().integrated_local_bend_deg_s_by_joint,
+    }
+    assert len({frozenset(item) for item in values.values()}) == 1
+    excess = {
+        joint: max(
+            0.0,
+            0.5 * (values["positive"][joint] + values["negative"][joint])
+            - values["uniform"][joint],
+        )
+        for joint in values["uniform"]
+    }
+    total = sum(excess.values())
+    peak = max(excess.values())
+    dominant = max(excess, key=excess.__getitem__)
+    joints = pivot["mechanical_joint_support"]
+    active = [
+        joint
+        for joint in joints
+        if excess[joint] >= gates["bend_activity_relative_threshold"] * peak
+    ]
+    outside = sum(
+        value for joint, value in excess.items() if joint not in joints
+    ) / total
+    adjacent_jump = max(
+        abs(excess[left] - excess[right])
+        for left, right in zip(joints[:-1], joints[1:], strict=True)
+    ) / peak
+    mirror_error = max(
+        abs(values["positive"][joint] - values["negative"][joint])
+        for joint in values["uniform"]
+    )
+    assert len(active) >= gates["minimum_active_pivot_joint_count"]
+    assert dominant in pivot["allowed_dominant_joints"]
+    assert peak / total <= gates["maximum_single_joint_bend_fraction"]
+    assert outside <= gates["maximum_outside_pivot_bend_fraction"]
+    assert adjacent_jump <= gates["maximum_adjacent_pivot_bend_jump_fraction"]
+    assert mirror_error <= gates["maximum_mirror_integrated_bend_error_deg_s"]
 
 
 def test_sensory_lesion_removes_field_steering_only():

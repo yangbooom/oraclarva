@@ -15,7 +15,7 @@ bounded world scalar field
   -> current left/right head-surface samples
   -> rectified lateral contrast
   -> side-resolved sensory LIF neurons
-  -> side-resolved A1/A2 premotor LIF neurons
+  -> side-resolved A1/A2/A3 premotor LIF neurons
   -> existing side-resolved mapped motor identities
   -> existing named-fiber activation state
   -> left/right active-curvature constraint + frozen axial force
@@ -45,7 +45,7 @@ receptor/connectome sign is outside this stage.
 
 ## Neural and muscle boundary
 
-The added circuit contains only bilateral sensory and A1/A2 premotor sparse
+The added circuit contains only bilateral sensory and A1/A2/A3 premotor sparse
 LIF neurons with delayed synapses. A premotor spike supplies a delayed current
 to a source ID already present as an actual motor-neuron node in axial v1. The
 resulting spike is generated once by that shared node and enters the same
@@ -60,11 +60,21 @@ projection therefore uses only muscle numbers represented on both sides:
 | --- | --- | ---: | --- |
 | A1 | 1, 10, 20 | 3 | original A1 edges remain `MEASURED_PUBLISHED`; pairing filter is `ANATOMY_DERIVED` |
 | A2 | 1, 5, 8, 9, 10, 11, 18, 19, 20, 21, 22, 23, 24 | 13 | A2 targets remain `ANATOMY_DERIVED` homology |
+| A3 | 1, 5, 8, 9, 10, 11, 18, 19, 20, 21, 22, 23, 24 | 13 | A3 targets remain `ANATOMY_DERIVED` homology |
 
 No missing contralateral MN or muscle identity is invented. The 146-fiber
 axial projection itself remains unchanged. A small residual axial-force
 asymmetry is disclosed and bounded by the mirror gates rather than hidden with
 side-specific gains.
+
+Lahiri et al. 2011 measured second-instar head sweeps centered on A1, with
+smaller contributions from T3, A2, and A3 (Fig. 9 and Methods;
+[doi:10.1371/journal.pone.0023180](https://doi.org/10.1371/journal.pone.0023180)).
+This constrains only the relative anterior support and A1-peak ordering. It is
+not evidence for an L1 numeric curvature profile. The current projection has
+no T3 MN-to-muscle mapping, so the model creates no T3 motor identity: real A1
+activation contributes mechanically to the T3-A1 joint. A1/A2/A3 delays and
+motor-current scales are all `MODEL_FITTED`.
 
 Each steering-driven active fiber sample retains this ordered trace:
 
@@ -96,12 +106,15 @@ The checked 4 s artifact reports:
 | condition | x displacement (um) | y displacement (um) | yaw change | forward progress |
 | --- | ---: | ---: | ---: | ---: |
 | uniform field | -44.645 | 0.000 | 0.000 deg | 44.645 um |
-| +Y gradient | -198.021 | +2.788 | -6.553 deg | 198.021 um |
-| -Y gradient | -214.123 | -3.563 | +6.756 deg | 214.123 um |
+| +Y gradient | -136.050 | -10.361 | -7.136 deg | 136.050 um |
+| -Y gradient | -172.316 | +7.076 | +8.154 deg | 172.316 um |
 
-Mirror residuals are `0.203 deg` heading, `16.102 um` world-x, and `0.776 um`
-world-y. The engineering rejection limits are respectively `0.35 deg`,
-`20 um`, and `20 um`. They are model gates, not measured L1 variability.
+Mirror residuals are `1.018 deg` heading, `36.266 um` world-x, and `3.285 um`
+world-y. The engineering rejection limits are respectively `1.25 deg`,
+`40 um`, and `40 um`. The neural/muscle drive and integrated joint bends are
+much more closely mirrored (`0.034 deg*s` maximum joint error); closed-loop
+contact and length feedback amplify numerical divergence over 4 s. These are
+model gates, not measured L1 variability.
 
 Both gradient cases also pass:
 
@@ -111,9 +124,22 @@ Both gradient cases also pass:
 - integrated body-frame lateral slip below 80 um;
 - every active body force traced to preceding sensory and neural events.
 
-The observed bends are about 10.65 degrees per adjacent centerline pair, the
-minimum chord ratio is about 0.983, and integrated lateral slip is about
-35.5--36.0 um.
+The maximum local bend is about `10.01 deg`, the minimum chord ratio is about
+`0.974`, and integrated lateral slip is `49.27--49.62 um`.
+
+The hinge-rejection metric subtracts the uniform-field bend from the mean of
+the two mirrored gradient cases. Its checked steering-excess distribution is:
+
+| joint | integrated excess bend (deg*s) |
+| --- | ---: |
+| T3-A1 | 12.361 |
+| A1-A2 | 18.529 |
+| A2-A3 | 15.951 |
+| A3-A4 | 13.112 |
+
+All four joints clear the relative activity gate. The dominant A1-A2 joint is
+28.03% of total excess bend (limit 35%), 90.69% lies within this four-joint
+pivot (minimum 90%), and the largest adjacent jump is 33.29% (limit 40%).
 
 ## Lesion checks
 
@@ -123,8 +149,8 @@ not to a behavior variable.
 | +Y-gradient intervention | neural result | physical result |
 | --- | --- | --- |
 | right field sensory neuron | right steering path silent | yaw returns to 0; frozen axial displacement preserved |
-| right A1+A2 shared MN sources | sensory/premotor spikes preserved; the actual axial MN spikes disappear | steering-force samples disappear; yaw magnitude falls from 6.553 to 2.070 degrees |
-| right A1+A2 named fibers | sensory, premotor, and shared MN spikes preserved | steering-force samples disappear; yaw magnitude falls from 6.553 to 2.180 degrees |
+| right A1+A2+A3 shared MN sources | sensory/premotor spikes preserved; the actual axial MN spikes disappear | steering-force samples disappear; yaw magnitude falls from 7.136 to 3.784 degrees |
+| right A1+A2+A3 named fibers | sensory, premotor, and shared MN spikes preserved | steering-force samples disappear; yaw magnitude falls from 7.136 to 4.251 degrees |
 
 MN and muscle lesions do not return to a perfectly symmetric body. The MN
 lesion removes the actual shared axial MNs, while the muscle lesion removes the

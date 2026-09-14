@@ -25,7 +25,17 @@
     "shared_axial_protocol": true,
     "shared_motor_and_muscle_atlas": true,
     "duplicated_motor_neuron_nodes": false,
-    "description": "The same world scalar field is sampled at the left and right head surface. Rectified lateral contrast drives mirrored sensory and anterior premotor LIF channels, then the bilaterally paired subset of existing side-resolved motor identities and named muscle fibers. Left-right paired-fiber activation difference enters active-curvature body physics while axial force and continuous contact remain the frozen axial-v1 path.",
+    "anterior_pivot": {
+      "published_stage": "L2",
+      "published_segment_support": ["T3", "A1", "A2", "A3"],
+      "published_peak_segment": "A1",
+      "published_support_provenance": "MEASURED_PUBLISHED",
+      "modeled_motor_segments": ["A1", "A2", "A3"],
+      "mechanical_joint_support": ["T3-A1", "A1-A2", "A2-A3", "A3-A4"],
+      "allowed_dominant_joints": ["T3-A1", "A1-A2"],
+      "numeric_profile_provenance": "MODEL_FITTED"
+    },
+    "description": "The same world scalar field is sampled at the left and right head surface. Rectified lateral contrast drives mirrored sensory and anterior premotor LIF channels, then bilaterally paired subsets of existing A1-A3 motor identities and named muscle fibers. Segment-scaled neural drive makes asymmetric contraction span the anterior pivot instead of applying a single body hinge; left-right activation difference enters active-curvature physics while axial force and continuous contact remain the frozen axial-v1 path.",
     "connections": [
       {
         "edge": "bilateral head field samples -> rectified sensory contrast",
@@ -41,8 +51,15 @@
         "allowed_use": "relative left-right anterior circuit topology only"
       },
       {
-        "edge": "side-resolved motor identities -> A1-A2 named fibers",
-        "stage": "L1 for A1 identity; anatomy-derived homology for A2",
+        "edge": "anterior asymmetric contraction spans T3-A3 with an A1 peak",
+        "stage": "L2",
+        "provenance": "MEASURED_PUBLISHED",
+        "evidence": "Lahiri et al. 2011, PLOS ONE 6:e23180, doi:10.1371/journal.pone.0023180, Fig. 9 and Methods",
+        "allowed_use": "relative segment support and A1-peak ordering only; not L1 absolute amplitude"
+      },
+      {
+        "edge": "side-resolved motor identities -> A1-A3 named fibers",
+        "stage": "L1 for A1 identity; anatomy-derived homology for A2-A3",
         "provenance": "ANATOMY_DERIVED",
         "evidence": "existing l1_neural_muscle_identity_v0 projection",
         "allowed_use": "identity event routing with original per-edge provenance"
@@ -51,9 +68,10 @@
     "limitations": [
       "This is not a reconstructed complete L1 steering connectome.",
       "The field modality and rectified opponent transform are generic research transduction, not an identified receptor pathway.",
-      "A1-A2 steering delays, LIF currents, and active-curvature gain are fitted parameters.",
+      "A1-A3 steering delays, segment current scales, LIF currents, and active-curvature gain are fitted parameters.",
       "Individual L1 muscle moment arms and force gains remain unavailable; yaw uses a reduced side-activation curvature constraint.",
       "A1 public MN-to-muscle coverage is left-right incomplete; steering uses only muscle numbers mapped on both sides and retains a small documented residual axial-force asymmetry.",
+      "The current atlas has no T3 MN-to-muscle projection; no T3 motor identity is invented, and the T3-A1 boundary bends only through adjacent real A1 activation.",
       "The scalar field creates sensory input only and never supplies a desired turn direction or heading."
     ]
   },
@@ -63,10 +81,16 @@
     "motor_current_a": 2.4e-09,
     "contrast_threshold": 0.02,
     "contrast_gain": 2.5,
-    "steering_segments": ["A1", "A2"],
+    "steering_segments": ["A1", "A2", "A3"],
     "premotor_delay_s_by_segment": {
       "A1": 0.0,
-      "A2": 0.03
+      "A2": 0.03,
+      "A3": 0.06
+    },
+    "motor_current_scale_by_segment": {
+      "A1": 1.0,
+      "A2": 0.75,
+      "A3": 0.7
     },
     "motor_delay_s": 0.001,
     "active_curvature_gain": 0.11,
@@ -75,9 +99,9 @@
   },
   "parameter_provenance": {
     "provenance": "MODEL_FITTED",
-    "objective": "Preserve frozen axial-v1 straight locomotion at zero lateral contrast while mirrored field gradients produce stable mirrored yaw through A1-A2 side activation.",
+    "objective": "Preserve frozen axial-v1 straight locomotion at zero lateral contrast while mirrored field gradients produce stable mirrored yaw and a distributed T3-A3 anterior pivot through A1-A3 side activation, with A1 strongest.",
     "fit_status": "engineering_symmetry_and_shape_gates_only",
-    "uncertainty": "No numeric current, delay, contrast gain, active-curvature gain, or scalar-field gradient is asserted as measured L1 biology."
+    "uncertainty": "No numeric current, delay, segment scale, contrast gain, active-curvature gain, or scalar-field gradient is asserted as measured L1 biology. Lahiri et al. constrains relative support and ordering from L2, not L1 amplitude."
   },
   "environment": {
     "field_type": "bounded_planar_linear_scalar",
@@ -104,19 +128,26 @@
       "sensory, motor-neuron, and muscle lesions attenuate the corresponding steering response",
       "every steering-driven active fiber force traces to field sample, sensory spike, premotor spike, and motor spike",
       "axial-v1 forward calibration and backward diagnostic behavior remain unchanged",
-      "turning remains within segment extension, chord-ratio, local-bend, and integrated-slip rejection gates"
+      "turning remains within segment extension, chord-ratio, local-bend, and integrated-slip rejection gates",
+      "steering-excess curvature spans all four T3-A1 through A3-A4 pivot joints, peaks adjacent to A1, and passes hinge-concentration gates"
     ],
     "gates": {
       "minimum_abs_heading_change_deg": 0.5,
-      "mirror_heading_tolerance_deg": 0.35,
-      "mirror_position_tolerance_um": 20.0,
+      "mirror_heading_tolerance_deg": 1.25,
+      "mirror_position_tolerance_um": 40.0,
       "straight_heading_tolerance_deg": 1e-09,
       "straight_trajectory_tolerance_um": 1e-06,
       "minimum_anatomical_forward_displacement_um": 20.0,
       "maximum_segment_extension_fraction": 0.05,
       "minimum_head_tail_chord_ratio": 0.75,
       "maximum_local_bend_deg": 55.0,
-      "maximum_integrated_lateral_slip_um": 80.0
+      "maximum_integrated_lateral_slip_um": 80.0,
+      "bend_activity_relative_threshold": 0.2,
+      "minimum_active_pivot_joint_count": 4,
+      "maximum_single_joint_bend_fraction": 0.35,
+      "maximum_outside_pivot_bend_fraction": 0.1,
+      "maximum_adjacent_pivot_bend_jump_fraction": 0.4,
+      "maximum_mirror_integrated_bend_error_deg_s": 1.0
     },
     "claim_limit": "Axial-v1-integrated bilateral steering research approximation; not an independently validated L1 steering connectome or measured muscle moment-arm model."
   }
