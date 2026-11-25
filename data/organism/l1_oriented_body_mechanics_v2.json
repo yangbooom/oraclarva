@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "model_id": "dmel_l1_oriented_body_mechanics_v2",
+  "status": "research_approximation",
+  "stage": "L1",
+  "base_model_id": "dmel_l1_named_fiber_steering_v1",
+  "release_validated": false,
+  "scope": "mechanics_fixture_not_yet_contact_integrated",
+  "causal_input_boundary": [
+    "named_motor_neuron_spike",
+    "named_muscle_activation",
+    "paired_active_tension_excess",
+    "off_axis_origin_and_insertion_force",
+    "centerline_force_and_section_torque",
+    "oriented_cross_section_rod_dynamics"
+  ],
+  "topology": {
+    "body_state_space": "unshearable_oriented_cross_section_rod_v2",
+    "centerline_nodes": 13,
+    "oriented_sections": 13,
+    "independent_section_degree_of_freedom": "twist_about_centerline_tangent",
+    "bending_degree_of_freedom": "centerline_particle_positions",
+    "attachment_segments": ["A1", "A2", "A3"],
+    "mirrored_non_transverse_pair_count": 17,
+    "attachment_coordinate_provenance": "ANATOMY_DERIVED",
+    "mechanics_parameter_provenance": "MODEL_FITTED",
+    "metric_attachment_coordinates_measured": false,
+    "csa_measured": false,
+    "fmax_measured": false,
+    "action_command": false,
+    "behavior_fsm": false,
+    "external_policy": false,
+    "heading_input": false,
+    "curvature_input": false,
+    "authored_translation": false
+  },
+  "parameters": {
+    "dt_s": 0.001,
+    "active_tension_gain_model_units": 15.0,
+    "passive_stiffness_model_units": 180.0,
+    "damping_model_units": 24.0,
+    "activation_rise_s": 0.02,
+    "activation_decay_s": 0.08,
+    "spatial_attachment_force_scale": 0.3,
+    "centerline_acceleration_scale_m_s2_per_model_force": 0.002,
+    "twist_torque_scale_rad_s2_per_model_torque": 100000000.0,
+    "twist_velocity_retention": 0.992,
+    "twist_stiffness_model_units_m_per_rad": 0.001,
+    "fixture_duration_s": 0.2,
+    "sample_interval_s": 0.004,
+    "fixture_fiber_pair": ["A1:left:M1:DA1", "A1:right:M1:DA1"]
+  },
+  "parameter_provenance": {
+    "provenance": "MODEL_FITTED",
+    "objective": "Make off-axis force and section torque observable in a stable free-space mechanics fixture while preserving exact force and generalized-torque balance.",
+    "fit_status": "engineering_invariant_and_symmetry_gates_only",
+    "uncertainty": "No value in this section is a measured L1 torsional stiffness, inertia, pressure, damping, CSA, Fmax, or force in newtons."
+  },
+  "validation": {
+    "release_validated": false,
+    "independent_biological_validation": false,
+    "required_gates": [
+      "every active load traces to an earlier named motor-neuron spike",
+      "each muscle contributes exactly two off-axis endpoint applications",
+      "free-space net internal force is numerical zero",
+      "free-space generalized internal torque is numerical zero",
+      "centerline-only moment is nonzero and exactly canceled by section torque",
+      "left and right loads are mirror covariant",
+      "equal bilateral activation produces no differential load",
+      "attachment lesion preserves upstream activation and removes mechanics",
+      "material frames remain right-handed and orthonormal",
+      "the frozen named-fiber steering v1 artifact remains unchanged"
+    ],
+    "gates": {
+      "maximum_net_force_model_units": 1e-10,
+      "maximum_net_generalized_torque_model_units_m": 1e-18,
+      "maximum_frame_orthogonality_error": 1e-7,
+      "mirror_position_tolerance_um": 1e-6,
+      "mirror_twist_tolerance_deg": 1e-6,
+      "minimum_abs_section_twist_deg": 0.001,
+      "maximum_abs_section_twist_deg": 15.0,
+      "maximum_segment_extension_fraction": 0.05
+    },
+    "claim_limit": "Reduced oriented-section mechanics reference with anatomy-derived normalized attachments and model-fitted angular parameters; not measured L1 material mechanics, not a full shell/continuum, and not yet a contact-integrated locomotion validation."
+  },
+  "limitations": [
+    "The section tangent is constrained to the centerline; shear and cross-section warping are not resolved.",
+    "Only twist about the tangent is an independent rotational degree of freedom; bending is carried by centerline particles.",
+    "The fixture runs in free space and cannot demonstrate locomotion or steering without environmental reaction forces.",
+    "Normalized attachment coordinates remain anatomy-derived hypotheses rather than measured L1 3D coordinates.",
+    "All force and torque magnitudes use model units, not newtons or newton-metres.",
+    "Pressure, anisotropic cuticle elasticity, self-contact, and substrate traction remain future work."
+  ]
+}
