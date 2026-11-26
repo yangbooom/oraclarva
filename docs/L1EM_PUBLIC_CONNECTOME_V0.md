@@ -64,3 +64,29 @@ modulatory channel and carry no fast sign.
   VNC neurons and 10% return to the brain.
 - Among segment-labelled pairs, 36% of contacts cross segments, mainly A1-A2
   and T3-A1.
+
+## Compiled connectome
+
+```text
+.venv/bin/python tools/compile_l1em_connectome.py
+data/local/l1em_public_connectome/compiled/l1em_connectome_v0.json          (~12 MB, not committed)
+data/local/l1em_public_connectome/compiled/l1em_connectome_v0.summary.json
+```
+
+The compiler checks the snapshot SHA-256 against the manifest. It takes each
+directed pair once, from the pre-synaptic skeleton's outgoing query, keeps the
+contacts per CATMAID confidence bin, and cross-checks every edge against the
+matching incoming record (137,247 checked, 0 mismatched).
+
+| item | value |
+|---|---:|
+| edges / contacts between public neurons | 137,247 / 428,975 |
+| brain-to-brain (Winding) edges / contacts | 112,371 / 355,382 |
+| brain contacts at confidence 5 | 355,221 (99.95%) |
+| contacts to non-public fragments | 432,097 (one contact per fragment edge) |
+| public contacts from excitatory / inhibitory / unresolved pre | 104,911 / 31,767 / 292,297 |
+
+Open question: the paper is commonly summarized as about 548,000 synapses, but
+the public neuron-level brain-to-brain count here is 355,382. The difference
+(counting convention, polyadic sites, or partners missing from the public set)
+is not yet resolved, so do not treat these as the same quantity.
