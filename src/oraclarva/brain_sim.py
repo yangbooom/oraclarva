@@ -115,6 +115,38 @@ class BrainNetwork:
         )
 
 
+def shuffle_targets(
+    contacts: sparse.csr_matrix, seed: int, groups: np.ndarray | None = None
+) -> sparse.csr_matrix:
+    """Null-model rewiring: permute postsynaptic targets among edges.
+
+    Every edge keeps its presynaptic neuron and contact count, so each neuron's
+    out-degree, total output contacts and in-degree (edge count) are preserved.
+    With ``groups`` (one label per neuron) targets are permuted only inside each
+    (pre group, post group) block, which also preserves the group-to-group
+    contact matrix: only *which* member of a group is wired to which changes.
+    Self-loops are re-drawn inside their block; duplicate edges are merged.
+    """
+    rng = np.random.default_rng(seed)
+    coo = contacts.tocoo()
+    rows, cols, data = coo.row.copy(), coo.col.copy(), coo.data.copy()
+    key = np.zeros(rows.size, dtype=np.int64) if groups is None else groups[rows] * (int(groups.max()) + 1) + groups[cols]
+    order = np.argsort(key, kind="stable")
+    bounds = np.flatnonzero(np.diff(key[order])) + 1
+    for block in np.split(order, bounds):
+        cols[block] = cols[block][rng.permutation(block.size)]
+        for _ in range(20):
+            loops = block[rows[block] == cols[block]]
+            if loops.size == 0 or block.size < 2:
+                break
+            partners = rng.choice(block, size=loops.size)
+            cols[loops], cols[partners] = cols[partners], cols[loops].copy()
+    keep = rows != cols
+    out = sparse.csr_matrix((data[keep], (rows[keep], cols[keep])), shape=contacts.shape)
+    out.sum_duplicates()
+    return out
+
+
 def build_network(
     compiled: Mapping[str, Any],
     policy: SignPolicy,
@@ -198,6 +230,72 @@ class RunResult:
         return self.spike_counts / (self.duration_ms / 1000.0)
 
 
+try:  # optional compiled engine
+    from oraclarva.brain_kernel import init_state as _init_state
+    from oraclarva.brain_kernel import run_kernel as _run_kernel
+
+    _HAVE_NUMBA = True
+except ImportError:  # pragma: no cover - numba not installed
+    _HAVE_NUMBA = False
+
+
+def _simulate_numba(
+    network, duration_ms, steps, delay, refractory, decay_g, k_mbr, params, seed,
+    stim_idx, stim_p, start, stop, extras, bg_prob, bg_weight, late_step, bin_steps, bin_ms, want_late, plasticity,
+):
+    dt = params.dt_ms
+    neurons, probs, weights, starts, stops = [], [], [], [], []
+
+    def add(idx, prob, window):
+        neurons.append(np.asarray(idx, dtype=np.int64))
+        probs.append(np.asarray(prob, dtype=float))
+        weights.append(np.full(len(idx), params.poisson_weight_mv))
+        # step t is active when window[0] <= step*dt < window[1]
+        starts.append(np.full(len(idx), int(np.ceil(window[0] / dt - 1e-9)), dtype=np.int64))
+        stops.append(np.full(len(idx), int(np.ceil(window[1] / dt - 1e-9)), dtype=np.int64))
+
+    if stim_idx.size:
+        add(stim_idx, stim_p, (start, stop))
+    for idx, prob, window in extras:
+        add(idx, prob, window)
+    cat = lambda xs, dtype: np.concatenate(xs).astype(dtype) if xs else np.zeros(0, dtype=dtype)  # noqa: E731
+    w = network.weights.tocsr()
+    n = len(network.skids)
+    if plasticity is not None:
+        kc_local = np.full(n, -1, dtype=np.int64)
+        kc_local[plasticity.kc_idx] = np.arange(plasticity.kc_idx.size)
+        dan_local = np.full(n, -1, dtype=np.int64)
+        dan_local[plasticity.dan_idx] = np.arange(plasticity.dan_idx.size)
+        km = np.ascontiguousarray(plasticity.km, dtype=float)
+        args = (
+            True, kc_local, dan_local, np.asarray(plasticity.mbon_idx, dtype=np.int64), km,
+            np.ascontiguousarray(plasticity.modulation, dtype=float), plasticity.eta * dt, float(plasticity.da_threshold),
+            float(np.exp(-dt / plasticity.tau_kc_ms)), float(np.exp(-dt / plasticity.tau_dan_ms)), bool(plasticity.learn),
+        )
+    else:
+        empty_i = np.full(n, -1, dtype=np.int64)
+        args = (False, empty_i, empty_i, np.zeros(0, dtype=np.int64), np.zeros((0, 0)), np.zeros((0, 0)), 0.0, 0.0, 1.0, 1.0, False)
+    n_kc = km.shape[0] if plasticity is not None else 0
+    n_dan = plasticity.dan_idx.size if plasticity is not None else 0
+    bgp = np.ascontiguousarray(bg_prob, dtype=float) if bg_weight else np.zeros(n)
+    state = _init_state(n, delay, params.v0_mv, n_kc, n_dan, bgp, int(seed) % (2**32))
+    counts = np.zeros(n, dtype=np.int64)
+    late = np.zeros(n, dtype=np.int64)
+    per_bin = np.zeros((steps + bin_steps - 1) // bin_steps, dtype=np.int64)
+    _run_kernel(
+        0, steps, delay, refractory, decay_g, k_mbr, params.v0_mv, params.v_th_mv,
+        w.indptr.astype(np.int64), w.indices.astype(np.int64), w.data.astype(float),
+        cat(neurons, np.int64), cat(probs, float), cat(weights, float), cat(starts, np.int64), cat(stops, np.int64),
+        bgp, float(bg_weight), late_step, bin_steps, *args, *state, counts, late, per_bin,
+    )
+    if plasticity is not None:
+        plasticity.km[...] = km
+    return RunResult(
+        duration_ms=duration_ms, spike_counts=counts, spikes_per_bin=per_bin, bin_ms=bin_ms,
+        late_counts=late if want_late else None,
+    )
+
+
 def simulate(
     network: BrainNetwork,
     duration_ms: float,
@@ -211,6 +309,7 @@ def simulate(
     extra_inputs: Sequence[tuple[Mapping[int, float], tuple[float, float]]] = (),
     background_hz: float | np.ndarray = 0.0,
     background_weight_mv: float = 0.0,
+    engine: str = "auto",
 ) -> RunResult:
     """Run the network.
 
@@ -219,6 +318,9 @@ def simulate(
     every neuron an independent Poisson input of ``background_weight_mv``
     (spontaneous synaptic noise; without it silent neurons cannot show
     decreases, the known Shiu-model limitation).  It may be a per-neuron array.
+
+    ``engine``: "numba" (compiled kernel), "numpy" (reference loop) or "auto"
+    (numba when installed).  Engines differ only in their random streams.
     """
     n = len(network.skids)
     steps = int(round(duration_ms / params.dt_ms))
@@ -263,6 +365,17 @@ def simulate(
         dan_tr = np.zeros(plasticity.dan_idx.size)
         kc_decay = np.exp(-params.dt_ms / plasticity.tau_kc_ms)
         dan_decay = np.exp(-params.dt_ms / plasticity.tau_dan_ms)
+
+    if engine == "auto":
+        engine = "numba" if _HAVE_NUMBA else "numpy"
+    if engine == "numba":
+        return _simulate_numba(
+            network, duration_ms, steps, delay, refractory, decay_g, k_mbr, params, seed,
+            stim_idx, stim_p, start, stop, extras, bg_prob, background_weight_mv if bg_on else 0.0,
+            late_step, bin_steps, bin_ms, late is not None, plasticity,
+        )
+    if engine != "numpy":
+        raise ValueError(f"unknown engine {engine!r}")
 
     for step in range(steps):
         slot = step % delay
@@ -310,3 +423,84 @@ def simulate(
     return RunResult(
         duration_ms=duration_ms, spike_counts=counts, spikes_per_bin=per_bin, bin_ms=bin_ms, late_counts=late
     )
+
+
+class BrainStepper:
+    """Advance the brain in chunks, with inputs that may change between chunks.
+
+    For closed-loop co-simulation with a body: each ``advance`` runs
+    ``duration_ms`` with the given Poisson rates (Hz per neuron index) and
+    returns the spike counts of that chunk.  State (membranes, conductances,
+    delay buffer, background schedule, plastic weights) carries over.
+    Requires the numba engine.
+    """
+
+    def __init__(
+        self,
+        network: BrainNetwork,
+        params: BrainParams = BrainParams(),
+        seed: int = 0,
+        background_hz: float | np.ndarray = 0.0,
+        background_weight_mv: float = 0.0,
+        plasticity: Plasticity | None = None,
+    ) -> None:
+        if not _HAVE_NUMBA:
+            raise RuntimeError("BrainStepper requires numba")
+        self.network, self.params, self.plasticity = network, params, plasticity
+        n = self.n = len(network.skids)
+        self.delay = max(1, int(round(params.t_dly_ms / params.dt_ms)))
+        self.refractory = int(round(params.t_rfc_ms / params.dt_ms))
+        self.decay_g = float(np.exp(-params.dt_ms / params.tau_ms))
+        self.k_mbr = params.dt_ms / params.t_mbr_ms
+        w = network.weights.tocsr()
+        self.csr = (w.indptr.astype(np.int64), w.indices.astype(np.int64), w.data.astype(float))
+        bg = np.broadcast_to(np.asarray(background_hz, dtype=float), (n,)) * params.dt_ms / 1000.0
+        self.bg_weight = float(background_weight_mv) if np.any(bg > 0) and background_weight_mv else 0.0
+        self.bg_prob = np.ascontiguousarray(bg) if self.bg_weight else np.zeros(n)
+        if plasticity is not None:
+            if plasticity.km is None:
+                raise ValueError("call plasticity.attach(network) first")
+            kc_local = np.full(n, -1, dtype=np.int64)
+            kc_local[plasticity.kc_idx] = np.arange(plasticity.kc_idx.size)
+            dan_local = np.full(n, -1, dtype=np.int64)
+            dan_local[plasticity.dan_idx] = np.arange(plasticity.dan_idx.size)
+            self.km = np.ascontiguousarray(plasticity.km, dtype=float)
+            dt = params.dt_ms
+            self._plastic_static = (
+                True, kc_local, dan_local, np.asarray(plasticity.mbon_idx, dtype=np.int64), self.km,
+                np.ascontiguousarray(plasticity.modulation, dtype=float), plasticity.eta * dt,
+                float(plasticity.da_threshold), float(np.exp(-dt / plasticity.tau_kc_ms)),
+                float(np.exp(-dt / plasticity.tau_dan_ms)),
+            )
+            n_kc, n_dan = self.km.shape[0], plasticity.dan_idx.size
+        else:
+            empty = np.full(n, -1, dtype=np.int64)
+            self.km = np.zeros((0, 0))
+            self._plastic_static = (False, empty, empty, np.zeros(0, dtype=np.int64), self.km, np.zeros((0, 0)), 0.0, 0.0, 1.0, 1.0)
+            n_kc = n_dan = 0
+        self.state = _init_state(n, self.delay, params.v0_mv, n_kc, n_dan, self.bg_prob, int(seed) % (2**32))
+        self.step = 0
+        self.total_counts = np.zeros(n, dtype=np.int64)
+
+    def advance(self, duration_ms: float, rates_hz: Mapping[int, float] | None = None) -> np.ndarray:
+        steps = int(round(duration_ms / self.params.dt_ms))
+        idx = np.array(sorted(rates_hz or {}), dtype=np.int64)
+        prob = np.array([rates_hz[i] for i in idx], dtype=float) * self.params.dt_ms / 1000.0 if idx.size else np.zeros(0)
+        start = np.full(idx.size, self.step, dtype=np.int64)
+        stop = np.full(idx.size, self.step + steps, dtype=np.int64)
+        weight = np.full(idx.size, self.params.poisson_weight_mv)
+        counts = np.zeros(self.n, dtype=np.int64)
+        late = np.zeros(self.n, dtype=np.int64)
+        per_bin = np.zeros(0, dtype=np.int64)
+        learn = bool(self.plasticity.learn) if self.plasticity is not None else False
+        _run_kernel(
+            self.step, self.step + steps, self.delay, self.refractory, self.decay_g, self.k_mbr,
+            self.params.v0_mv, self.params.v_th_mv, *self.csr, idx, prob, weight, start, stop,
+            self.bg_prob, self.bg_weight, np.iinfo(np.int64).max, 1, *self._plastic_static, learn,
+            *self.state, counts, late, per_bin,
+        )
+        self.step += steps
+        self.total_counts += counts
+        if self.plasticity is not None:
+            self.plasticity.km[...] = self.km
+        return counts

@@ -132,3 +132,72 @@ def test_dopamine_threshold_blocks_weak_dan_activity():
     p.da_threshold = 1e9
     simulate(stripped, 500.0, {0: 150.0, 3: 150.0}, seed=1, plasticity=p)
     assert p.km[0, 0] == pytest.approx(p.km_initial[0, 0])
+
+
+def test_numba_engine_matches_numpy_reference_statistically():
+    pytest.importorskip("numba")
+    net = build_network(_compiled(), SignPolicy(mode="silent"))
+    bg = np.full(len(net.skids), 150.0)
+    totals = {}
+    for engine in ("numpy", "numba"):
+        totals[engine] = np.mean(
+            [
+                simulate(net, 300.0, {0: 120.0}, seed=k, engine=engine, background_hz=bg, background_weight_mv=4.0)
+                .spike_counts.sum()
+                for k in range(12)
+            ]
+        )
+    assert totals["numba"] == pytest.approx(totals["numpy"], rel=0.1)
+
+
+def test_numba_engine_applies_plasticity_like_reference():
+    pytest.importorskip("numba")
+    net = build_network(_mb_compiled(), SignPolicy(mode="silent"))
+    depression = {}
+    for engine in ("numpy", "numba"):
+        p, stripped = _plastic(net)
+        simulate(stripped, 500.0, {3: 150.0}, seed=1, plasticity=p, engine=engine)  # sugar only: no change
+        assert p.km[0, 0] == pytest.approx(p.km_initial[0, 0])
+        vals = []
+        for k in range(6):
+            p, stripped = _plastic(net)
+            simulate(stripped, 500.0, {0: 150.0, 3: 150.0}, seed=k, plasticity=p, engine=engine)
+            vals.append(1 - p.km[0, 0] / p.km_initial[0, 0])
+        depression[engine] = np.mean(vals)
+    assert depression["numba"] > 0.1
+    assert depression["numba"] == pytest.approx(depression["numpy"], rel=0.25)
+
+
+def test_shuffle_targets_preserves_degrees_and_block_totals():
+    from scipy import sparse
+
+    from oraclarva.brain_sim import shuffle_targets
+
+    rng = np.random.default_rng(0)
+    dense = (rng.random((40, 40)) < 0.15) * rng.integers(1, 9, (40, 40))
+    np.fill_diagonal(dense, 0)
+    contacts = sparse.csr_matrix(dense.astype(float))
+    groups = np.repeat(np.arange(4), 10)
+    out = shuffle_targets(contacts, seed=3, groups=groups)
+    assert out.diagonal().sum() == 0
+    block = lambda m: np.array(  # noqa: E731
+        [[m[groups == a][:, groups == b].sum() for b in range(4)] for a in range(4)]
+    )
+    assert np.array_equal(block(out.toarray()), block(dense))  # group-to-group contacts preserved
+    assert np.array_equal(np.asarray(out.sum(axis=1)).ravel(), dense.sum(axis=1))  # output contacts per neuron
+    assert (out.toarray() != dense).any()  # wiring actually changed
+
+
+def test_brain_stepper_chunks_match_one_long_run_statistically():
+    pytest.importorskip("numba")
+    from oraclarva.brain_sim import BrainStepper
+
+    net = build_network(_compiled(), SignPolicy(mode="silent"))
+    chunked, whole = [], []
+    for k in range(10):
+        st = BrainStepper(net, seed=k)
+        chunked.append(sum(st.advance(1.0, {0: 120.0}).sum() for _ in range(300)))
+        whole.append(simulate(net, 300.0, {0: 120.0}, seed=100 + k).spike_counts.sum())
+    assert np.mean(chunked) == pytest.approx(np.mean(whole), rel=0.1)
+    st = BrainStepper(net, seed=0)
+    assert st.advance(50.0).sum() == 0  # no input, no spikes

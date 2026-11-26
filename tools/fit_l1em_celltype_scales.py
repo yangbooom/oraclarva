@@ -36,7 +36,15 @@ sys.path.insert(0, str(ROOT / "src"))
 
 import numpy as np  # noqa: E402
 
-from oraclarva.brain_sim import BrainParams, SignPolicy, build_network, resolve_signs, simulate  # noqa: E402
+from oraclarva.brain_sim import (  # noqa: E402
+    BrainNetwork,
+    BrainParams,
+    SignPolicy,
+    build_network,
+    resolve_signs,
+    shuffle_targets,
+    simulate,
+)
 from oraclarva.cmaes import CMAES  # noqa: E402
 
 LOCAL = ROOT / "data" / "local" / "l1em_public_connectome"
@@ -74,7 +82,7 @@ def _members(raw, annotation):
     return {s for s, items in raw["skeletons"].items() if any(str(a["id"]) in ids for a in items)}
 
 
-def setup(free_sign_skids: tuple[str, ...] = ()) -> dict:
+def setup(free_sign_skids: tuple[str, ...] = (), shuffle: dict | None = None) -> dict:
     compiled = json.loads(COMPILED.read_text(encoding="utf-8"))
     neurons = [n for n in compiled["neurons"] if n["winding_2023"]]
     winding = {n["skid"] for n in neurons}
@@ -89,6 +97,12 @@ def setup(free_sign_skids: tuple[str, ...] = ()) -> dict:
         idx = idx[~assigned[idx]]
         cls[idx] = ci
         assigned[idx] = True
+    if shuffle:
+        groups = cls if shuffle["mode"] == "block" else None
+        shuffled = shuffle_targets(base.contacts, int(shuffle["seed"]), groups=groups)
+        base = BrainNetwork(skids=base.skids, signs=base.signs, weights=base.weights, contacts=shuffled).reweighted(
+            signs=base.signs
+        )
     left, right = _members(raw, "mw left"), _members(raw, "mw right")
     app = _members(raw, "mw ORN appetitive")
     kc = _members(raw, "mw KC")
@@ -124,8 +138,8 @@ def background_rates(state, hz):
     return rates
 
 
-def _init_worker(free_sign_skids=(), reward_contrast=False, bg_hz=0.0, bg_mv=0.0):
-    _STATE.update(setup(tuple(free_sign_skids)))
+def _init_worker(free_sign_skids=(), reward_contrast=False, bg_hz=0.0, bg_mv=0.0, shuffle=None):
+    _STATE.update(setup(tuple(free_sign_skids), shuffle))
     _STATE["reward_contrast"] = reward_contrast
     if bg_hz > 0:
         _STATE["background"] = {"background_hz": background_rates(_STATE, bg_hz), "background_weight_mv": bg_mv}
@@ -237,6 +251,7 @@ def main(argv=None) -> int:
         "--reward-contrast", action="store_true",
         help="require odor-evoked pPAM rate <= 0.5 x sugar-evoked rate (functional requirement, not a measured value)",
     )
+    parser.add_argument("--shuffle", default=None, help="null model, e.g. block:1 or full:1 (see brain_sim.shuffle_targets)")
     parser.add_argument("--bg-hz", type=float, default=0.0, help="spontaneous Poisson input per non-KC neuron")
     parser.add_argument("--bg-mv", type=float, default=6.0)
     args = parser.parse_args(argv)
@@ -245,7 +260,11 @@ def main(argv=None) -> int:
     if args.free_signs:
         ranking = json.loads(args.ranking.read_text(encoding="utf-8"))
         free = tuple(item["skid"] for item in ranking["top50"][: args.free_signs])
-    state = setup(free)
+    shuffle = None
+    if args.shuffle:
+        mode, seed = args.shuffle.split(":")
+        shuffle = {"mode": mode, "seed": int(seed)}
+    state = setup(free, shuffle)
     state["reward_contrast"] = args.reward_contrast
     if args.bg_hz > 0:
         state["background"] = {"background_hz": background_rates(state, args.bg_hz), "background_weight_mv": args.bg_mv}
@@ -265,7 +284,7 @@ def main(argv=None) -> int:
     es = CMAES(mean=x0, sigma=0.4, seed=0)
     history = []
     started = time.time()
-    with ProcessPoolExecutor(max_workers=args.workers, initializer=_init_worker, initargs=(free, args.reward_contrast, args.bg_hz, args.bg_mv)) as pool:
+    with ProcessPoolExecutor(max_workers=args.workers, initializer=_init_worker, initargs=(free, args.reward_contrast, args.bg_hz, args.bg_mv, shuffle)) as pool:
         for gen in range(args.generations):
             xs = es.ask()
             losses = np.array(list(pool.map(evaluate, xs)))
@@ -284,6 +303,7 @@ def main(argv=None) -> int:
         "held_out_seeds": list(TEST_SEEDS),
         "regularization": REG,
         "reward_contrast": args.reward_contrast,
+        "shuffle": shuffle,
         "background_hz": args.bg_hz,
         "background_mv": args.bg_mv if args.bg_hz > 0 else None,
         "class_sizes": state["class_sizes"],
