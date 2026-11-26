@@ -89,6 +89,7 @@ class BrainNetwork:
     skids: list[str]
     signs: np.ndarray
     weights: sparse.csr_matrix  # rows = pre, cols = post, values in mV
+    contacts: sparse.csr_matrix | None = None  # unsigned contact counts, rows = pre
     index: dict[str, int] = field(init=False)
 
     def __post_init__(self) -> None:
@@ -96,6 +97,22 @@ class BrainNetwork:
 
     def ids(self, skids: Iterable[str]) -> np.ndarray:
         return np.array([self.index[s] for s in skids if s in self.index], dtype=np.int64)
+
+    def reweighted(
+        self,
+        signs: np.ndarray | None = None,
+        row_scale: np.ndarray | None = None,
+        w_syn_mv: float = BrainParams().w_syn_mv,
+    ) -> "BrainNetwork":
+        """Same graph, new signs and/or per-presynaptic-neuron scale (mV per contact = w_syn * scale)."""
+        if self.contacts is None:
+            raise ValueError("network was built without contacts")
+        signs = self.signs if signs is None else np.asarray(signs, dtype=np.int8)
+        scale = np.ones(len(self.skids)) if row_scale is None else np.asarray(row_scale, dtype=float)
+        factor = sparse.diags(signs.astype(float) * scale * w_syn_mv)
+        return BrainNetwork(
+            skids=self.skids, signs=signs, weights=(factor @ self.contacts).tocsr(), contacts=self.contacts
+        )
 
 
 def build_network(
@@ -113,14 +130,16 @@ def build_network(
     rows, cols, vals = [], [], []
     for edge in compiled["edges"]:
         pre, post = index.get(edge["pre"]), index.get(edge["post"])
-        if pre is None or post is None or signs[pre] == 0:
+        if pre is None or post is None:
             continue
         rows.append(pre)
         cols.append(post)
-        vals.append(sum(edge["contacts_by_confidence"]) * int(signs[pre]) * params.w_syn_mv)
+        vals.append(float(sum(edge["contacts_by_confidence"])))
     n = len(skids)
-    weights = sparse.csr_matrix((vals, (rows, cols)), shape=(n, n), dtype=np.float64)
-    return BrainNetwork(skids=skids, signs=signs, weights=weights)
+    contacts = sparse.csr_matrix((vals, (rows, cols)), shape=(n, n), dtype=np.float64)
+    weights = (sparse.diags(signs.astype(float) * params.w_syn_mv) @ contacts).tocsr()
+    weights.eliminate_zeros()
+    return BrainNetwork(skids=skids, signs=signs, weights=weights, contacts=contacts)
 
 
 @dataclass
@@ -129,6 +148,7 @@ class RunResult:
     spike_counts: np.ndarray
     spikes_per_bin: np.ndarray  # population spikes per bin_ms
     bin_ms: float
+    late_counts: np.ndarray | None = None  # per-neuron spikes at t >= late_from_ms
 
     def rates_hz(self) -> np.ndarray:
         return self.spike_counts / (self.duration_ms / 1000.0)
@@ -142,6 +162,7 @@ def simulate(
     params: BrainParams = BrainParams(),
     seed: int = 0,
     bin_ms: float = 10.0,
+    late_from_ms: float | None = None,
 ) -> RunResult:
     """Run the network; ``poisson_inputs`` maps neuron index -> rate (Hz)."""
     n = len(network.skids)
@@ -157,6 +178,8 @@ def simulate(
     ref = np.zeros(n, dtype=np.int32)
     ring = np.zeros((delay, n))
     counts = np.zeros(n, dtype=np.int64)
+    late = np.zeros(n, dtype=np.int64) if late_from_ms is not None else None
+    late_step = int(round(late_from_ms / params.dt_ms)) if late_from_ms is not None else steps
     bin_steps = max(1, int(round(bin_ms / params.dt_ms)))
     per_bin = np.zeros(int(np.ceil(steps / bin_steps)), dtype=np.int64)
 
@@ -185,6 +208,10 @@ def simulate(
             g[fired] = 0.0
             ref[fired] = refractory
             counts[fired] += 1
+            if late is not None and step >= late_step:
+                late[fired] += 1
             per_bin[step // bin_steps] += fired.size
             ring[(step + delay) % delay] += np.asarray(weights[fired].sum(axis=0)).ravel()
-    return RunResult(duration_ms=duration_ms, spike_counts=counts, spikes_per_bin=per_bin, bin_ms=bin_ms)
+    return RunResult(
+        duration_ms=duration_ms, spike_counts=counts, spikes_per_bin=per_bin, bin_ms=bin_ms, late_counts=late
+    )
