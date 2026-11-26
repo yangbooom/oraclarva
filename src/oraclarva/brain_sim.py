@@ -143,6 +143,50 @@ def build_network(
 
 
 @dataclass
+class Plasticity:
+    """Dopamine-gated KC->MBON depression (three-factor, synapse-local rule).
+
+    dw_ij/dt = -eta * kc_trace_i(t) * da_j(t) * w_ij      (w_ij >= 0)
+    da_j     = sum_d modulation[d, j] * max(0, dan_trace_d(t) - da_threshold)
+
+``da_threshold`` (spikes in the DAN trace) stands in for the supralinear
+cAMP coincidence detection downstream of dopamine: weak, odor-evoked DAN
+activity does not teach, strong reinforcer-evoked activity does.
+
+    ``modulation`` (n_dan x n_mbon) is the compartment proxy; here it comes
+    from measured DAN->MBON contacts, row-normalized (ANATOMY_DERIVED).  KC->MBON
+    weights are taken out of the sparse matrix and held densely in ``km`` so
+    they can change; they persist across ``simulate`` calls (train, then test).
+    """
+
+    kc_idx: np.ndarray
+    mbon_idx: np.ndarray
+    dan_idx: np.ndarray
+    modulation: np.ndarray
+    eta: float = 2e-6  # per ms per (trace unit)^2
+    tau_kc_ms: float = 500.0
+    tau_dan_ms: float = 300.0
+    da_threshold: float = 0.0
+    learn: bool = True
+    km: np.ndarray | None = None
+    km_initial: np.ndarray | None = None
+
+    def attach(self, network: "BrainNetwork") -> "BrainNetwork":
+        """Move KC->MBON weights from ``network`` into ``km``; return the network without them."""
+        w = network.weights.tolil(copy=True)
+        sub = network.weights[self.kc_idx][:, self.mbon_idx].toarray()
+        for i in self.kc_idx:
+            for j in self.mbon_idx:
+                if w[i, j] != 0:
+                    w[i, j] = 0.0
+        self.km = sub.copy()
+        self.km_initial = sub.copy()
+        stripped = w.tocsr()
+        stripped.eliminate_zeros()
+        return BrainNetwork(skids=network.skids, signs=network.signs, weights=stripped, contacts=network.contacts)
+
+
+@dataclass
 class RunResult:
     duration_ms: float
     spike_counts: np.ndarray
@@ -163,8 +207,19 @@ def simulate(
     seed: int = 0,
     bin_ms: float = 10.0,
     late_from_ms: float | None = None,
+    plasticity: Plasticity | None = None,
+    extra_inputs: Sequence[tuple[Mapping[int, float], tuple[float, float]]] = (),
+    background_hz: float | np.ndarray = 0.0,
+    background_weight_mv: float = 0.0,
 ) -> RunResult:
-    """Run the network; ``poisson_inputs`` maps neuron index -> rate (Hz)."""
+    """Run the network.
+
+    ``poisson_inputs`` maps neuron index -> rate (Hz) inside ``stim_window_ms``;
+    ``extra_inputs`` adds more (rates, window) stimuli.  ``background_hz`` gives
+    every neuron an independent Poisson input of ``background_weight_mv``
+    (spontaneous synaptic noise; without it silent neurons cannot show
+    decreases, the known Shiu-model limitation).  It may be a per-neuron array.
+    """
     n = len(network.skids)
     steps = int(round(duration_ms / params.dt_ms))
     delay = max(1, int(round(params.t_dly_ms / params.dt_ms)))
@@ -187,6 +242,27 @@ def simulate(
     stim_p = np.array([poisson_inputs[i] for i in stim_idx]) * params.dt_ms / 1000.0 if stim_idx.size else None
     start, stop = stim_window_ms if stim_window_ms else (0.0, duration_ms)
     weights = network.weights
+    extras = [
+        (
+            np.array(sorted(rates), dtype=np.int64),
+            np.array([rates[i] for i in sorted(rates)]) * params.dt_ms / 1000.0,
+            window,
+        )
+        for rates, window in extra_inputs
+    ]
+    bg_prob = np.broadcast_to(np.asarray(background_hz, dtype=float), (n,)) * params.dt_ms / 1000.0
+    bg_on = bool(np.any(bg_prob > 0.0)) and background_weight_mv != 0.0
+    if plasticity is not None:
+        if plasticity.km is None:
+            raise ValueError("call plasticity.attach(network) first")
+        kc_local = np.full(n, -1, dtype=np.int64)
+        kc_local[plasticity.kc_idx] = np.arange(plasticity.kc_idx.size)
+        dan_local = np.full(n, -1, dtype=np.int64)
+        dan_local[plasticity.dan_idx] = np.arange(plasticity.dan_idx.size)
+        kc_tr = np.zeros(plasticity.kc_idx.size)
+        dan_tr = np.zeros(plasticity.dan_idx.size)
+        kc_decay = np.exp(-params.dt_ms / plasticity.tau_kc_ms)
+        dan_decay = np.exp(-params.dt_ms / plasticity.tau_dan_ms)
 
     for step in range(steps):
         slot = step % delay
@@ -196,6 +272,11 @@ def simulate(
         if stim_idx.size and start <= t < stop:
             hits = stim_idx[rng.random(stim_idx.size) < stim_p]
             g[hits] += params.poisson_weight_mv
+        if bg_on:
+            g[rng.random(n) < bg_prob] += background_weight_mv
+        for idx, prob, (e_start, e_stop) in extras:
+            if e_start <= t < e_stop:
+                g[idx[rng.random(idx.size) < prob]] += params.poisson_weight_mv
 
         active = ref == 0
         v[active] += k_mbr * (params.v0_mv - v[active] + g[active])
@@ -212,6 +293,20 @@ def simulate(
                 late[fired] += 1
             per_bin[step // bin_steps] += fired.size
             ring[(step + delay) % delay] += np.asarray(weights[fired].sum(axis=0)).ravel()
+            if plasticity is not None:
+                kc_fired = kc_local[fired]
+                kc_fired = kc_fired[kc_fired >= 0]
+                if kc_fired.size:
+                    ring[(step + delay) % delay][plasticity.mbon_idx] += plasticity.km[kc_fired].sum(axis=0)
+                    kc_tr[kc_fired] += 1.0
+                dan_fired = dan_local[fired]
+                dan_tr[dan_fired[dan_fired >= 0]] += 1.0
+        if plasticity is not None:
+            if plasticity.learn and kc_tr.any() and dan_tr.max() > plasticity.da_threshold:
+                da = np.maximum(dan_tr - plasticity.da_threshold, 0.0) @ plasticity.modulation
+                plasticity.km *= np.clip(1.0 - plasticity.eta * params.dt_ms * np.outer(kc_tr, da), 0.0, 1.0)
+            kc_tr *= kc_decay
+            dan_tr *= dan_decay
     return RunResult(
         duration_ms=duration_ms, spike_counts=counts, spikes_per_bin=per_bin, bin_ms=bin_ms, late_counts=late
     )

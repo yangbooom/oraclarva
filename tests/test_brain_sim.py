@@ -77,3 +77,58 @@ def test_late_counts_only_after_cutoff():
     run = simulate(net, 300.0, poisson_inputs={0: 150.0}, stim_window_ms=(0.0, 100.0), seed=1, late_from_ms=200.0)
     assert run.late_counts is not None and run.late_counts.sum() == 0
     assert run.spike_counts[0] > 0
+
+
+def _mb_compiled():
+    # 0 = odor input -> 1 = KC -> 2 = MBON ; 3 = sugar input -> 4 = DAN
+    neurons = [{"skid": str(i), "fast_sign": 1} for i in range(5)]
+    edges = [
+        {"pre": "0", "post": "1", "contacts_by_confidence": [0, 0, 0, 0, 160]},
+        {"pre": "1", "post": "2", "contacts_by_confidence": [0, 0, 0, 0, 160]},
+        {"pre": "3", "post": "4", "contacts_by_confidence": [0, 0, 0, 0, 160]},
+    ]
+    return {"neurons": neurons, "edges": edges}
+
+
+def _plastic(net):
+    from oraclarva.brain_sim import Plasticity
+
+    p = Plasticity(
+        kc_idx=np.array([1]), mbon_idx=np.array([2]), dan_idx=np.array([4]), modulation=np.array([[1.0]]), eta=2e-5
+    )
+    return p, p.attach(net)
+
+
+def test_kc_mbon_weights_move_out_of_sparse_matrix_and_still_drive_mbon():
+    net = build_network(_mb_compiled(), SignPolicy(mode="silent"))
+    p, stripped = _plastic(net)
+    assert stripped.weights[1, 2] == 0 and p.km[0, 0] == pytest.approx(160 * 0.275)
+    p.learn = False
+    run = simulate(stripped, 300.0, {0: 150.0}, seed=1, plasticity=p)
+    assert run.spike_counts[2] > 0
+
+
+def test_pairing_kc_with_dan_depresses_but_either_alone_does_not():
+    net = build_network(_mb_compiled(), SignPolicy(mode="silent"))
+    p, stripped = _plastic(net)
+    simulate(stripped, 500.0, {0: 150.0}, seed=1, plasticity=p)  # odor only
+    assert p.km[0, 0] == pytest.approx(p.km_initial[0, 0])
+    simulate(stripped, 500.0, {3: 150.0}, seed=1, plasticity=p)  # sugar only
+    assert p.km[0, 0] == pytest.approx(p.km_initial[0, 0])
+    simulate(stripped, 500.0, {0: 150.0, 3: 150.0}, seed=1, plasticity=p)  # paired
+    assert p.km[0, 0] < 0.9 * p.km_initial[0, 0]
+
+
+def test_background_noise_creates_baseline_activity():
+    net = build_network(_compiled(), SignPolicy(mode="silent"))
+    quiet = simulate(net, 500.0, seed=2)
+    noisy = simulate(net, 500.0, seed=2, background_hz=200.0, background_weight_mv=6.0)
+    assert quiet.spike_counts.sum() == 0 and noisy.spike_counts.sum() > 0
+
+
+def test_dopamine_threshold_blocks_weak_dan_activity():
+    net = build_network(_mb_compiled(), SignPolicy(mode="silent"))
+    p, stripped = _plastic(net)
+    p.da_threshold = 1e9
+    simulate(stripped, 500.0, {0: 150.0, 3: 150.0}, seed=1, plasticity=p)
+    assert p.km[0, 0] == pytest.approx(p.km_initial[0, 0])
