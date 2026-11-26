@@ -180,6 +180,9 @@ Limits:
 
 ## Next
 
+Null-model control, robustness and the first brain-body bridge: `docs/L1EM_NULL_MODEL_AND_BRAIN_BODY_BRIDGE_V0.md`.
+
+
 1. Refit the free signs tied across left/right homologs, and add more odors.
 2. Read the learned change out through descending neurons into the body
    (odor preference as navigation), which closes (c) end to end.

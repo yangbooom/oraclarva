@@ -226,6 +226,10 @@ class AxialLocomotionResult:
     t3_contact_proxy_peak_activation: float
     t3_contact_proxy_neural_traced: bool
     release_validated: bool = False
+    untraced_active_force_frames: int = 0
+
+
+BRAIN_BRIDGE_NODES = ("descending:MDN",)
 
 
 class AxialLocomotionProtocol:
@@ -644,6 +648,7 @@ class AxialLocomotionProtocol:
         additional_motor_origin_by_source: Mapping[
             str, Mapping[str, object]
         ] | None = None,
+        descending_spikes: Mapping[str, int] | None = None,
     ) -> NeuralMuscleActivationFrame:
         p = self.parameters
         dt = float(p["dt_s"])
@@ -692,6 +697,25 @@ class AxialLocomotionProtocol:
             index = self.index_by_id[node_id]
             external[index] = external.get(index, 0.0) + value
             self.additional_motor_origin_by_source[node_id] = origin
+        # Spikes of identified brain descending neurons from the whole-brain
+        # simulation (e.g. the four L1EM MDNs) arrive as excitatory synaptic
+        # current on the matching reduced-circuit node; nothing else is set.
+        for label, count in (descending_spikes or {}).items():
+            if label not in BRAIN_BRIDGE_NODES:
+                raise ValueError(f"{label} is not a brain-bridge node")
+            if count <= 0:
+                continue
+            index = self.index_by_id[label]
+            self.network.excitatory_current_a[index] += int(count) * float(
+                p.get("brain_bridge_current_a", p["premotor_current_a"])
+            )
+            if label == "descending:MDN":
+                self._last_anterior_origin = {
+                    "body_state_time_s": body_state.time_s,
+                    "sensor_node_id": "brain_l1em:MDN",
+                    "sensor_spike_time_s": time_s,
+                    "path_provenance": "MEASURED_PUBLISHED",
+                }
         spikes = self.network.step(external)
         spiked_labels = tuple(self.labels[index] for index in spikes)
         self.last_spiked_labels = spiked_labels
@@ -1131,7 +1155,10 @@ class AxialLocomotionLarva:
         anterior_touch: bool = False,
         duration_s: float | None = None,
         record_trajectory_interval_s: float | None = 0.03,
+        descending_spike_source: Any = None,
     ) -> AxialLocomotionResult:
+        """``descending_spike_source(time_s, dt_s) -> {bridge label: spike count}``
+        couples a whole-brain simulation (see ``brain_body_bridge``)."""
         p = self.config["parameters"]
         coupling = self.config["named_fiber_body_coupling"]
         contact = self.config["continuous_ground_contact"]
@@ -1149,6 +1176,7 @@ class AxialLocomotionLarva:
         local_tension_drive = dict.fromkeys(AXIAL_SEGMENTS, 0.0)
         feedback_frames = 0
         all_traced = True
+        untraced_frames = 0
         samples: list[dict[str, Any]] = []
         minimum_retention = 1.0
         maximum_retention = 0.0
@@ -1179,6 +1207,9 @@ class AxialLocomotionLarva:
                 posterior_touch=posterior_touch,
                 anterior_touch=anterior_touch,
                 local_tension_drive=local_tension_drive,
+                descending_spikes=(
+                    None if descending_spike_source is None else descending_spike_source(time_s, dt)
+                ),
             )
             force = self.coupling.step(
                 activation,
@@ -1216,11 +1247,13 @@ class AxialLocomotionLarva:
                 )
             if force.active_fiber_count > 0:
                 feedback_frames += 1
-                all_traced = all_traced and (
+                frame_traced = (
                     force.feedback_driven_fiber_count
                     == force.active_fiber_count
                     == force.feedback_traced_fiber_count
                 )
+                all_traced = all_traced and frame_traced
+                untraced_frames += 0 if frame_traced else 1
             active_gain = float(coupling["active_tension_gain_model_units"])
             local_tension_drive = {}
             for segment in AXIAL_SEGMENTS:
@@ -1319,6 +1352,7 @@ class AxialLocomotionLarva:
             trajectory_samples=tuple(samples),
             feedback_force_frames=feedback_frames,
             all_active_forces_sensory_traced=all_traced,
+            untraced_active_force_frames=untraced_frames,
             causal_trace_examples=trace_examples,
             t3_contact_proxy_peak_activation=(
                 maximum_t3_contact_proxy_activation

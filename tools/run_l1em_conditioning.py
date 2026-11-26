@@ -52,10 +52,15 @@ TEST_TRIALS = 3
 _S: dict = {}
 
 
-def _setup(fit_path: str, eta: float, bg_hz: float = 0.0, bg_mv: float = 0.0, da_threshold: float = 0.0):
+def _setup(
+    fit_path: str, eta: float, bg_hz: float = 0.0, bg_mv: float = 0.0, da_threshold: float = 0.0,
+    p_exc: float | None = None, odor_a: tuple = ODOR_A, odor_b: tuple = ODOR_B,
+):
     fitted = json.loads(Path(fit_path).read_text(encoding="utf-8"))
     free = tuple(fitted.get("fitted_free_signs", {}))
-    state = fit.setup(free)
+    if p_exc is not None:
+        fit.P_EXC = p_exc  # robustness: resample unknown signs with another excitatory fraction
+    state = fit.setup(free, fitted.get("shuffle"))  # a null-model fit re-creates its shuffled network
     with tarfile.open(fit.SNAPSHOT) as archive:
         raw = json.load(archive.extractfile("annotations_for_skeletons.json"))
     base = state["base"]
@@ -78,8 +83,8 @@ def _setup(fit_path: str, eta: float, bg_hz: float = 0.0, bg_mv: float = 0.0, da
         state=state,
         scale=fit.row_scale(x[:n_scale], state),
         free_signs=free_signs,
-        odor_a=odor(ODOR_A),
-        odor_b=odor(ODOR_B),
+        odor_a=odor(tuple(odor_a)),
+        odor_b=odor(tuple(odor_b)),
         sugar=state["sugar"],
         punish=base.ids(s for s in members("mw MBIN subclass_DAN") if name_of[s].split(" ")[0] in PUNISH_DANS),
         kc=kc,
@@ -161,6 +166,9 @@ def main(argv=None) -> int:
     parser.add_argument("--fit", default=str(LOCAL / "runs" / "celltype_sign_fit_v2.json"))
     parser.add_argument("--eta", type=float, default=2e-3)
     parser.add_argument("--da-threshold", type=float, default=4.0)
+    parser.add_argument("--p-exc", type=float, default=None, help="excitatory fraction for unknown signs (default: fit's 0.7)")
+    parser.add_argument("--odor-a", nargs="+", default=list(ODOR_A))
+    parser.add_argument("--odor-b", nargs="+", default=list(ODOR_B))
     parser.add_argument("--bg-hz", type=float, default=100.0, help="spontaneous Poisson input per neuron")
     parser.add_argument("--bg-mv", type=float, default=6.0)
     parser.add_argument("--seeds", type=int, nargs="+", default=list(fit.TEST_SEEDS))
@@ -169,7 +177,7 @@ def main(argv=None) -> int:
     parser.add_argument("--out", type=Path, default=LOCAL / "runs" / "conditioning_v0.json")
     args = parser.parse_args(argv)
     jobs = [(seed, c) for c in args.conditions for seed in args.seeds]
-    with ProcessPoolExecutor(max_workers=args.workers, initializer=_setup, initargs=(args.fit, args.eta, args.bg_hz, args.bg_mv, args.da_threshold)) as pool:
+    with ProcessPoolExecutor(max_workers=args.workers, initializer=_setup, initargs=(args.fit, args.eta, args.bg_hz, args.bg_mv, args.da_threshold, args.p_exc, args.odor_a, args.odor_b)) as pool:
         rows = list(pool.map(run_seed, jobs))
     summary = {}
     for c in args.conditions:
@@ -180,7 +188,7 @@ def main(argv=None) -> int:
             "LI_positive": int((li > 0).sum()),
             "n": int(li.size),
         }
-    report = {"fit": args.fit, "eta": args.eta, "da_threshold": args.da_threshold, "background_hz": args.bg_hz, "background_mv": args.bg_mv, "odor_A": ODOR_A, "odor_B": ODOR_B, "summary": summary, "runs": rows}
+    report = {"fit": args.fit, "shuffle": json.loads(Path(args.fit).read_text(encoding="utf-8")).get("shuffle"), "eta": args.eta, "da_threshold": args.da_threshold, "background_hz": args.bg_hz, "background_mv": args.bg_mv, "odor_A": args.odor_a, "odor_B": args.odor_b, "p_exc": args.p_exc, "summary": summary, "runs": rows}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({"summary": summary}, indent=2))
