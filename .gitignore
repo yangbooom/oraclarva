@@ -8,3 +8,6 @@ dist/
 .cxx/
 local.properties
 node_modules/
+
+# Third-party data fetched locally and never redistributed (license boundary)
+data/local/
