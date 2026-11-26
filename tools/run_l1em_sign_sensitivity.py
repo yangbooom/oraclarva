@@ -45,6 +45,8 @@ def main(argv=None) -> int:
     parser.add_argument("--w-syn", type=float, default=0.8)
     parser.add_argument("--p-exc", type=float, default=0.7)
     parser.add_argument("--seeds", type=int, default=60)
+    parser.add_argument("--orn-rate", type=float, default=100.0)
+    parser.add_argument("--fit", type=Path, default=None, help="celltype fit JSON; applies its fitted scales (w_base 0.275)")
     parser.add_argument("--out", type=Path, default=LOCAL / "runs" / "sign_sensitivity_v0.json")
     args = parser.parse_args(argv)
 
@@ -56,11 +58,20 @@ def main(argv=None) -> int:
     unknown = np.array(
         [n["fast_sign"] not in (1, -1) and not n.get("modulatory") and not n.get("conflict") for n in neurons]
     )
-    orn = {int(i): 100.0 for i in base.ids(annotation_members("mw ORN"))}
+    orn = {int(i): args.orn_rate for i in base.ids(annotation_members("mw ORN"))}
     contacts = base.contacts
+    row_scale, w_eff = None, args.w_syn
+    if args.fit is not None:
+        sys.path.insert(0, str(ROOT / "tools"))
+        import fit_l1em_celltype_scales as fit  # noqa: E402
+
+        fitted = json.loads(args.fit.read_text(encoding="utf-8"))
+        state = fit.setup()
+        row_scale = fit.row_scale(np.array(fitted["best_x"]), state)
+        w_eff = fit.W_BASE
 
     def run(signs, seed=0):
-        net = base.reweighted(signs=signs, w_syn_mv=args.w_syn)
+        net = base.reweighted(signs=signs, row_scale=row_scale, w_syn_mv=w_eff)
         return simulate(net, 800.0, orn, stim_window_ms=(0.0, 500.0), seed=seed, late_from_ms=600.0)
 
     runs = []
@@ -125,7 +136,9 @@ def main(argv=None) -> int:
         for i in ranked[:50]
     ]
     report = {
-        "w_syn_mv": args.w_syn,
+        "w_syn_mv": args.w_syn if args.fit is None else None,
+        "fit": str(args.fit) if args.fit else None,
+        "orn_rate_hz": args.orn_rate,
         "p_excitatory": args.p_exc,
         "seeds": args.seeds,
         "runaway_fraction": round(n_run / args.seeds, 3),

@@ -110,6 +110,9 @@ Interpretation and limits:
 
 ## Next
 
+Steps 1-3 below are done in `docs/L1EM_CONDITIONING_V0.md`.
+
+
 1. Fit or look up the signs of the ~30 stability-deciding neurons, then refit.
 2. Add quantitative L1 targets as they are found (KC response fraction,
    DAN rates) and odors beyond the appetitive set.
