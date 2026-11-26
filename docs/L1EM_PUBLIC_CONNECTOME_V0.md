@@ -86,7 +86,26 @@ matching incoming record (137,247 checked, 0 mismatched).
 | contacts to non-public fragments | 432,097 (one contact per fragment edge) |
 | public contacts from excitatory / inhibitory / unresolved pre | 104,911 / 31,767 / 292,297 |
 
-Open question: the paper is commonly summarized as about 548,000 synapses, but
-the public neuron-level brain-to-brain count here is 355,382. The difference
-(counting convention, polyadic sites, or partners missing from the public set)
-is not yet resolved, so do not treat these as the same quantity.
+Synapse count reconciliation: Winding et al. report "~548,000 synaptic sites",
+and say only about 75% of them (about 411,000) are linked to a neuron; the rest
+are mostly small dendritic fragments. The 355,382 public brain-to-brain contacts
+here are therefore a subset of the neuron-linked sites, not a different measure.
+Part of the remaining gap is brain-to-input and brain-to-VNC edges, which this
+count leaves out. Polyadic counting conventions are not stated in the text that
+was checked. Winding et al. also split edges into axo-dendritic (66.6%),
+axo-axonic (25.8%), dendro-dendritic (5.8%) and dendro-axonic (1.8%). This
+compiler does not yet make that split.
+
+## Neurotransmitter prediction survey (2026-11-26)
+
+- Winding et al. 2023 publish unsigned edges. The text we checked has no
+  per-neuron transmitter table and no edge signs.
+- Eckstein et al. 2024 (Cell, doi:10.1016/j.cell.2024.03.016) classify
+  synapses from EM by transmitter (ACh, Glu, GABA, DA, 5-HT, OA) with about 87%
+  synapse-level accuracy. They cover only the adult FAFB/FlyWire and hemibrain
+  volumes, and release the predictions on Zenodo (doi:10.5281/zenodo.10593546).
+- We found no published transmitter prediction for the L1EM larval volume.
+  Applying the Eckstein classifier would need L1EM image access at synapse
+  locations and retraining or validation on this volume's 3.8 x 3.8 x 50 nm
+  ssTEM, using the 653 annotated brain neurons as labels. That is a separate
+  project with its own licensing and compute questions.
