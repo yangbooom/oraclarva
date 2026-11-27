@@ -4,6 +4,7 @@ import ctypes
 import json
 import math
 import subprocess
+import sys
 from collections import Counter
 from dataclasses import dataclass
 from functools import lru_cache
@@ -388,13 +389,23 @@ def test_mobile_c_header_and_shared_exports_are_c_only(mobile_build: dict[str, P
         ],
         check=True,
     )
+    if sys.platform == "darwin":
+        # Mach-O has no ELF dynamic symbol table: list defined external
+        # symbols instead, and drop the C-ABI leading underscore.
+        nm_command = ["nm", "-gU", str(mobile_build["shared"])]
+    else:
+        nm_command = ["nm", "-D", "--defined-only", str(mobile_build["shared"])]
     symbols = subprocess.run(
-        ["nm", "-D", "--defined-only", str(mobile_build["shared"])],
+        nm_command,
         text=True,
         capture_output=True,
         check=True,
     ).stdout.splitlines()
-    assert {line.split()[-1] for line in symbols} == {
+    names = [line.split()[-1] for line in symbols if line.strip()]
+    if sys.platform == "darwin":
+        assert all(name.startswith("_") for name in names), names
+        names = [name[1:] for name in names]
+    assert set(names) == {
         "oraclarva_mobile_create",
         "oraclarva_mobile_create_spatial",
         "oraclarva_mobile_advance_environment",

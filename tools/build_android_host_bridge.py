@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -25,11 +27,34 @@ def required(name: str) -> str:
     return value
 
 
+def jdk_home() -> Path:
+    """Locate the JDK that provides jni.h for the host build."""
+    if sys.platform == "darwin":
+        # /usr/bin/javac on macOS is a launcher stub outside any JDK, so the
+        # JDK is found via JAVA_HOME or /usr/libexec/java_home instead.
+        configured = os.environ.get("JAVA_HOME")
+        if configured:
+            return Path(configured)
+        completed = subprocess.run(
+            ["/usr/libexec/java_home"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if completed.returncode == 0 and completed.stdout.strip():
+            return Path(completed.stdout.strip())
+    return Path(required("javac")).resolve().parents[1]
+
+
 def build(output: Path) -> Path:
     compiler = required("c++")
-    javac = Path(required("javac")).resolve()
-    jdk = javac.parents[1]
-    library = output / "liboraclarva_android.so"
+    jdk = jdk_home()
+    javac = jdk / "bin" / "javac"
+    platform_include = "darwin" if sys.platform == "darwin" else "linux"
+    # The host JVM resolves System.loadLibrary via its platform naming rule
+    # (liboraclarva_android.so on Linux, liboraclarva_android.dylib on macOS).
+    suffix = ".dylib" if sys.platform == "darwin" else ".so"
+    library = output / f"liboraclarva_android{suffix}"
     sources = (
         NATIVE / "lif_core.cpp",
         NATIVE / "spatial_controller.cpp",
@@ -54,7 +79,7 @@ def build(output: Path) -> Path:
             "-I",
             str(jdk / "include"),
             "-I",
-            str(jdk / "include" / "linux"),
+            str(jdk / "include" / platform_include),
             *(str(source) for source in sources),
             "-o",
             str(library),
