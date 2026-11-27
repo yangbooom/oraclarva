@@ -342,7 +342,15 @@ class BilateralSteeringCircuit:
     def motor_source_ids(self) -> frozenset[str]:
         return frozenset(self.channel_by_source)
 
-    def step(self, sample: BilateralFieldSample) -> SteeringCircuitFrame:
+    def step(
+        self,
+        sample: BilateralFieldSample,
+        brain_side_counts: Mapping[str, int] | None = None,
+    ) -> SteeringCircuitFrame:
+        """``brain_side_counts`` (left/right spike counts of a whole-brain
+        descending group) replaces the field-contrast drive of the two side
+        nodes: each spike adds ``brain_steering_current_a`` of excitatory
+        current. The field is then only sensed by the brain."""
         p = self.parameters
         time_s = sample.time_s
         due = [
@@ -375,12 +383,23 @@ class BilateralSteeringCircuit:
                 max(0.0, -signed - threshold) * float(p["contrast_gain"]),
             ),
         }
-        external = {
-            self.index_by_id[f"field_sensory:{side}"]:
-            value * float(p["sensory_current_a"])
-            for side, value in rectified.items()
-            if value > 0.0
-        }
+        if brain_side_counts is None:
+            external = {
+                self.index_by_id[f"field_sensory:{side}"]:
+                value * float(p["sensory_current_a"])
+                for side, value in rectified.items()
+                if value > 0.0
+            }
+        else:
+            rectified = {side: 0.0 for side in SIDES}
+            external = {}
+            for side in SIDES:
+                count = int(brain_side_counts.get(side, 0))
+                if count > 0:
+                    index = self.index_by_id[f"field_sensory:{side}"]
+                    self.network.excitatory_current_a[index] += count * float(
+                        p["brain_steering_current_a"]
+                    )
         spikes = self.network.step(external)
         spiked = tuple(self.labels[index] for index in spikes)
         for label in spiked:
@@ -393,6 +412,7 @@ class BilateralSteeringCircuit:
                 self.last_sensor_origin[side] = {
                     "body_state_time_s": time_s,
                     "sensor_node_id": sensor,
+                    "drive": "field" if brain_side_counts is None else "brain_l1em",
                     "sensor_spike_time_s": time_s,
                     "field_left_intensity": sample.left_intensity,
                     "field_right_intensity": sample.right_intensity,
@@ -731,7 +751,12 @@ class AxialSteeringLarva:
         posterior_touch: bool = True,
         duration_s: float | None = None,
         record_trajectory_interval_s: float | None = 0.01,
+        descending_spike_source: Any = None,
+        steering_spike_source: Any = None,
     ) -> AxialSteeringResult:
+        """``descending_spike_source(time_s, dt_s, field_sample)`` returns axial
+        brain-bridge counts; ``steering_spike_source()`` then returns the
+        left/right counts of the brain steering group for the same step."""
         p = self.axial_config["parameters"]
         coupling = self.axial_config["named_fiber_body_coupling"]
         contact = self.axial_config["continuous_ground_contact"]
@@ -857,13 +882,22 @@ class AxialSteeringLarva:
             time_s = step * dt
             body_state = self.transducer.sample(time_s)
             field_sample = BilateralFieldSample.from_body(self.body, field, time_s)
-            circuit_frame = self.circuit.step(field_sample)
+            bridge_counts = (
+                None
+                if descending_spike_source is None
+                else descending_spike_source(time_s, dt, field_sample)
+            )
+            circuit_frame = self.circuit.step(
+                field_sample,
+                None if steering_spike_source is None else steering_spike_source(),
+            )
             activation = self.protocol.step(
                 time_s,
                 body_state,
                 posterior_touch=posterior_touch,
                 anterior_touch=False,
                 local_tension_drive=local_tension_drive,
+                descending_spikes=bridge_counts,
                 additional_motor_current_by_source=(
                     circuit_frame.motor_current_by_source
                 ),

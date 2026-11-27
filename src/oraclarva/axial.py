@@ -229,7 +229,16 @@ class AxialLocomotionResult:
     untraced_active_force_frames: int = 0
 
 
-BRAIN_BRIDGE_NODES = ("descending:MDN",)
+# Reduced-circuit nodes that may receive whole-brain spikes:
+# - descending:MDN <- the four identified L1EM MDNs (backward);
+# - premotor:A27h:A6 <- L1EM brain neurons descending to A8/A9, where forward
+#   waves start (forward-initiation hypothesis, see
+#   docs/L1EM_DESCENDING_TARGETS_AND_SPONTANEOUS_CRAWL_V0.md).
+BRAIN_BRIDGE_NODES = ("descending:MDN", "premotor:A27h:A6")
+_BRAIN_BRIDGE_SENSOR = {
+    "descending:MDN": "brain_l1em:MDN",
+    "premotor:A27h:A6": "brain_l1em:dVNC_to_A8_A9",
+}
 
 
 class AxialLocomotionProtocol:
@@ -700,22 +709,36 @@ class AxialLocomotionProtocol:
         # Spikes of identified brain descending neurons from the whole-brain
         # simulation (e.g. the four L1EM MDNs) arrive as excitatory synaptic
         # current on the matching reduced-circuit node; nothing else is set.
+        # Contract: counts are spikes emitted in the preceding step [t - dt, t),
+        # so the brain spike strictly precedes any reduced-circuit spike.
+        brain_spike_time_s = time_s - dt
         for label, count in (descending_spikes or {}).items():
             if label not in BRAIN_BRIDGE_NODES:
                 raise ValueError(f"{label} is not a brain-bridge node")
             if count <= 0:
                 continue
             index = self.index_by_id[label]
+            per_node = p.get("brain_bridge_current_a_by_node", {})
             self.network.excitatory_current_a[index] += int(count) * float(
-                p.get("brain_bridge_current_a", p["premotor_current_a"])
+                per_node.get(label, p.get("brain_bridge_current_a", p["premotor_current_a"]))
             )
             if label == "descending:MDN":
                 self._last_anterior_origin = {
-                    "body_state_time_s": body_state.time_s,
-                    "sensor_node_id": "brain_l1em:MDN",
-                    "sensor_spike_time_s": time_s,
+                    "body_state_time_s": brain_spike_time_s,
+                    "sensor_node_id": _BRAIN_BRIDGE_SENSOR[label],
+                    "sensor_spike_time_s": brain_spike_time_s,
                     "path_provenance": "MEASURED_PUBLISHED",
                 }
+            else:
+                self._queue_origin(
+                    "forward",
+                    "A6",
+                    body_state_time_s=brain_spike_time_s,
+                    sensor_node_id=_BRAIN_BRIDGE_SENSOR[label],
+                    sensor_spike_time_s=brain_spike_time_s,
+                    available_time_s=time_s,
+                    path_provenance="ANATOMY_DERIVED",
+                )
         spikes = self.network.step(external)
         spiked_labels = tuple(self.labels[index] for index in spikes)
         self.last_spiked_labels = spiked_labels
