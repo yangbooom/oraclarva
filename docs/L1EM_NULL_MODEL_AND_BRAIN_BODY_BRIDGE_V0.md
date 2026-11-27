@@ -149,6 +149,8 @@ Key findings for the north star:
 
 ## 5. Next (toward natural movement)
 
+Items 1-3 are addressed in `docs/L1EM_DESCENDING_TARGETS_AND_SPONTANEOUS_CRAWL_V0.md`.
+
 1. **Descending-output targets.** Add L1-supported qualitative motor targets
    to the brain fit, with sources checked:
    - anterior touch -> MDN -> backward;

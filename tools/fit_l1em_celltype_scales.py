@@ -128,7 +128,87 @@ def setup(free_sign_skids: tuple[str, ...] = (), shuffle: dict | None = None) ->
         "kc_all": base.ids(_members(raw, "mw KC")),
         "free_idx": base.ids(free_sign_skids),
         "free_skids": [s for s in free_sign_skids if s in base.index],
+        "groups": _motor_sets(raw, base, names),
     }
+
+
+def _motor_sets(raw, base, names):
+    """Identified output groups and somatosensory input sets (index arrays)."""
+    listed = [names.get(s, "") for s in base.skids]
+    mdn = base.ids(_members(raw, "MDNs"))
+    forward = np.setdiff1d(base.ids(_members(raw, "lv dVNC to A8+A9")), mdn)
+    pdm = np.array([i for i, n in enumerate(listed) if n.startswith("PDM-DN")], dtype=np.int64)
+    # Anterior/head touch: first-order sensory inputs (AN/MxN external sensory,
+    # v'td, pCC) with >= 2 contacts onto Winding mechano-II/III 2nd-order
+    # neurons, i.e. the class II/III touch pathway into the brain.
+    pn = base.ids(_members(raw, "mw mechano-II/III 2nd_order"))
+    into = np.asarray(base.contacts[:, pn].sum(axis=1)).ravel()
+    first = _members(raw, "mw sens") | _members(raw, "mw A1 ascending class II_III")
+    touch = np.array(sorted(base.index[s] for s in first if s in base.index and into[base.index[s]] >= 2), dtype=np.int64)
+    return {
+        "MDN": mdn,
+        "PDM-DN": pdm,
+        "dVNC_to_A8_A9": forward,
+        "touch_II_III": touch,
+        "A1_ascending_noci": base.ids(_members(raw, "mw A1 ascending noci")),
+        "A1_ascending_mechano": base.ids(_members(raw, "mw A1 ascending mechano")),
+        "dVNC": base.ids(_members(raw, "mw dVNC")),
+        "MBON": base.ids(_members(raw, "mw MBON")),
+    }
+
+
+def motor_groups(state):
+    return state["groups"]
+
+
+def touch_path_skids(k: int) -> tuple[str, ...]:
+    """Top-k unknown-sign neurons that both receive head-touch signal (<= 3 hops)
+    and reach the MDNs (<= 2 hops), scored by the product of input fractions."""
+    import scipy.sparse as sparse  # noqa: PLC0415
+
+    compiled = json.loads(COMPILED.read_text(encoding="utf-8"))
+    neurons = [n for n in compiled["neurons"] if n["winding_2023"]]
+    base = build_network(compiled, SignPolicy(mode="silent"), BrainParams(), include={n["skid"] for n in neurons})
+    unknown = np.array([n["fast_sign"] is None for n in neurons])
+    with tarfile.open(SNAPSHOT) as archive:
+        raw = json.load(archive.extractfile("annotations_for_skeletons.json"))
+    names = {n["skid"]: n["name"] for n in neurons}
+    groups = _motor_sets(raw, base, names)
+    a = sparse.csr_matrix(base.contacts, dtype=float)
+    total = np.asarray(a.sum(axis=0)).ravel()
+    total[total == 0] = 1.0
+    f = a.multiply(1.0 / total).tocsr()  # pre -> post, as fraction of post input
+    v = np.zeros(a.shape[0])
+    v[groups["touch_II_III"]] = 1.0
+    reach = np.zeros_like(v)
+    for _ in range(3):
+        v = f.T @ v
+        reach += v
+    w = np.zeros(a.shape[0])
+    w[groups["MDN"]] = 1.0
+    back = np.zeros_like(w)
+    for _ in range(2):
+        w = f @ w
+        back += w
+    score = reach * back
+    score[~unknown] = 0
+    score[groups["MDN"]] = 0
+    return tuple(base.skids[i] for i in np.argsort(-score)[:k] if score[i] > 0)
+
+
+def mdn_input_skids(k: int) -> tuple[str, ...]:
+    """Top-k unknown-sign presynaptic partners of the MDNs, by L1EM contacts."""
+    compiled = json.loads(COMPILED.read_text(encoding="utf-8"))
+    neurons = [n for n in compiled["neurons"] if n["winding_2023"]]
+    base = build_network(compiled, SignPolicy(mode="silent"), BrainParams(), include={n["skid"] for n in neurons})
+    unknown = np.array([n["fast_sign"] is None for n in neurons])
+    with tarfile.open(SNAPSHOT) as archive:
+        raw = json.load(archive.extractfile("annotations_for_skeletons.json"))
+    mdn = base.ids(_members(raw, "MDNs"))
+    into = np.asarray(base.contacts[:, mdn].sum(axis=1)).ravel()
+    into[mdn] = 0
+    into[~unknown] = 0
+    return tuple(base.skids[i] for i in np.argsort(-into)[:k] if into[i] > 0)
 
 
 def background_rates(state, hz):
@@ -138,9 +218,10 @@ def background_rates(state, hz):
     return rates
 
 
-def _init_worker(free_sign_skids=(), reward_contrast=False, bg_hz=0.0, bg_mv=0.0, shuffle=None):
+def _init_worker(free_sign_skids=(), reward_contrast=False, bg_hz=0.0, bg_mv=0.0, shuffle=None, motor_targets=False):
     _STATE.update(setup(tuple(free_sign_skids), shuffle))
     _STATE["reward_contrast"] = reward_contrast
+    _STATE["motor_targets"] = motor_targets
     if bg_hz > 0:
         _STATE["background"] = {"background_hz": background_rates(_STATE, bg_hz), "background_weight_mv": bg_mv}
 
@@ -203,6 +284,39 @@ def evaluate(x, seeds=TRAIN_SEEDS, side="left", state=None, detail=False):
         ppam_odor = float((o.rates_hz()[s["ppam"]] - ppam_base).mean())
         contrast = _hinge(ppam_odor, None, 0.5 * float(ppam_rates.mean()), 5.0) if s.get("reward_contrast") else 0.0
         max_rate = float(max(o.rates_hz().max(), g.rates_hz().max()))
+        motor = {}
+        motor_loss = 0.0
+        if s.get("motor_targets"):
+            # Descending-output targets (qualitative, docs/L1EM_DESCENDING_TARGETS_AND_SPONTANEOUS_CRAWL_V0.md):
+            # head touch -> MDN (larvae back up on anterior touch); appetitive odor
+            # and sugar do not recruit MDN; resting MDN stays low.
+            grp = s["groups"]
+            t = run({int(i): 150.0 for i in grp["touch_II_III"]})
+            ref = b.rates_hz()[grp["MDN"]].mean() if b is not None else 0.0
+            motor = {
+                "mdn_touch_evoked_hz": float(t.rates_hz()[grp["MDN"]].mean() - ref),
+                "mdn_odor_evoked_hz": float(o.rates_hz()[grp["MDN"]].mean() - ref),
+                "mdn_sugar_evoked_hz": float(g.rates_hz()[grp["MDN"]].mean() - ref),
+                "mdn_baseline_hz": float(ref),
+                "forward_dn_baseline_hz": float(b.rates_hz()[grp["dVNC_to_A8_A9"]].mean()) if b is not None else 0.0,
+            }
+            mbon_ref = b.rates_hz()[grp["MBON"]] if b is not None else 0.0
+            mbon_evoked = o.rates_hz()[grp["MBON"]] - mbon_ref
+            motor["mbon_odor_evoked_hz"] = float(mbon_evoked.mean())
+            motor["mbon_odor_active_fraction"] = float((mbon_evoked > 2.0).mean())
+            if b is not None:
+                late += max(0.0, (t.late_counts.sum() - b.late_counts.sum()) / max(1, t.spike_counts.sum()) - 0.02)
+            max_rate = max(max_rate, float(t.rates_hz().max()))
+            motor_loss = (
+                _hinge(motor["mdn_touch_evoked_hz"], 15.0, None, 5.0)
+                + _hinge(motor["mdn_odor_evoked_hz"], None, 2.0, 2.0)
+                + _hinge(motor["mdn_sugar_evoked_hz"], None, 2.0, 2.0)
+                + _hinge(motor["mdn_baseline_hz"], None, 3.0, 2.0)
+                # Memory readout needs odor-driven MBONs (functional requirement;
+                # the motor-only refit v3b lost it and with it conditioning).
+                + _hinge(motor["mbon_odor_evoked_hz"], 3.0, None, 1.5)
+                + _hinge(motor["mbon_odor_active_fraction"], 0.3, None, 0.1)
+            )
         loss = (
             50.0 * strong_late
             + 5.0 * float(strong_late > 0)
@@ -214,6 +328,7 @@ def evaluate(x, seeds=TRAIN_SEEDS, side="left", state=None, detail=False):
             + _hinge(float(ppam_rates.mean()), 5.0, None, 5.0)
             + _hinge(max_rate, None, 300.0, 50.0)
             + contrast
+            + motor_loss
             + (_hinge(float(ppam_base.mean()), None, 15.0, 5.0) if b is not None else 0.0)
         )
         total += loss
@@ -231,6 +346,7 @@ def evaluate(x, seeds=TRAIN_SEEDS, side="left", state=None, detail=False):
                 "ppam_baseline_rate_hz": round(float(ppam_base.mean()), 1),
                 "max_rate_hz": round(max_rate, 1),
                 "active_neurons_odor": int((o.spike_counts > 0).sum()),
+                **{k: round(v, 2) for k, v in motor.items()},
             }
         )
     x0 = np.full(n_scale, np.log(0.6 / W_BASE))
@@ -254,18 +370,29 @@ def main(argv=None) -> int:
     parser.add_argument("--shuffle", default=None, help="null model, e.g. block:1 or full:1 (see brain_sim.shuffle_targets)")
     parser.add_argument("--bg-hz", type=float, default=0.0, help="spontaneous Poisson input per non-KC neuron")
     parser.add_argument("--bg-mv", type=float, default=6.0)
+    parser.add_argument(
+        "--motor-targets", action="store_true",
+        help="add descending-output targets: head touch -> MDN, odor/sugar do not recruit MDN (qualitative)",
+    )
+    parser.add_argument("--free-mdn-input-signs", type=int, default=0, help="also fit signs of the top-K unknown MDN inputs")
+    parser.add_argument("--free-touch-path-signs", type=int, default=0, help="also fit signs of top-K unknown neurons on head-touch -> MDN paths")
     args = parser.parse_args(argv)
 
     free = ()
     if args.free_signs:
         ranking = json.loads(args.ranking.read_text(encoding="utf-8"))
         free = tuple(item["skid"] for item in ranking["top50"][: args.free_signs])
+    if args.free_mdn_input_signs:
+        free = free + tuple(k for k in mdn_input_skids(args.free_mdn_input_signs) if k not in free)
+    if args.free_touch_path_signs:
+        free = free + tuple(k for k in touch_path_skids(args.free_touch_path_signs) if k not in free)
     shuffle = None
     if args.shuffle:
         mode, seed = args.shuffle.split(":")
         shuffle = {"mode": mode, "seed": int(seed)}
     state = setup(free, shuffle)
     state["reward_contrast"] = args.reward_contrast
+    state["motor_targets"] = args.motor_targets
     if args.bg_hz > 0:
         state["background"] = {"background_hz": background_rates(state, args.bg_hz), "background_weight_mv": args.bg_mv}
     n_scale = len(CLASSES) + 1
@@ -276,15 +403,18 @@ def main(argv=None) -> int:
     if args.init is not None:
         prev = json.loads(args.init.read_text(encoding="utf-8"))["best_x"]
         x0[:n_scale] = prev[:n_scale]
-        if len(prev) == dims:
-            x0[n_scale:] = prev[n_scale:]
+        # Reuse previously fitted signs for the leading free neurons; new free
+        # signs start undecided (0 = threshold).
+        k = min(len(prev), dims) - n_scale
+        if k > 0:
+            x0[n_scale : n_scale + k] = prev[n_scale : n_scale + k]
     baseline = {
         "start_point_train": evaluate(x0, state=state, detail=True),
     }
     es = CMAES(mean=x0, sigma=0.4, seed=0)
     history = []
     started = time.time()
-    with ProcessPoolExecutor(max_workers=args.workers, initializer=_init_worker, initargs=(free, args.reward_contrast, args.bg_hz, args.bg_mv, shuffle)) as pool:
+    with ProcessPoolExecutor(max_workers=args.workers, initializer=_init_worker, initargs=(free, args.reward_contrast, args.bg_hz, args.bg_mv, shuffle, args.motor_targets)) as pool:
         for gen in range(args.generations):
             xs = es.ask()
             losses = np.array(list(pool.map(evaluate, xs)))
@@ -303,6 +433,7 @@ def main(argv=None) -> int:
         "held_out_seeds": list(TEST_SEEDS),
         "regularization": REG,
         "reward_contrast": args.reward_contrast,
+        "motor_targets": args.motor_targets,
         "shuffle": shuffle,
         "background_hz": args.bg_hz,
         "background_mv": args.bg_mv if args.bg_hz > 0 else None,
