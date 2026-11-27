@@ -146,3 +146,67 @@ class BrainSpikeSource:
             self.per_ms[name].append(k)
         self.pending = {node: int(counts[self.groups[g]].sum()) for node, g in self.bridges.items()}
         return out
+
+
+class OrnTransducer:
+    """Odor concentration -> ORN input with adaptation and offset inhibition.
+
+    Larval ORNs act as differentiators: they respond to the rise of a stimulus,
+    keep a smaller sustained response, and fall below their spontaneous rate
+    after a decrease (Schulze et al. 2015 eLife, Or42a, L3: "At the end of the
+    falling phase, OSN activity decreased below baseline").  Here, with
+    concentration F in [0, 1] and an adaptation variable A (dA/dt = (F - A)/tau):
+
+        drive d = F - beta * A
+        d > 0: extra Poisson input at gain_hz * d (as for a constant odor);
+        d < 0: the ORNs' spontaneous (background) input is scaled by
+               clip(1 + d / inhibition_scale, 0, 1).
+
+    This is a sensory transduction model (environment -> first-order neuron),
+    not a brain or motor rule. tau_s, beta and inhibition_scale are
+    MODEL_ASSUMPTION values; the paper's ODE parameters were not transcribed.
+    """
+
+    def __init__(self, brain: BrainStepper, orns: np.ndarray, gain_hz: float = 150.0, beta: float = 0.7,
+                 tau_s: float = 1.0, inhibition_scale: float = 0.2, seed: int = 0) -> None:
+        self.brain = brain
+        self.orns = np.asarray(orns, dtype=np.int64)
+        self.base_prob = brain.bg_prob[self.orns].copy()
+        self.gain_hz = float(gain_hz)
+        self.beta = float(beta)
+        self.tau_s = float(tau_s)
+        self.inhibition_scale = float(inhibition_scale)
+        self.adapted = 0.0
+        self.drive = 0.0
+        self.factor = 1.0
+        self.rng = np.random.default_rng(seed)
+
+    def _set_background(self, factor: float) -> None:
+        # The kernel draws background events as geometric gaps (bg_next). A
+        # Bernoulli process is memoryless, so redrawing the next event from the
+        # current step at the new probability is exact.
+        self.factor = factor
+        prob = self.base_prob * factor
+        self.brain.bg_prob[self.orns] = prob
+        bg_next = self.brain.state[4]
+        never = np.iinfo(np.int64).max
+        for i, p in zip(self.orns, prob):
+            bg_next[i] = never if p <= 0.0 else self.brain.step + int(self.rng.geometric(min(p, 1.0))) - 1
+
+    def reset(self, concentration: float) -> None:
+        self.adapted = float(concentration)
+
+    def __call__(self, concentration: float, dt_s: float) -> dict[int, float]:
+        f = float(concentration)
+        self.adapted += dt_s / self.tau_s * (f - self.adapted)
+        d = f - self.beta * self.adapted
+        self.drive = d
+        factor = min(1.0, max(0.0, 1.0 + min(0.0, d) / self.inhibition_scale))
+        if factor > 0.999:
+            factor = 1.0
+        if abs(factor - self.factor) > 1e-3 or (factor != self.factor and factor in (0.0, 1.0)):
+            self._set_background(factor)
+        if d <= 0.0:
+            return {}
+        rate = self.gain_hz * d
+        return {int(i): rate for i in self.orns}

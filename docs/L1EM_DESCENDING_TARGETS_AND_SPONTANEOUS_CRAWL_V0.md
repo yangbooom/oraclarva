@@ -264,3 +264,4 @@ Held out (seeds 100-109, 20 s; paired by seed, +y run minus -y run):
 .venv/bin/python tools/run_brain_odor_navigation.py --fit .../celltype_motor_fit_v3b.json \
   --seeds 100 ... 109 --steering-current-a 2e-10 --forward-current-a 2e-10 --mdn-current-a 1.5e-10
 ```
+- Follow-up (joint fit v4, bridge re-calibration, GVLI, PDM-DN -> SEZ-DN1 stop): `L1EM_JOINT_FIT_GVLI_PDM_STOP_V0.md`.

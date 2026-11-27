@@ -234,11 +234,39 @@ class AxialLocomotionResult:
 # - premotor:A27h:A6 <- L1EM brain neurons descending to A8/A9, where forward
 #   waves start (forward-initiation hypothesis, see
 #   docs/L1EM_DESCENDING_TARGETS_AND_SPONTANEOUS_CRAWL_V0.md).
-BRAIN_BRIDGE_NODES = ("descending:MDN", "premotor:A27h:A6")
+BRAIN_BRIDGE_NODES = ("descending:MDN", "premotor:A27h:A6", "descending:SEZ-DN1")
+# SEZ-DN1 (GABA) receives PDM-DN and synapses onto A27h, with connections
+# "restricted to the posterior segments" (Tastekin et al. 2018 eLife, L1 EM);
+# PDM-DN and SEZ-DN1 stop crawling "by inhibiting the initiation of new
+# peristaltic waves at the posterior segments".  A6 and A5 are the two most
+# posterior segments of this body (the exact segment list is an assumption).
+SEZ_DN1_TARGET_SEGMENTS = ("A6", "A5")
 _BRAIN_BRIDGE_SENSOR = {
     "descending:MDN": "brain_l1em:MDN",
     "premotor:A27h:A6": "brain_l1em:dVNC_to_A8_A9",
+    "descending:SEZ-DN1": "brain_l1em:PDM-DN",
 }
+
+
+# GVLI (glutamatergic ventro-lateral interneurons; Itakura et al. 2015 PLoS One,
+# L3 imaging): a segment's GVLIs are "activated when the front of a forward motor
+# wave reaches the second or third anterior segment" and "most likely ...
+# directly inhibit motoneurons in the same neuromere".  Inputs here are the
+# A27h premotor neurons two and three segments anterior (the wave-front
+# position); the input identity itself is not known (MODEL_HYPOTHESIS).
+GVLI_INPUT_OFFSETS = (2, 3)
+
+
+def gvli_inputs() -> dict[str, tuple[str, ...]]:
+    order = list(FORWARD_WAVE)  # posterior -> anterior
+    out: dict[str, tuple[str, ...]] = {}
+    for index, segment in enumerate(order):
+        sources = tuple(
+            order[index + k] for k in GVLI_INPUT_OFFSETS if index + k < len(order)
+        )
+        if sources:
+            out[segment] = sources
+    return out
 
 
 class AxialLocomotionProtocol:
@@ -287,6 +315,12 @@ class AxialLocomotionProtocol:
         labels.extend(f"premotor:A18b:{segment}" for segment in AXIAL_SEGMENTS)
         labels.extend(f"inhibitory:Ifb-Bwd:{segment}" for segment in AXIAL_SEGMENTS)
         labels.extend(f"inhibitory:Canon-A18g:{segment}" for segment in AXIAL_SEGMENTS)
+        self.gvli_enabled = float(config["parameters"].get("gvli_inhibitory_current_a", 0.0)) > 0.0
+        self.gvli_inputs = gvli_inputs() if self.gvli_enabled else {}
+        labels.extend(f"inhibitory:GVLI:{segment}" for segment in self.gvli_inputs)
+        self.sez_dn1_enabled = float(config["parameters"].get("sez_dn1_inhibitory_current_a", 0.0)) > 0.0
+        if self.sez_dn1_enabled:
+            labels.append("descending:SEZ-DN1")
         labels.extend(sorted(projection.source_node_ids))
         if len(labels) != len(set(labels)):
             raise ValueError("axial neural labels must be unique")
@@ -361,6 +395,26 @@ class AxialLocomotionProtocol:
                     delay_steps=steps("intersegmental_delay_s"),
                 )
             )
+
+        if self.sez_dn1_enabled:
+            for segment in SEZ_DN1_TARGET_SEGMENTS:
+                synapses.append(
+                    Synapse(
+                        self.index_by_id["descending:SEZ-DN1"],
+                        self.index_by_id[f"premotor:A27h:{segment}"],
+                        float(p["sez_dn1_inhibitory_current_a"]),
+                        kind="inhibitory",
+                    )
+                )
+        for segment, sources in self.gvli_inputs.items():
+            for source in sources:
+                synapses.append(
+                    Synapse(
+                        self.index_by_id[f"premotor:A27h:{source}"],
+                        self.index_by_id[f"inhibitory:GVLI:{segment}"],
+                        premotor_current,
+                    )
+                )
 
         atlas = load_muscle_atlas()
         group_by_number = {
@@ -474,6 +528,7 @@ class AxialLocomotionProtocol:
         self.adaptation["mechanosensory:recovery:A1"] = 0.0
         self.adaptation["mechanosensory:recovery:A6"] = 0.0
         self.pair1_gate = 0.0
+        self.gvli_gate = dict.fromkeys(self.gvli_inputs, 0.0)
         self.relaxation_drive = dict.fromkeys(AXIAL_SEGMENTS, 0.0)
         self.pending_origins = {
             (direction, segment): []
@@ -538,6 +593,18 @@ class AxialLocomotionProtocol:
                 external[self.index_by_id["environment_touch:anterior"]] = float(
                     p["touch_current_a"]
                 )
+        if self.gvli_inputs:
+            # GVLI -> motoneurons of the same segment.  The GVLI burst is
+            # represented as a decaying gate (like the Pair1 gate); its
+            # duration gvli_gate_tau_s is fitted, not measured.
+            gvli_decay = exp(-dt / float(p["gvli_gate_tau_s"]))
+            gvli_current = float(p["gvli_inhibitory_current_a"])
+            for segment in self.gvli_gate:
+                self.gvli_gate[segment] *= gvli_decay
+                if self.gvli_gate[segment] > 1e-6:
+                    for node_id in self.source_nodes_by_segment[segment]:
+                        index = self.index_by_id[node_id]
+                        external[index] = external.get(index, 0.0) - gvli_current * self.gvli_gate[segment]
         maximum = float(p["sensory_maximum_current_a"])
         forward_gate = max(0.0, 1.0 - self.pair1_gate)
         for segment in AXIAL_SEGMENTS:
@@ -717,12 +784,16 @@ class AxialLocomotionProtocol:
                 raise ValueError(f"{label} is not a brain-bridge node")
             if count <= 0:
                 continue
+            if label not in self.index_by_id:
+                raise ValueError(f"{label} is not enabled in this axial configuration")
             index = self.index_by_id[label]
             per_node = p.get("brain_bridge_current_a_by_node", {})
             self.network.excitatory_current_a[index] += int(count) * float(
                 per_node.get(label, p.get("brain_bridge_current_a", p["premotor_current_a"]))
             )
-            if label == "descending:MDN":
+            if label == "descending:SEZ-DN1":
+                pass  # inhibitory relay: produces no force, so no causal origin
+            elif label == "descending:MDN":
                 self._last_anterior_origin = {
                     "body_state_time_s": brain_spike_time_s,
                     "sensor_node_id": _BRAIN_BRIDGE_SENSOR[label],
@@ -788,6 +859,9 @@ class AxialLocomotionProtocol:
             )
         if "descending:Pair1" in spiked_labels:
             self.pair1_gate = 1.0
+        for segment in self.gvli_gate:
+            if f"inhibitory:GVLI:{segment}" in spiked_labels:
+                self.gvli_gate[segment] = 1.0
 
         if self.t3_contact_proxy_event_pending:
             self.t3_contact_proxy_excitation = max(
