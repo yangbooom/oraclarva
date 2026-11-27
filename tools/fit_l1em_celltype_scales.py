@@ -138,6 +138,7 @@ def _motor_sets(raw, base, names):
     mdn = base.ids(_members(raw, "MDNs"))
     forward = np.setdiff1d(base.ids(_members(raw, "lv dVNC to A8+A9")), mdn)
     pdm = np.array([i for i, n in enumerate(listed) if n.startswith("PDM-DN")], dtype=np.int64)
+    sez_dn1 = np.array([i for i, n in enumerate(listed) if n.startswith("SEZ-DN1")], dtype=np.int64)
     # Anterior/head touch: first-order sensory inputs (AN/MxN external sensory,
     # v'td, pCC) with >= 2 contacts onto Winding mechano-II/III 2nd-order
     # neurons, i.e. the class II/III touch pathway into the brain.
@@ -148,6 +149,7 @@ def _motor_sets(raw, base, names):
     return {
         "MDN": mdn,
         "PDM-DN": pdm,
+        "SEZ-DN1": sez_dn1,
         "dVNC_to_A8_A9": forward,
         "touch_II_III": touch,
         "A1_ascending_noci": base.ids(_members(raw, "mw A1 ascending noci")),
@@ -164,6 +166,17 @@ def motor_groups(state):
 def touch_path_skids(k: int) -> tuple[str, ...]:
     """Top-k unknown-sign neurons that both receive head-touch signal (<= 3 hops)
     and reach the MDNs (<= 2 hops), scored by the product of input fractions."""
+    return path_skids(k, "touch_II_III", "MDN")
+
+
+def pdm_path_skids(k: int) -> tuple[str, ...]:
+    """Top-k unknown-sign neurons on appetitive-ORN -> PDM-DN paths (ORN -> PN ->
+    LH-LN1 -> LH-LN2 -> PDM-DN in Tastekin et al. 2018, whose motif signs "are
+    unknown"); ORN reach <= 3 hops, PDM-DN reach <= 2 hops."""
+    return path_skids(k, "ORN_appetitive", "PDM-DN")
+
+
+def path_skids(k: int, source: str, target: str) -> tuple[str, ...]:
     import scipy.sparse as sparse  # noqa: PLC0415
 
     compiled = json.loads(COMPILED.read_text(encoding="utf-8"))
@@ -174,25 +187,26 @@ def touch_path_skids(k: int) -> tuple[str, ...]:
         raw = json.load(archive.extractfile("annotations_for_skeletons.json"))
     names = {n["skid"]: n["name"] for n in neurons}
     groups = _motor_sets(raw, base, names)
+    groups["ORN_appetitive"] = base.ids(_members(raw, "mw ORN appetitive"))
     a = sparse.csr_matrix(base.contacts, dtype=float)
     total = np.asarray(a.sum(axis=0)).ravel()
     total[total == 0] = 1.0
     f = a.multiply(1.0 / total).tocsr()  # pre -> post, as fraction of post input
     v = np.zeros(a.shape[0])
-    v[groups["touch_II_III"]] = 1.0
+    v[groups[source]] = 1.0
     reach = np.zeros_like(v)
     for _ in range(3):
         v = f.T @ v
         reach += v
     w = np.zeros(a.shape[0])
-    w[groups["MDN"]] = 1.0
+    w[groups[target]] = 1.0
     back = np.zeros_like(w)
     for _ in range(2):
         w = f @ w
         back += w
     score = reach * back
     score[~unknown] = 0
-    score[groups["MDN"]] = 0
+    score[groups[target]] = 0
     return tuple(base.skids[i] for i in np.argsort(-score)[:k] if score[i] > 0)
 
 
@@ -218,12 +232,26 @@ def background_rates(state, hz):
     return rates
 
 
-def _init_worker(free_sign_skids=(), reward_contrast=False, bg_hz=0.0, bg_mv=0.0, shuffle=None, motor_targets=False):
+def _init_worker(
+    free_sign_skids=(), reward_contrast=False, bg_hz=0.0, bg_mv=0.0, shuffle=None, motor_targets=False,
+    x_fixed=None, free_dims=None, pdm_targets=False,
+):
     _STATE.update(setup(tuple(free_sign_skids), shuffle))
+    _STATE["pdm_targets"] = pdm_targets
+    if x_fixed is not None:
+        _STATE["x_fixed"] = np.asarray(x_fixed, dtype=float)
+        _STATE["free_dims"] = np.asarray(free_dims, dtype=np.int64)
     _STATE["reward_contrast"] = reward_contrast
     _STATE["motor_targets"] = motor_targets
     if bg_hz > 0:
         _STATE["background"] = {"background_hz": background_rates(_STATE, bg_hz), "background_weight_mv": bg_mv}
+
+
+def evaluate_free(z):
+    """Evaluate with only the unfrozen dimensions varied (``--freeze-classes``)."""
+    x = _STATE["x_fixed"].copy()
+    x[_STATE["free_dims"]] = z
+    return evaluate(x)
 
 
 def _hinge(value, low=None, high=None, scale=1.0):
@@ -286,6 +314,7 @@ def evaluate(x, seeds=TRAIN_SEEDS, side="left", state=None, detail=False):
         max_rate = float(max(o.rates_hz().max(), g.rates_hz().max()))
         motor = {}
         motor_loss = 0.0
+        pdm_loss = 0.0
         if s.get("motor_targets"):
             # Descending-output targets (qualitative, docs/L1EM_DESCENDING_TARGETS_AND_SPONTANEOUS_CRAWL_V0.md):
             # head touch -> MDN (larvae back up on anterior touch); appetitive odor
@@ -304,6 +333,17 @@ def evaluate(x, seeds=TRAIN_SEEDS, side="left", state=None, detail=False):
             mbon_evoked = o.rates_hz()[grp["MBON"]] - mbon_ref
             motor["mbon_odor_evoked_hz"] = float(mbon_evoked.mean())
             motor["mbon_odor_active_fraction"] = float((mbon_evoked > 2.0).mean())
+            if s.get("pdm_targets"):
+                # Functional requirement (not a measured PDM-DN response):
+                # high ORN activity suppresses turning and ORN inhibition
+                # promotes it (Schulze 2015), and PDM-DN drives stops/turns
+                # on negative gradients (Tastekin 2018), so appetitive odor
+                # should lower PDM-DN below its resting rate.
+                pdm_ref = b.rates_hz()[grp["PDM-DN"]].mean() if b is not None else 0.0
+                motor["pdm_odor_evoked_hz"] = float(o.rates_hz()[grp["PDM-DN"]].mean() - pdm_ref)
+                motor["pdm_baseline_hz"] = float(pdm_ref)
+                pdm_loss += _hinge(motor["pdm_odor_evoked_hz"], None, -1.0, 1.0)
+                pdm_loss += _hinge(motor["pdm_baseline_hz"], 2.0, None, 1.0)
             if b is not None:
                 late += max(0.0, (t.late_counts.sum() - b.late_counts.sum()) / max(1, t.spike_counts.sum()) - 0.02)
             max_rate = max(max_rate, float(t.rates_hz().max()))
@@ -329,6 +369,7 @@ def evaluate(x, seeds=TRAIN_SEEDS, side="left", state=None, detail=False):
             + _hinge(max_rate, None, 300.0, 50.0)
             + contrast
             + motor_loss
+            + pdm_loss
             + (_hinge(float(ppam_base.mean()), None, 15.0, 5.0) if b is not None else 0.0)
         )
         total += loss
@@ -376,6 +417,13 @@ def main(argv=None) -> int:
     )
     parser.add_argument("--free-mdn-input-signs", type=int, default=0, help="also fit signs of the top-K unknown MDN inputs")
     parser.add_argument("--free-touch-path-signs", type=int, default=0, help="also fit signs of top-K unknown neurons on head-touch -> MDN paths")
+    parser.add_argument("--pdm-targets", action="store_true", help="add PDM-DN targets: appetitive odor lowers PDM-DN (needs --motor-targets)")
+    parser.add_argument("--free-pdm-path-signs", type=int, default=0, help="also fit signs of top-K unknown neurons on ORN -> PDM-DN paths")
+    parser.add_argument(
+        "--freeze-classes", default="",
+        help="comma list of presynaptic classes whose scales stay at --init (e.g. the MB learning block)",
+    )
+    parser.add_argument("--freeze-init-signs", action="store_true", help="keep the free signs inherited from --init fixed")
     args = parser.parse_args(argv)
 
     free = ()
@@ -386,6 +434,8 @@ def main(argv=None) -> int:
         free = free + tuple(k for k in mdn_input_skids(args.free_mdn_input_signs) if k not in free)
     if args.free_touch_path_signs:
         free = free + tuple(k for k in touch_path_skids(args.free_touch_path_signs) if k not in free)
+    if args.free_pdm_path_signs:
+        free = free + tuple(k for k in pdm_path_skids(args.free_pdm_path_signs) if k not in free)
     shuffle = None
     if args.shuffle:
         mode, seed = args.shuffle.split(":")
@@ -393,6 +443,7 @@ def main(argv=None) -> int:
     state = setup(free, shuffle)
     state["reward_contrast"] = args.reward_contrast
     state["motor_targets"] = args.motor_targets
+    state["pdm_targets"] = args.pdm_targets
     if args.bg_hz > 0:
         state["background"] = {"background_hz": background_rates(state, args.bg_hz), "background_weight_mv": args.bg_mv}
     n_scale = len(CLASSES) + 1
@@ -400,6 +451,7 @@ def main(argv=None) -> int:
     x0 = np.zeros(dims)
     x0[:n_scale] = np.log(0.6 / W_BASE)  # start inside the bounded regime found by the probe
     x0[n_scale - 1] = 0.0
+    k = 0
     if args.init is not None:
         prev = json.loads(args.init.read_text(encoding="utf-8"))["best_x"]
         x0[:n_scale] = prev[:n_scale]
@@ -408,20 +460,34 @@ def main(argv=None) -> int:
         k = min(len(prev), dims) - n_scale
         if k > 0:
             x0[n_scale : n_scale + k] = prev[n_scale : n_scale + k]
+    frozen = {name.strip() for name in args.freeze_classes.split(",") if name.strip()}
+    unknown = frozen - {name for name, _ in CLASSES}
+    if unknown:
+        raise SystemExit(f"unknown classes: {sorted(unknown)}")
+    if (frozen or args.freeze_init_signs) and args.init is None:
+        raise SystemExit("--freeze-classes/--freeze-init-signs need --init")
+    fixed_mask = np.zeros(dims, dtype=bool)
+    for i, (name, _) in enumerate(CLASSES):
+        fixed_mask[i] = name in frozen
+    if args.freeze_init_signs and k > 0:
+        fixed_mask[n_scale : n_scale + k] = True
+    free_dims = np.flatnonzero(~fixed_mask)
     baseline = {
         "start_point_train": evaluate(x0, state=state, detail=True),
     }
-    es = CMAES(mean=x0, sigma=0.4, seed=0)
+    es = CMAES(mean=x0[free_dims], sigma=0.4, seed=0)
     history = []
     started = time.time()
-    with ProcessPoolExecutor(max_workers=args.workers, initializer=_init_worker, initargs=(free, args.reward_contrast, args.bg_hz, args.bg_mv, shuffle, args.motor_targets)) as pool:
+    initargs = (free, args.reward_contrast, args.bg_hz, args.bg_mv, shuffle, args.motor_targets, x0, free_dims, args.pdm_targets)
+    with ProcessPoolExecutor(max_workers=args.workers, initializer=_init_worker, initargs=initargs) as pool:
         for gen in range(args.generations):
             xs = es.ask()
-            losses = np.array(list(pool.map(evaluate, xs)))
+            losses = np.array(list(pool.map(evaluate_free, xs)))
             es.tell(xs, losses)
             history.append({"generation": gen, "best": round(float(losses.min()), 4), "median": round(float(np.median(losses)), 4), "sigma": round(es.sigma, 4)})
             print(json.dumps(history[-1] | {"elapsed_s": round(time.time() - started)}), flush=True)
-    best = es.best_x
+    best = x0.copy()
+    best[free_dims] = es.best_x
     train_loss, train_rows = evaluate(best, TRAIN_SEEDS, "left", state, detail=True)
     held_loss, held_rows = evaluate(best, TEST_SEEDS, "right", state, detail=True)
     scales = {name: round(float(np.exp(best[i])), 4) for i, (name, _) in enumerate(CLASSES)}
@@ -434,7 +500,10 @@ def main(argv=None) -> int:
         "regularization": REG,
         "reward_contrast": args.reward_contrast,
         "motor_targets": args.motor_targets,
+        "pdm_targets": args.pdm_targets,
         "shuffle": shuffle,
+        "frozen_classes": sorted(frozen),
+        "frozen_init_signs": bool(args.freeze_init_signs and k > 0),
         "background_hz": args.bg_hz,
         "background_mv": args.bg_mv if args.bg_hz > 0 else None,
         "class_sizes": state["class_sizes"],
