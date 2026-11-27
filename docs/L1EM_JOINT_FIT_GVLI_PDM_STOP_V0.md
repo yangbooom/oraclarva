@@ -185,3 +185,5 @@ R=data/local/l1em_public_connectome/runs
   --conditions spontaneous pdm_activation forward_cut head_touch --forward-current-a 1e-10 \
   --mdn-current-a 1.5e-10 --sez-current-a 9e-10 --out $R/brain_body_crawl_v1.json
 ```
+
+Follow-up: `L1_SCORECARD_AND_CONNECTOME_SPECIFICITY_V0.md` (shuffle test of v4, speed-gap breakdown, scorecard).

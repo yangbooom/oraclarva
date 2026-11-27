@@ -54,6 +54,31 @@ def _setup(fit_path, bg_hz, bg_mv):
     _C["ctx"] = BrainContext.load(fit_path, bg_hz, bg_mv)
 
 
+def cycle_metrics(result):
+    """Per-cycle kinematics comparable to Greaney 2026, which averages over
+    crawl cycles rather than over a fixed time window. Progress of the body
+    centroid along the initial head direction between successive forward-wave
+    arrivals at A1 (one crawl cycle each)."""
+    ends = np.array(result.premotor_spike_times_s.get("forward", {}).get("A1", []))
+    samples = result.trajectory_samples
+    if ends.size < 2 or len(samples) < 2:
+        return {"cycle_stride_um": None, "cycle_speed_um_s": None, "cycles": 0}
+    t = np.array([x["time_s"] for x in samples])
+    nodes0 = np.array(samples[0]["nodes_um"])
+    head = nodes0[0] - nodes0[-1]
+    head /= np.linalg.norm(head)
+    c0 = nodes0.mean(axis=0)
+    progress = np.array([(np.array(x["nodes_um"]).mean(axis=0) - c0) @ head for x in samples])
+    at = lambda time: float(np.interp(time, t, progress))  # noqa: E731
+    strides = np.array([at(b) - at(a) for a, b in zip(ends[:-1], ends[1:])])
+    periods = np.diff(ends)
+    return {
+        "cycle_stride_um": round(float(np.median(strides)), 1),
+        "cycle_speed_um_s": round(float(np.median(strides / periods)), 2),
+        "cycles": int(strides.size),
+    }
+
+
 def wave_metrics(result, duration_s):
     starts = np.array(result.premotor_spike_times_s.get("forward", {}).get("A6", []))
     ends = np.array(result.premotor_spike_times_s.get("forward", {}).get("A1", []))
@@ -108,7 +133,7 @@ def run_one(job):
         config["parameters"]["sez_dn1_inhibitory_current_a"] = args["sez_inhibition_a"]
         config["parameters"]["brain_bridge_current_a_by_node"]["descending:SEZ-DN1"] = args["sez_current_a"]
     larva = AxialLocomotionLarva(config)
-    result = larva.run(duration_s=args["duration_s"], record_trajectory_interval_s=None, descending_spike_source=source)
+    result = larva.run(duration_s=args["duration_s"], record_trajectory_interval_s=0.05, descending_spike_source=source)
     row = {
         "seed": seed,
         "condition": condition,
@@ -118,6 +143,7 @@ def run_one(job):
         "axial_mdn_spikes": int(result.spike_counts.get("descending:MDN", 0)),
         "untraced_active_force_frames": int(result.untraced_active_force_frames),
         **wave_metrics(result, args["duration_s"]),
+        **cycle_metrics(result),
     }
     if condition in ("odor_constant", "odor_drop", "pdm_activation", "spontaneous"):
         t0, t1 = args["drop_at"], args["drop_at"] + args["stop_window_s"]
@@ -146,6 +172,8 @@ def summarize(rows, conditions):
             "n": len(sel),
             "displacement_um_mean": round(float(get("forward_displacement_um").mean()), 1),
             "crawl_speed_um_s_median": round(float(np.median(get("crawl_speed_um_s"))), 2),
+            "cycle_speed_um_s_median": round(float(np.median(get("cycle_speed_um_s"))), 2) if get("cycle_speed_um_s").size else None,
+            "cycle_stride_um_median": round(float(np.median(get("cycle_stride_um"))), 1) if get("cycle_stride_um").size else None,
             "wave_period_s_median": round(float(np.median(get("wave_period_s"))), 2) if get("wave_period_s").size else None,
             "forward_waves_mean": round(float(get("forward_waves_completed").mean()), 1),
             "backward_waves_mean": round(float(get("backward_waves").mean()), 1),
