@@ -9,14 +9,15 @@ control = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(control)
 
 
-def behaviour(paired, fictive, runs, stop):
-    return {"paired_LI": paired, "fictive_punishment_LI": fictive, "spontaneous_forward_runs": runs, "pdm_stop_waves": stop}
+def behaviour(paired, fictive, runs, stop, toward=5, offset=1):
+    return {"paired_LI": paired, "fictive_punishment_LI": fictive, "spontaneous_forward_runs": runs,
+            "pdm_stop_waves": stop, "toward_odor_runs": toward, "odor_offset_pdm_seeds": offset}
 
 
 def test_judge_marks_specific_only_when_every_shuffle_fails():
     verdicts = control.judge(
         {
-            "intact": behaviour(1.2, -1.8, 10, 0.0),
+            "intact": behaviour(1.2, -1.8, 10, 0.0, toward=8),
             "1": behaviour(-0.05, -0.1, 10, 0.0),
             "2": behaviour(0.27, 0.8, 9, 0.0),
         },
@@ -24,6 +25,8 @@ def test_judge_marks_specific_only_when_every_shuffle_fails():
     )
     assert verdicts["paired_LI"]["connectome_specific"] is True
     assert verdicts["fictive_punishment_LI"]["connectome_specific"] is True
+    assert verdicts["toward_odor_runs"]["connectome_specific"] is True
+    assert verdicts["odor_offset_pdm_seeds"]["intact_passes"] is False
     assert verdicts["spontaneous_forward_runs"] == {
         "criterion": ">= 8 of 10", "intact_passes": True, "shuffles_passing": ["1", "2"], "connectome_specific": False,
     }

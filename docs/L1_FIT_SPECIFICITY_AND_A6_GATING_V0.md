@@ -134,6 +134,8 @@ What changed compared with v4:
 - Rerun odor-offset and navigation with the v5 brain, using the shuffle control.
 - Look for a body mechanism that shortens the period without breaking the Greaney calibration.
 
+The next steps are done in `L1_TOUCH_PATH_AND_ODOR_RERUN_V0.md`.
+
 ## Commands
 
 ```text
