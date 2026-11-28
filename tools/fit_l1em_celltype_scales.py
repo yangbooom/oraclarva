@@ -12,7 +12,11 @@ Targets (MODEL_FITTED against these; provenance in docs/L1EM_CELLTYPE_FIT_V0.md)
   * appetitive odor (left ORNs) activates 3-15% of ipsilateral KCs
     (adult ~7% sparseness used as a weak prior; larval value not found)
   * contralateral KC activation <= half of ipsilateral (L1 KC responses are
-    almost entirely ipsilateral; Zimmerman et al. 2026 Sci Adv, late L1 imaging)
+    almost entirely ipsilateral; Zimmerman et al. 2026 Sci Adv, late L1 imaging);
+    with --strict-laterality, <= 0.2 x ipsilateral at a 10x weight. This is the
+    reading of "almost entirely" used here; the paper's exact fraction was not
+    transcribed. It separates measured from block-shuffled wiring
+    (docs/L1_FIT_SPECIFICITY_AND_A6_GATING_V0.md).
   * sugar sensory input activates the pPAM DANs DAN-i1/j1/k1 (MBE1c/1d/1b)
     (Weber et al. 2023 eLife, pooled pPAM imaging, 500 mM fructose; stage not
     verified verbatim, so this is a qualitative target)
@@ -234,10 +238,11 @@ def background_rates(state, hz):
 
 def _init_worker(
     free_sign_skids=(), reward_contrast=False, bg_hz=0.0, bg_mv=0.0, shuffle=None, motor_targets=False,
-    x_fixed=None, free_dims=None, pdm_targets=False,
+    x_fixed=None, free_dims=None, pdm_targets=False, strict_laterality=False,
 ):
     _STATE.update(setup(tuple(free_sign_skids), shuffle))
     _STATE["pdm_targets"] = pdm_targets
+    _STATE["strict_laterality"] = strict_laterality
     if x_fixed is not None:
         _STATE["x_fixed"] = np.asarray(x_fixed, dtype=float)
         _STATE["free_dims"] = np.asarray(free_dims, dtype=np.int64)
@@ -363,7 +368,11 @@ def evaluate(x, seeds=TRAIN_SEEDS, side="left", state=None, detail=False):
             + 50.0 * late
             + 5.0 * float(late > 0)
             + _hinge(ipsi, 0.03, 0.15, 0.03)
-            + _hinge(contra, None, 0.5 * ipsi + 0.01, 0.03)
+            + (
+                _hinge(contra, None, 0.2 * ipsi, 0.01)
+                if s.get("strict_laterality")
+                else _hinge(contra, None, 0.5 * ipsi + 0.01, 0.03)
+            )
             + _hinge(float((ppam_rates > 1.0).mean()), 0.5, None, 0.25)
             + _hinge(float(ppam_rates.mean()), 5.0, None, 5.0)
             + _hinge(max_rate, None, 300.0, 50.0)
@@ -418,6 +427,10 @@ def main(argv=None) -> int:
     parser.add_argument("--free-mdn-input-signs", type=int, default=0, help="also fit signs of the top-K unknown MDN inputs")
     parser.add_argument("--free-touch-path-signs", type=int, default=0, help="also fit signs of top-K unknown neurons on head-touch -> MDN paths")
     parser.add_argument("--pdm-targets", action="store_true", help="add PDM-DN targets: appetitive odor lowers PDM-DN (needs --motor-targets)")
+    parser.add_argument(
+        "--strict-laterality", action="store_true",
+        help="contralateral KC activation <= 0.2 x ipsilateral, 10x weight (Zimmerman 2026: almost entirely ipsilateral)",
+    )
     parser.add_argument("--free-pdm-path-signs", type=int, default=0, help="also fit signs of top-K unknown neurons on ORN -> PDM-DN paths")
     parser.add_argument(
         "--freeze-classes", default="",
@@ -444,6 +457,7 @@ def main(argv=None) -> int:
     state["reward_contrast"] = args.reward_contrast
     state["motor_targets"] = args.motor_targets
     state["pdm_targets"] = args.pdm_targets
+    state["strict_laterality"] = args.strict_laterality
     if args.bg_hz > 0:
         state["background"] = {"background_hz": background_rates(state, args.bg_hz), "background_weight_mv": args.bg_mv}
     n_scale = len(CLASSES) + 1
@@ -478,7 +492,7 @@ def main(argv=None) -> int:
     es = CMAES(mean=x0[free_dims], sigma=0.4, seed=0)
     history = []
     started = time.time()
-    initargs = (free, args.reward_contrast, args.bg_hz, args.bg_mv, shuffle, args.motor_targets, x0, free_dims, args.pdm_targets)
+    initargs = (free, args.reward_contrast, args.bg_hz, args.bg_mv, shuffle, args.motor_targets, x0, free_dims, args.pdm_targets, args.strict_laterality)
     with ProcessPoolExecutor(max_workers=args.workers, initializer=_init_worker, initargs=initargs) as pool:
         for gen in range(args.generations):
             xs = es.ask()
@@ -501,6 +515,7 @@ def main(argv=None) -> int:
         "reward_contrast": args.reward_contrast,
         "motor_targets": args.motor_targets,
         "pdm_targets": args.pdm_targets,
+        "strict_laterality": args.strict_laterality,
         "shuffle": shuffle,
         "frozen_classes": sorted(frozen),
         "frozen_init_signs": bool(args.freeze_init_signs and k > 0),
