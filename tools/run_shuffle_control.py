@@ -13,7 +13,10 @@ Every network gets the same treatment:
 2. conditioning parameters (DA threshold, eta) chosen on train seeds 0-3 by
    paired - unpaired LI, then held-out seeds;
 3. the forward bridge current chosen on train seeds 0-3 by mean displacement,
-   then held-out spontaneous crawling and PDM-DN activation.
+   then held-out spontaneous crawling and PDM-DN activation;
+4. the odor-offset probe (does an odor decrease raise PDM-DN?) on held-out
+   seeds, and odor-gradient navigation with the steering current chosen on
+   train seeds 0-3 by the mean mirror-pair difference, then held-out seeds.
 
 Outputs (fits, runs, summary) go to the git-ignored
 ``data/local/l1em_public_connectome/runs/control/<tag>/``. A stage whose output
@@ -36,6 +39,8 @@ TRAIN = [0, 1, 2, 3]
 HELD_OUT = list(range(100, 110))
 LEARNING_GRID = [(0.0, 1e-4), (2.0, 5e-4), (4.0, 2e-3), (8.0, 2e-3)]
 FORWARD_GRID = [1e-10, 1.4e-10, 2e-10, 3e-10, 4e-10]
+STEERING_GRID = [2e-10, 4e-10, 8e-10]
+NAV_ARGS = ["--forward-current-a", "2e-10", "--mdn-current-a", "1.5e-10", "--bg-hz", "100", "--bg-mv", "6"]
 
 # Pass criteria. They match tools/build_l1_scorecard.py.
 CRITERIA = {
@@ -43,6 +48,8 @@ CRITERIA = {
     "fictive_punishment_LI": ("< -0.3", lambda v: v < -0.3),
     "spontaneous_forward_runs": (">= 8 of 10", lambda v: v >= 8),
     "pdm_stop_waves": ("== 0", lambda v: v == 0),
+    "toward_odor_runs": (">= 8 of 10", lambda v: v >= 8),
+    "odor_offset_pdm_seeds": (">= 5 of 10", lambda v: v >= 5),
 }
 
 
@@ -108,6 +115,27 @@ def crawl(fit: Path, net: str, out_dir: Path, log: Path, workers: int, bridge: l
     return {"forward_current_a": best[1], "summary": d["summary"]}
 
 
+def odor(fit: Path, net: str, out_dir: Path, log: Path, workers: int):
+    probe = once(out_dir / f"probe_{net}.json",
+                 [PY, "tools/probe_brain_odor_offset.py", "--fit", str(fit), "--transducer", "--bg-hz", "100",
+                  "--bg-mv", "6", "--workers", str(workers)], log)["summary"]["PDM-DN"]
+    best = None
+    for steer in STEERING_GRID:
+        d = once(out_dir / f"nav_select_{net}_{steer}.json",
+                 [PY, "tools/run_brain_odor_navigation.py", "--fit", str(fit), "--seeds", *map(str, TRAIN),
+                  "--conditions", "plus_y", "minus_y", "--steering-current-a", str(steer), *NAV_ARGS,
+                  "--workers", str(workers)], log)
+        dy = d["mirror_pairs"]["y_plus_minus_y_minus_um"]
+        score = sum(dy) / len(dy)
+        if best is None or score > best[0]:
+            best = (score, steer)
+    d = once(out_dir / f"nav_{net}.json",
+             [PY, "tools/run_brain_odor_navigation.py", "--fit", str(fit), "--seeds", *map(str, HELD_OUT),
+              "--conditions", "plus_y", "minus_y", "--steering-current-a", str(best[1]), *NAV_ARGS,
+              "--workers", str(workers)], log)
+    return {"steering_current_a": best[1], "navigation": d["mirror_pairs"], "odor_offset_pdm": probe}
+
+
 def behaviour(net_result) -> dict[str, float]:
     c, w = net_result["conditioning"]["summary"], net_result["crawl"]["summary"]
     return {
@@ -117,6 +145,8 @@ def behaviour(net_result) -> dict[str, float]:
         "spontaneous_forward_runs": w["spontaneous"]["runs_net_forward"],
         "cycle_speed_um_s": w["spontaneous"].get("cycle_speed_um_s_median"),
         "pdm_stop_waves": w["pdm_activation"]["waves_to_A5_in_stop_window_mean"],
+        "toward_odor_runs": net_result["odor"]["navigation"]["toward_odor_runs"],
+        "odor_offset_pdm_seeds": net_result["odor"]["odor_offset_pdm"]["seeds_increase_gt_1hz"],
         "held_out_fit_loss": net_result["fit_held_out_loss"],
     }
 
@@ -167,6 +197,7 @@ def main(argv=None) -> int:
             "fit_held_out_loss": load(ROOT / fit)["held_out_right_odor_new_seeds"]["loss"],
             "conditioning": conditioning(fit, net, out_dir, log, args.workers),
             "crawl": crawl(fit, net, out_dir, log, args.workers, bridge),
+            "odor": odor(fit, net, out_dir, log, args.workers),
         }
         results[net]["behaviour"] = behaviour(results[net])
         print(f"  {json.dumps(results[net]['behaviour'])}", flush=True)

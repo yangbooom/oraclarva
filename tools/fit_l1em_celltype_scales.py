@@ -466,14 +466,22 @@ def main(argv=None) -> int:
     x0[:n_scale] = np.log(0.6 / W_BASE)  # start inside the bounded regime found by the probe
     x0[n_scale - 1] = 0.0
     k = 0
+    reused = np.zeros(dims, dtype=bool)
     if args.init is not None:
-        prev = json.loads(args.init.read_text(encoding="utf-8"))["best_x"]
+        init = json.loads(args.init.read_text(encoding="utf-8"))
+        prev = init["best_x"]
         x0[:n_scale] = prev[:n_scale]
-        # Reuse previously fitted signs for the leading free neurons; new free
-        # signs start undecided (0 = threshold).
-        k = min(len(prev), dims) - n_scale
-        if k > 0:
-            x0[n_scale : n_scale + k] = prev[n_scale : n_scale + k]
+        # Reuse previously fitted signs, matched by neuron; new free signs
+        # start undecided (0 = threshold).
+        prev_skids = list(init.get("fitted_free_signs", {}))
+        if len(prev_skids) != len(prev) - n_scale:  # older fits: match by position
+            prev_skids = state["free_skids"][: max(0, len(prev) - n_scale)]
+        prev_x = dict(zip(prev_skids, prev[n_scale:]))
+        for i, skid in enumerate(state["free_skids"]):
+            if skid in prev_x:
+                x0[n_scale + i] = prev_x[skid]
+                reused[n_scale + i] = True
+        k = int(reused.sum())
     frozen = {name.strip() for name in args.freeze_classes.split(",") if name.strip()}
     unknown = frozen - {name for name, _ in CLASSES}
     if unknown:
@@ -483,8 +491,8 @@ def main(argv=None) -> int:
     fixed_mask = np.zeros(dims, dtype=bool)
     for i, (name, _) in enumerate(CLASSES):
         fixed_mask[i] = name in frozen
-    if args.freeze_init_signs and k > 0:
-        fixed_mask[n_scale : n_scale + k] = True
+    if args.freeze_init_signs:
+        fixed_mask |= reused
     free_dims = np.flatnonzero(~fixed_mask)
     baseline = {
         "start_point_train": evaluate(x0, state=state, detail=True),

@@ -5,7 +5,7 @@ One row per behaviour, with:
 - the L1 reference: Greaney 2026 held-out animals (p10 / median / p90), or a
   qualitative published finding;
 - the current model: the intact network of a shuffle-control run
-  (tools/run_shuffle_control.py, default tag joint_v5_strict) plus the
+  (tools/run_shuffle_control.py, default tag joint_v6_touch) plus the
   brain-body bridge, on held-out sign seeds 100-109;
 - the block-shuffled connectomes from the same run (mean over shuffles);
 - a pass / fail / not-built status.
@@ -45,7 +45,7 @@ def shuffle_mean(values):
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out", type=Path, default=RUNS / "scorecard_v0.json")
-    parser.add_argument("--control", default="joint_v5_strict", help="tag of a run_shuffle_control.py run")
+    parser.add_argument("--control", default="joint_v6_touch", help="tag of a run_shuffle_control.py run")
     parser.add_argument("--shuffles", nargs="+", default=["1", "2", "3"])
     args = parser.parse_args(argv)
     ctl = RUNS / "control" / args.control
@@ -56,14 +56,16 @@ def main(argv=None) -> int:
     cycles = crawl["spontaneous"]
     cond = load(ctl / "cond_intact.json")["summary"]
     fits = {n: load(ctl / f"fit_{n}.json") for n in ["intact", *args.shuffles]}
-    probe = load(RUNS / "odor_offset_probe_v5_transducer.json")["summary"]["PDM-DN"]
-    nav = load(RUNS / "odor_navigation_v0.json")["mirror_pairs"]
+    probe = load(ctl / "probe_intact.json")["summary"]["PDM-DN"]
+    nav = load(ctl / "nav_intact.json")["mirror_pairs"]
     delay = load(AXIAL)["parameters"]["intersegmental_delay_s"]
 
     # Learning parameters and the forward bridge current were reselected per
     # network on train seeds 0-3 by run_shuffle_control.py.
     null_crawl = [load(ctl / f"crawl_{k}.json") for k in args.shuffles]
     null_cond = [load(ctl / f"cond_{k}.json") for k in args.shuffles]
+    null_probe = [d["summary"]["PDM-DN"]["seeds_increase_gt_1hz"] if d else None for d in (load(ctl / f"probe_{k}.json") for k in args.shuffles)]
+    null_nav = [d["mirror_pairs"]["toward_odor_runs"] if d else None for d in (load(ctl / f"nav_{k}.json") for k in args.shuffles)]
     nc = lambda cond_, key: [d["summary"][cond_].get(key) for d in null_crawl if d and cond_ in d["summary"]]  # noqa: E731
     nl = lambda cond_: [d["summary"][cond_]["LI_mean"] for d in null_cond if d]  # noqa: E731
 
@@ -138,7 +140,8 @@ def main(argv=None) -> int:
     add("Reflexes", "Head touch makes the larva back up", "runs of 10",
         {"text": "larvae back up on anterior touch"}, crawl["head_touch"]["backup_after_touch"],
         "pass" if crawl["head_touch"]["backup_after_touch"] >= 5 else "fail",
-        note="The fitted MDN response to touch is too weak.")
+        note="Touch->MDN is about 2-4 Hz against 15 Hz. In larvae gentle touch acts through body-wall C3da neurons "
+        "and the nerve cord (Omamiuda-Ishikawa 2020), which the brain volume barely contains.")
     stop = crawl["pdm_activation"]["waves_to_A5_in_stop_window_mean"]
     add("Reflexes", "PDM-DN activation stops crawling (5 s window)", "waves per run",
         {"text": "deterministic stop (Tastekin 2018)"}, stop, "pass" if stop == 0 else "fail",
@@ -155,11 +158,14 @@ def main(argv=None) -> int:
         specific(lat >= 8, lat_null, lambda v: v >= 8))
     add("Odor", "Odor decrease raises PDM-DN", "seeds of 10",
         {"text": "inferred from behaviour (Tastekin 2018)"}, probe["seeds_increase_gt_1hz"],
-        "pass" if probe["seeds_increase_gt_1hz"] >= 5 else "fail",
-        note="v4 brain. Model ORNs fire only 0.36 Hz at rest, so there is no OFF signal.")
+        "pass" if probe["seeds_increase_gt_1hz"] >= 5 else "fail", shuffle_mean(null_probe),
+        "Model ORNs fire only 0.36 Hz at rest, so there is no OFF signal.",
+        specific(probe["seeds_increase_gt_1hz"] >= 5, null_probe, lambda v: v >= 5))
     add("Odor", "Turns toward an odor gradient", "runs of 10",
         {"text": "L1 larvae climb odor gradients"}, nav["toward_odor_runs"],
-        "pass" if nav["toward_odor_runs"] >= 8 else "fail", note="v3b brain, not yet rerun with v4.")
+        "pass" if nav["toward_odor_runs"] >= 8 else "fail", shuffle_mean(null_nav),
+        f"Mirror-pair test, Wilcoxon p = {nav['wilcoxon_p']}. Steering current reselected on train seeds for every network.",
+        specific(nav["toward_odor_runs"] >= 8, null_nav, lambda v: v >= 8))
     add("Odor", "Head casts", "", {"text": "cast after a stop (Tastekin 2018)"}, None, "not built")
 
     add("Learning", "Odor-sugar conditioning (paired LI)", "LI",
