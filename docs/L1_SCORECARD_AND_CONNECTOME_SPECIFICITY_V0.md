@@ -80,6 +80,8 @@ Of 14 behaviours, 7 pass, 5 fail and 2 are not built. Only the two learning rows
 - Tighten the fit targets so that they separate intact from shuffled wiring.
 - Reduce the brain's extra A6 drive, then the body period.
 
+All three are done in `L1_FIT_SPECIFICITY_AND_A6_GATING_V0.md`.
+
 ## Commands
 
 ```text
